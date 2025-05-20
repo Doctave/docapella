@@ -1,0 +1,4 @@
+---
+# Let's agree that the doctave.yaml is what we use to determine
+# if we are inside a Doctave project. It should be in the root
+# directory.

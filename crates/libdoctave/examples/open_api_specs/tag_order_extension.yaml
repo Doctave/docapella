@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Example tags extensions case
+  version: 1.0.11
+tags:
+  - name: first_tag
+  - name: extension_tag
+  - name: second_tag
+paths:
+  /first:
+    put:
+      tags:
+        - first_tag
+      description: First PUT
+      responses:
+        '200':
+          description: Successful operation
+    post:
+      tags:
+        - first_tag
+      description: First POST
+      responses:
+        '200':
+          description: Successful operation
+
+  /second:
+    get:
+      tags:
+        - second_tag
+      description: Second GET
+      responses:
+        '200':
+          description: successful operation
+
+  /third:
+    get:
+      tags:
+        - third_tag
+      x-doctave-tags:
+        - extension_tag
+      description: Third GET
+      responses:
+        '200':
+          description: successful operation

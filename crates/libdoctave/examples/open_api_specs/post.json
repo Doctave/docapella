@@ -1,0 +1,2155 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Upvest Investment API",
+    "version": "0.8.0",
+    "description": "Upvest Investment API.",
+    "contact": {
+      "name": "Upvest API Support",
+      "email": "api@upvest.co",
+      "url": "https://docs.upvest.co"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "tags": [
+    {
+      "name": "Users",
+      "description": "All general user related paths."
+    },
+  ],
+  "servers": [
+    {
+      "url": "https://sandbox.api.upvest.io",
+      "description": "Sandbox Environment"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "parameters": [
+        {
+          "name": "upvest-client-id",
+          "in": "header",
+          "description": "Tenant Client ID",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "example": "ebabcf4d-61c3-4942-875c-e265a7c2d062"
+          }
+        },
+        {
+          "name": "authorization",
+          "in": "header",
+          "description": "Bearer (access) token from the OAuth flow with correct scopes.\nhttps://datatracker.ietf.org/doc/html/rfc6750\n",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^Bearer [a-zA-Z0-9\\-\\._~+/]*=*",
+            "example": "Bearer c2VjcmV0Cg=="
+          }
+        },
+        {
+          "name": "signature",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "https://tools.ietf.org/id/draft-ietf-httpbis-message-signatures-01.html#name-the-signature-http-header"
+        },
+        {
+          "name": "signature-input",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "https://tools.ietf.org/id/draft-ietf-httpbis-message-signatures-01.html#name-the-signature-input-http-he"
+        },
+        {
+          "name": "upvest-api-version",
+          "in": "header",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "1"
+            ],
+            "default": "1"
+          },
+          "description": "Upvest API version"
+        }
+      ],
+      "post": {
+        "operationId": "create_user",
+        "summary": "Create a user",
+        "description": "Create a user",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "oauth-client-credentials": [
+              "users:admin"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "f1150421-2e34-42b6-aae9-52ef157065b9"
+            },
+            "description": "Idempotency key to prevent the same request from replaying.\nhttps://tools.ietf.org/id/draft-idempotency-header-01.html\n"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "title": "User - Create - Request",
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "description": "First name of the user."
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "description": "Last name of the user."
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "maxLength": 100,
+                    "description": "Email of the user. Must be a valid email address."
+                  },
+                  "salutation": {
+                    "type": "string",
+                    "description": "Salutation of the user, used in reports and statements.\n* (empty string) - \n* SALUTATION_MALE - \n* SALUTATION_FEMALE - \n* SALUTATION_FEMALE_MARRIED - \n* SALUTATION_DIVERSE - ",
+                    "enum": [
+                      "",
+                      "SALUTATION_MALE",
+                      "SALUTATION_FEMALE",
+                      "SALUTATION_FEMALE_MARRIED",
+                      "SALUTATION_DIVERSE"
+                    ],
+                    "default": ""
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "Title of the user, used in reports and statements.\n* (empty string) - \n* DR - Doctor\n* PROF - Professor\n* PROF_DR - \n* DIPL_ING - Graduate engineer (Diplom-Ingenieur)\n* MAGISTER - ",
+                    "enum": [
+                      "",
+                      "DR",
+                      "PROF",
+                      "PROF_DR",
+                      "DIPL_ING",
+                      "MAGISTER"
+                    ],
+                    "default": ""
+                  },
+                  "birth_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Birth date of the user in YYYY-MM-DD format. [RFC 3339, section 5.6](https://json-schema.org/draft/2020-12/json-schema-validation.html#RFC3339)"
+                  },
+                  "birth_city": {
+                    "description": "Birth city of the user.",
+                    "allOf": [
+                      {
+                        "title": "City name",
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 85
+                      }
+                    ]
+                  },
+                  "birth_country": {
+                    "description": "Birth country of the user. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                    "allOf": [
+                      {
+                        "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$"
+                      }
+                    ]
+                  },
+                  "birth_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "description": "If applicable, birth name of the user."
+                  },
+                  "nationalities": {
+                    "type": "array",
+                    "items": {
+                      "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                      "type": "string",
+                      "pattern": "^[A-Z]{2}$"
+                    },
+                    "minItems": 1,
+                    "description": "Nationalities of the user. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)."
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "pattern": "^([0-9]{8,15})?$",
+                    "description": "Phone number of the user. [Phone number E.164 format](https://en.wikipedia.org/wiki/E.164)."
+                  },
+                  "address": {
+                    "allOf": [
+                      {
+                        "title": "Address",
+                        "type": "object",
+                        "description": "Address",
+                        "properties": {
+                          "address_line1": {
+                            "type": "string",
+                            "description": "First address line of the address.",
+                            "maxLength": 100
+                          },
+                          "address_line2": {
+                            "type": "string",
+                            "description": "Second address line of the address.",
+                            "maxLength": 100
+                          },
+                          "postcode": {
+                            "title": "Postal code",
+                            "type": "string",
+                            "description": "Postal code (postcode, PIN or ZIP code)",
+                            "pattern": "^[a-zA-Z0-9\\s\\-]{1,10}$"
+                          },
+                          "country": {
+                            "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                            "type": "string",
+                            "pattern": "^[A-Z]{2}$"
+                          },
+                          "state": {
+                            "description": "State, province, county. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          "city": {
+                            "title": "City name",
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 85
+                          }
+                        },
+                        "required": [
+                          "address_line1",
+                          "postcode",
+                          "country",
+                          "city"
+                        ]
+                      }
+                    ],
+                    "description": "User residental address."
+                  },
+                  "postal_address": {
+                    "description": "User postal address. Needs to be specified if different to the residential address, otherwise it is automatically populated.",
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "title": "Address",
+                        "type": "object",
+                        "description": "Address",
+                        "properties": {
+                          "address_line1": {
+                            "type": "string",
+                            "description": "First address line of the address.",
+                            "maxLength": 100
+                          },
+                          "address_line2": {
+                            "type": "string",
+                            "description": "Second address line of the address.",
+                            "maxLength": 100
+                          },
+                          "postcode": {
+                            "title": "Postal code",
+                            "type": "string",
+                            "description": "Postal code (postcode, PIN or ZIP code)",
+                            "pattern": "^[a-zA-Z0-9\\s\\-]{1,10}$"
+                          },
+                          "country": {
+                            "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                            "type": "string",
+                            "pattern": "^[A-Z]{2}$"
+                          },
+                          "state": {
+                            "description": "State, province, county. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                            "type": "string",
+                            "maxLength": 50
+                          },
+                          "city": {
+                            "title": "City name",
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 85
+                          }
+                        },
+                        "required": [
+                          "address_line1",
+                          "postcode",
+                          "country",
+                          "city"
+                        ]
+                      }
+                    ]
+                  },
+                  "fatca": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "boolean",
+                        "description": "The user’s FATCA status is true if the user is subject to paying taxes in the US, otherwise it can be set to false."
+                      },
+                      "confirmed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp at which the user confirmed their FATCA status. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                      }
+                    },
+                    "required": [
+                      "status",
+                      "confirmed_at"
+                    ]
+                  },
+                  "terms_and_conditions": {
+                    "type": "object",
+                    "properties": {
+                      "consent_document_id": {
+                        "title": "Consent unique identifier.",
+                        "type": "string",
+                        "description": "Consent unique identifier.",
+                        "format": "uuid"
+                      },
+                      "confirmed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp at which the user consented to the terms & conditions. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                      }
+                    },
+                    "required": [
+                      "consent_document_id",
+                      "confirmed_at"
+                    ]
+                  },
+                  "data_privacy_and_sharing_agreement": {
+                    "type": "object",
+                    "properties": {
+                      "consent_document_id": {
+                        "title": "Consent unique identifier.",
+                        "type": "string",
+                        "description": "Consent unique identifier.",
+                        "format": "uuid"
+                      },
+                      "confirmed_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "Timestamp at which the user consented to the data sharing agreement. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                      }
+                    },
+                    "required": [
+                      "consent_document_id",
+                      "confirmed_at"
+                    ]
+                  }
+                },
+                "required": [
+                  "first_name",
+                  "last_name",
+                  "email",
+                  "birth_date",
+                  "birth_city",
+                  "birth_country",
+                  "nationalities",
+                  "address",
+                  "fatca",
+                  "terms_and_conditions",
+                  "data_privacy_and_sharing_agreement"
+                ],
+                "additionalProperties": false
+              },
+              "example": {
+                "first_name": "Karl",
+                "last_name": "Schmidt",
+                "email": "karl.schmidt@example.com",
+                "salutation": "SALUTATION_MALE",
+                "title": "DR",
+                "birth_date": "1972-09-30",
+                "birth_city": "Berlin",
+                "birth_country": "DE",
+                "birth_name": "Schmidt",
+                "nationalities": [
+                  "DE",
+                  "AU"
+                ],
+                "phone_number": "4930901820",
+                "postal_address": {
+                  "address_line1": "Rosenweg 221",
+                  "address_line2": "apt. 33",
+                  "postcode": "45678",
+                  "city": "Berlin",
+                  "state": "BE",
+                  "country": "DE"
+                },
+                "address": {
+                  "address_line1": "Rosenweg 221",
+                  "address_line2": "apt. 33",
+                  "postcode": "45678",
+                  "city": "Berlin",
+                  "state": "BE",
+                  "country": "DE"
+                },
+                "fatca": {
+                  "status": false,
+                  "confirmed_at": "2020-08-24T14:15:22Z"
+                },
+                "terms_and_conditions": {
+                  "consent_document_id": "a8a87268-4f3c-4de2-abb9-a553a3bb7608",
+                  "confirmed_at": "2020-08-24T14:14:22Z"
+                },
+                "data_privacy_and_sharing_agreement": {
+                  "consent_document_id": "fb1827c3-2b29-47e1-84da-996d09517edc",
+                  "confirmed_at": "2020-08-24T14:16:22Z"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Example response",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "User",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "title": "User unique identifier.",
+                      "type": "string",
+                      "description": "User unique identifier.",
+                      "format": "uuid"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Date and time when the resource was created. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "description": "Date and time when the resource was last updated. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                    },
+                    "first_name": {
+                      "type": "string",
+                      "maxLength": 100,
+                      "minLength": 2,
+                      "description": "First name of the user."
+                    },
+                    "last_name": {
+                      "type": "string",
+                      "maxLength": 100,
+                      "minLength": 2,
+                      "description": "Last name of the user."
+                    },
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "maxLength": 100,
+                      "description": "Email of the user. Must be a valid email address."
+                    },
+                    "salutation": {
+                      "type": "string",
+                      "description": "Salutation of the user, used in reports and statements.\n* (empty string) - \n* SALUTATION_MALE - \n* SALUTATION_FEMALE - \n* SALUTATION_FEMALE_MARRIED - \n* SALUTATION_DIVERSE - ",
+                      "enum": [
+                        "",
+                        "SALUTATION_MALE",
+                        "SALUTATION_FEMALE",
+                        "SALUTATION_FEMALE_MARRIED",
+                        "SALUTATION_DIVERSE"
+                      ],
+                      "default": ""
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Title of the user, used in reports and statements.\n* (empty string) - \n* DR - Doctor\n* PROF - Professor\n* PROF_DR - \n* DIPL_ING - Graduate engineer (Diplom-Ingenieur)\n* MAGISTER - ",
+                      "enum": [
+                        "",
+                        "DR",
+                        "PROF",
+                        "PROF_DR",
+                        "DIPL_ING",
+                        "MAGISTER"
+                      ],
+                      "default": ""
+                    },
+                    "birth_date": {
+                      "type": "string",
+                      "format": "date",
+                      "description": "Birth date of the user in YYYY-MM-DD format. [RFC 3339, section 5.6](https://json-schema.org/draft/2020-12/json-schema-validation.html#RFC3339)"
+                    },
+                    "birth_city": {
+                      "description": "Birth city of the user.",
+                      "allOf": [
+                        {
+                          "title": "City name",
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 85
+                        }
+                      ]
+                    },
+                    "birth_country": {
+                      "description": "Birth country of the user. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                      "allOf": [
+                        {
+                          "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}$"
+                        }
+                      ]
+                    },
+                    "birth_name": {
+                      "type": "string",
+                      "maxLength": 100,
+                      "description": "If applicable, birth name of the user."
+                    },
+                    "nationalities": {
+                      "type": "array",
+                      "items": {
+                        "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                        "type": "string",
+                        "pattern": "^[A-Z]{2}$"
+                      },
+                      "minItems": 1,
+                      "description": "Nationalities of the user. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)."
+                    },
+                    "phone_number": {
+                      "type": "string",
+                      "pattern": "^([0-9]{8,15})?$",
+                      "description": "Phone number of the user. [Phone number E.164 format](https://en.wikipedia.org/wiki/E.164)."
+                    },
+                    "address": {
+                      "allOf": [
+                        {
+                          "title": "Address",
+                          "type": "object",
+                          "description": "Address",
+                          "properties": {
+                            "address_line1": {
+                              "type": "string",
+                              "description": "First address line of the address.",
+                              "maxLength": 100
+                            },
+                            "address_line2": {
+                              "type": "string",
+                              "description": "Second address line of the address.",
+                              "maxLength": 100
+                            },
+                            "postcode": {
+                              "title": "Postal code",
+                              "type": "string",
+                              "description": "Postal code (postcode, PIN or ZIP code)",
+                              "pattern": "^[a-zA-Z0-9\\s\\-]{1,10}$"
+                            },
+                            "country": {
+                              "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}$"
+                            },
+                            "state": {
+                              "description": "State, province, county. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                              "type": "string",
+                              "maxLength": 50
+                            },
+                            "city": {
+                              "title": "City name",
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 85
+                            }
+                          },
+                          "required": [
+                            "address_line1",
+                            "postcode",
+                            "country",
+                            "city"
+                          ]
+                        }
+                      ],
+                      "description": "User residental address."
+                    },
+                    "postal_address": {
+                      "description": "User postal address. Needs to be specified if different to the residential address, otherwise it is automatically populated.",
+                      "oneOf": [
+                        {
+                          "type": "null"
+                        },
+                        {
+                          "title": "Address",
+                          "type": "object",
+                          "description": "Address",
+                          "properties": {
+                            "address_line1": {
+                              "type": "string",
+                              "description": "First address line of the address.",
+                              "maxLength": 100
+                            },
+                            "address_line2": {
+                              "type": "string",
+                              "description": "Second address line of the address.",
+                              "maxLength": 100
+                            },
+                            "postcode": {
+                              "title": "Postal code",
+                              "type": "string",
+                              "description": "Postal code (postcode, PIN or ZIP code)",
+                              "pattern": "^[a-zA-Z0-9\\s\\-]{1,10}$"
+                            },
+                            "country": {
+                              "description": "Country code. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                              "type": "string",
+                              "pattern": "^[A-Z]{2}$"
+                            },
+                            "state": {
+                              "description": "State, province, county. [ISO 3166 alpha-2 Codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).",
+                              "type": "string",
+                              "maxLength": 50
+                            },
+                            "city": {
+                              "title": "City name",
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 85
+                            }
+                          },
+                          "required": [
+                            "address_line1",
+                            "postcode",
+                            "country",
+                            "city"
+                          ]
+                        }
+                      ]
+                    },
+                    "fatca": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "boolean",
+                          "description": "The user’s FATCA status is true if the user is subject to paying taxes in the US, otherwise it can be set to false."
+                        },
+                        "confirmed_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Timestamp at which the user confirmed their FATCA status. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "confirmed_at"
+                      ]
+                    },
+                    "terms_and_conditions": {
+                      "type": "object",
+                      "properties": {
+                        "consent_document_id": {
+                          "title": "Consent unique identifier.",
+                          "type": "string",
+                          "description": "Consent unique identifier.",
+                          "format": "uuid"
+                        },
+                        "confirmed_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Timestamp at which the user consented to the terms & conditions. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                        }
+                      },
+                      "required": [
+                        "consent_document_id",
+                        "confirmed_at"
+                      ]
+                    },
+                    "data_privacy_and_sharing_agreement": {
+                      "type": "object",
+                      "properties": {
+                        "consent_document_id": {
+                          "title": "Consent unique identifier.",
+                          "type": "string",
+                          "description": "Consent unique identifier.",
+                          "format": "uuid"
+                        },
+                        "confirmed_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "description": "Timestamp at which the user consented to the data sharing agreement. [RFC 3339-5](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6), [ISO8601 UTC](https://www.iso.org/iso-8601-date-and-time-format.html)"
+                        }
+                      },
+                      "required": [
+                        "consent_document_id",
+                        "confirmed_at"
+                      ]
+                    },
+                    "status": {
+                      "type": "string",
+                      "description": "Status of the user.\n* ACTIVE - \n* INACTIVE - \n* OFFBOARDING - \n* OFFBOARDED - ",
+                      "enum": [
+                        "ACTIVE",
+                        "INACTIVE",
+                        "OFFBOARDING",
+                        "OFFBOARDED"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "created_at",
+                    "updated_at",
+                    "first_name",
+                    "last_name",
+                    "email",
+                    "birth_date",
+                    "birth_city",
+                    "birth_country",
+                    "birth_name",
+                    "nationalities",
+                    "address",
+                    "postal_address",
+                    "fatca",
+                    "terms_and_conditions",
+                    "data_privacy_and_sharing_agreement",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "id": "83d83ec2-d2ca-49ff-bbea-b92b5c3be202",
+                  "created_at": "2021-07-21T14:10:00Z",
+                  "updated_at": "2021-07-21T14:10:00Z",
+                  "first_name": "Karl",
+                  "last_name": "Schmidt",
+                  "email": "karl.schmidt@example.com",
+                  "salutation": "SALUTATION_MALE",
+                  "title": "DR",
+                  "birth_date": "1972-09-30",
+                  "birth_city": "Berlin",
+                  "birth_country": "DE",
+                  "birth_name": "Schmidt",
+                  "nationalities": [
+                    "DE",
+                    "AU"
+                  ],
+                  "phone_number": "4930901820",
+                  "postal_address": {
+                    "address_line1": "Rosenweg 221",
+                    "address_line2": "apt. 33",
+                    "postcode": "45678",
+                    "city": "Berlin",
+                    "state": "BE",
+                    "country": "DE"
+                  },
+                  "address": {
+                    "address_line1": "Rosenweg 221",
+                    "address_line2": "apt. 33",
+                    "postcode": "45678",
+                    "city": "Berlin",
+                    "state": "BE",
+                    "country": "DE"
+                  },
+                  "fatca": {
+                    "status": false,
+                    "confirmed_at": "2020-08-24T14:15:22Z"
+                  },
+                  "terms_and_conditions": {
+                    "consent_document_id": "a8a87268-4f3c-4de2-abb9-a553a3bb7608",
+                    "confirmed_at": "2020-08-24T14:14:22Z"
+                  },
+                  "data_privacy_and_sharing_agreement": {
+                    "consent_document_id": "fb1827c3-2b29-47e1-84da-996d09517edc",
+                    "confirmed_at": "2020-08-24T14:16:22Z"
+                  },
+                  "status": "ACTIVE"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request. The incoming request had a malformed parameter/object.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 400,
+                  "type": "bad_request"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. The caller has not been authenticated.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 401,
+                  "type": "unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden. The caller has been authenticated but is not allowed to take the requested action.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 403,
+                  "type": "forbidden"
+                }
+              }
+            }
+          },
+          "406": {
+            "description": "Not Acceptable. The resource does not have a current representation that would be acceptable to the user agent. \"Accept\" header defined unsupported value.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 406,
+                  "type": "not_acceptable"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests. The caller has exceeded their quota for the time period and has been throttled.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 429,
+                  "type": "too_many_requests"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error. The service encountered an unexpected error.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 500,
+                  "type": "internal_server_error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable. The service handling this request cannot be reached at this time.",
+            "headers": {
+              "upvest-request-id": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "format": "uuid",
+                  "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+                }
+              }
+            },
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "title": "Error",
+                  "type": "object",
+                  "description": "",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "description": "URL to a document describing the error condition."
+                    },
+                    "status": {
+                      "type": "integer",
+                      "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                    },
+                    "detail": {
+                      "type": "string",
+                      "description": "A human-readable description of the specific error."
+                    },
+                    "instance": {
+                      "type": "string",
+                      "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                    },
+                    "request_id": {
+                      "type": "string",
+                      "description": "Correlation ID for the original request."
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "status"
+                  ],
+                  "additionalProperties": false
+                },
+                "example": {
+                  "status": 503,
+                  "type": "method_not_allowed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+  },
+  "components": {
+    "securitySchemes": {
+      "oauth-client-credentials": {
+        "type": "oauth2",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://sandbox.api.upvest.io/auth/token",
+            "scopes": {
+              "accounts:read": "Read accounts and account groups",
+              "accounts:admin": "Create/update/delete accounts and account groups",
+              "webhooks:admin": "Create/update/delete webhooks",
+              "webhooks:read": "Read webhooks",
+              "orders:admin": "Create/update/delete orders",
+              "orders:read": "Read orders",
+              "users:admin": "Create/update/delete users and create checks",
+              "users:read": "Read users and checks",
+              "checks:admin": "Create checks",
+              "checks:read": "Read checks",
+              "positions:read": "Read positions",
+              "reference_accounts:admin": "Create/update/delete reference accounts",
+              "reference_accounts:read": "Read reference accounts",
+              "mandates:admin": "Create/update/delete mandates",
+              "mandates:read": "Read mandates",
+              "payments:admin": "Payins and withdrawal operations",
+              "payments:read": "Payins and withdrawal read operations",
+              "reports:read": "Read reports",
+              "taxes:read": "Read tax residencies",
+              "taxes:admin": "Modify tax residencies"
+            }
+          }
+        }
+      }
+    },
+    "headers": {
+      "upvest-request-id": {
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+        }
+      }
+    },
+    "parameters": {
+      "apiVersion": {
+        "name": "upvest-api-version",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "1"
+          ],
+          "default": "1"
+        },
+        "description": "Upvest API version"
+      },
+      "authorization": {
+        "name": "authorization",
+        "in": "header",
+        "description": "Bearer (access) token from the OAuth flow with correct scopes.\nhttps://datatracker.ietf.org/doc/html/rfc6750\n",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^Bearer [a-zA-Z0-9\\-\\._~+/]*=*",
+          "example": "Bearer c2VjcmV0Cg=="
+        }
+      },
+      "clientID": {
+        "name": "upvest-client-id",
+        "in": "header",
+        "description": "Tenant Client ID",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "ebabcf4d-61c3-4942-875c-e265a7c2d062"
+        }
+      },
+      "signature": {
+        "name": "signature",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "https://tools.ietf.org/id/draft-ietf-httpbis-message-signatures-01.html#name-the-signature-http-header"
+      },
+      "signatureInput": {
+        "name": "signature-input",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "https://tools.ietf.org/id/draft-ietf-httpbis-message-signatures-01.html#name-the-signature-input-http-he"
+      },
+      "idempotencyKey": {
+        "name": "idempotency-key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "example": "f1150421-2e34-42b6-aae9-52ef157065b9"
+        },
+        "description": "Idempotency key to prevent the same request from replaying.\nhttps://tools.ietf.org/id/draft-idempotency-header-01.html\n"
+      },
+      "limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "format": "int32",
+          "default": 100,
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "allowEmptyValue": true,
+        "description": "Maximum number of items requested."
+      },
+      "offset": {
+        "name": "offset",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 0,
+          "format": "int32"
+        },
+        "allowEmptyValue": true,
+        "description": "Offset into a list."
+      },
+      "order": {
+        "name": "order",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC",
+            "DESC"
+          ],
+          "default": "ASC"
+        },
+        "description": "Sort order if sort parameter given. One of ASC or DESC for ascending or descending sort order."
+      },
+      "order_asc": {
+        "name": "order",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "ASC"
+          ],
+          "default": "ASC"
+        },
+        "description": "Sort order if sort parameter given. Default only ASC for ascending sort order."
+      },
+      "webhookID": {
+        "name": "webhook_id",
+        "in": "path",
+        "description": "Webhook identifier",
+        "required": true,
+        "schema": {
+          "title": "Webhook ID",
+          "type": "string",
+          "description": "Webhook unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "userID": {
+        "name": "user_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "User unique identifier.",
+          "type": "string",
+          "description": "User unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "accountID": {
+        "name": "account_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Account unique identifier.",
+          "type": "string",
+          "description": "Account unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "accountGroupID": {
+        "name": "account_group_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Account group unique identifier.",
+          "type": "string",
+          "description": "Account group unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "referenceAccountID": {
+        "name": "reference_account_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Reference account unique identifier.",
+          "type": "string",
+          "description": "Reference account unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "mandateID": {
+        "name": "mandate_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Direct Debit Mandate unique identifier.",
+          "type": "string",
+          "description": "Direct Debit Mandate unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "directDebitID": {
+        "name": "direct_debit_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Direct debit funding request unique identifier",
+          "type": "string",
+          "description": "Direct debit funding request unique identifier",
+          "format": "uuid"
+        }
+      },
+      "checkID": {
+        "name": "check_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "User Check unique identifier",
+          "type": "string",
+          "description": "User Check unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "instrumentID": {
+        "name": "instrument_id",
+        "description": "The instrument's ISIN",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Instrument unique identifier",
+          "description": "Instrument unique identifier.",
+          "oneOf": [
+            {
+              "title": "International securities identification number with 'isin:' URN namespace",
+              "type": "string",
+              "description": "International securities identification number defined by [ISO 6166](https://en.wikipedia.org/wiki/International_Securities_Identification_Number), prefixed with a 'isin:' [URN scheme](https://datatracker.ietf.org/doc/html/rfc8141).",
+              "pattern": "^(urn:)?isin:[A-Z]{2}[A-Z0-9]{9}[0-9]$"
+            },
+            {
+              "title": "Universally Unique IDentifier (UUID) with 'uuid:' URN scheme",
+              "type": "string",
+              "description": "Universally Unique IDentifier (UUID) with 'uuid:' URN namespace, defined by [RFC 4122](https://datatracker.ietf.org/doc/html/rfc4122).",
+              "pattern": "^(urn:)?uuid:[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-5][0-9a-fA-F]{3}-?[089abAB][0-9a-fA-F]{3}-?[0-9a-fA-F]{12}$"
+            }
+          ]
+        }
+      },
+      "orderID": {
+        "name": "order_id",
+        "description": "",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Order unique identifier",
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "reportID": {
+        "name": "report_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Report unique identifier.",
+          "type": "string",
+          "description": "Report unique identifier.",
+          "format": "uuid"
+        }
+      },
+      "withdrawalID": {
+        "name": "withdrawal_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "title": "Cash withdrawal unique identifier",
+          "type": "string",
+          "description": "Cash withdrawal unique identifier",
+          "format": "uuid"
+        }
+      }
+    },
+    "responses": {
+      "WebhookNoContentResponse": {
+        "description": "Request has been processed succesfully."
+      },
+      "ResponseNoContent": {
+        "description": "Request has been processed succesfully.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        }
+      },
+      "ResponseAccepted": {
+        "description": "Request has been accepted succesfully and going to be completed asynchronously.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        }
+      },
+      "ResponseSingleError": {
+        "description": "Shared error response to be used for all errors returned from the API.\n\nWe follow the generic parts of RFC 7807 \"Problem Details for HTTP APIs\"\nhttps://datatracker.ietf.org/doc/html/rfc7807",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "ResponseError400": {
+        "description": "Bad Request. The incoming request had a malformed parameter/object.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 400,
+              "type": "bad_request"
+            }
+          }
+        }
+      },
+      "ResponseError401": {
+        "description": "Unauthorized. The caller has not been authenticated.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 401,
+              "type": "unauthorized"
+            }
+          }
+        }
+      },
+      "ResponseError403": {
+        "description": "Forbidden. The caller has been authenticated but is not allowed to take the requested action.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 403,
+              "type": "forbidden"
+            }
+          }
+        }
+      },
+      "ResponseError404": {
+        "description": "Not Found. The requested resource could not be found.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 404,
+              "type": "not_found"
+            }
+          }
+        }
+      },
+      "ResponseError405": {
+        "description": "Method Not Allowed. The requested method is not allowed on the requested resource.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 405,
+              "type": "method_not_allowed"
+            }
+          }
+        }
+      },
+      "ResponseError406": {
+        "description": "Not Acceptable. The resource does not have a current representation that would be acceptable to the user agent. \"Accept\" header defined unsupported value.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 406,
+              "type": "not_acceptable"
+            }
+          }
+        }
+      },
+      "ResponseError422": {
+        "description": "Unprocessable Entity. The syntax of request is correct but server can't process it due a semantic error.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 422,
+              "type": "unprocessable_entity"
+            }
+          }
+        }
+      },
+      "ResponseError429": {
+        "description": "Too Many Requests. The caller has exceeded their quota for the time period and has been throttled.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 429,
+              "type": "too_many_requests"
+            }
+          }
+        }
+      },
+      "ResponseError500": {
+        "description": "Internal Server Error. The service encountered an unexpected error.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 500,
+              "type": "internal_server_error"
+            }
+          }
+        }
+      },
+      "ResponseError503": {
+        "description": "Service Unavailable. The service handling this request cannot be reached at this time.",
+        "headers": {
+          "upvest-request-id": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "169ae4c7-ebd7-4041-94da-25369653eba7"
+            }
+          }
+        },
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "description": "",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "URL to a document describing the error condition."
+                },
+                "status": {
+                  "type": "integer",
+                  "description": "Conveying the HTTP status code; this is so that all information is in one place, but also to correct for changes in the status code due to the usage of proxy servers."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "A short, human-readable title for the general error type; the title should not change for given types."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "A human-readable description of the specific error."
+                },
+                "instance": {
+                  "type": "string",
+                  "description": "This optional key may be present, with a unique URI for the specific error; this will often point to an error log for that specific response."
+                },
+                "request_id": {
+                  "type": "string",
+                  "description": "Correlation ID for the original request."
+                }
+              },
+              "required": [
+                "type",
+                "status"
+              ],
+              "additionalProperties": false
+            },
+            "example": {
+              "status": 503,
+              "type": "method_not_allowed"
+            }
+          }
+        }
+      }
+    }
+  }
+}

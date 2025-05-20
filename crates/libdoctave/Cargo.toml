@@ -1,0 +1,66 @@
+[package]
+name = "libdoctave"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+bench = false
+
+[[bin]]
+name = "libdoctave"
+test = false
+bench = false
+
+[[bench]]
+name = "large_openapi"
+harness = false
+
+[[bench]]
+name = "markdown"
+harness = false
+
+[features]
+default = []
+rustler = ["dep:rustler"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+openapi_parser = { path = "../openapi_parser" }
+serde = { version = "1.0.145", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = { version = "1", features = ["preserve_order"] }
+url = "2"
+indoc = "1"
+walkdir = "2"
+lazy_static = "1"
+liquid = "0.26"
+liquid-core = "0.26"
+indexmap = "=1.9.3"
+rayon = "1.5"
+uriparse = "0.6"
+deunicode = "=1.4.0"
+itermap = "0.2.2"
+unix_path = "1.0.1"
+include_dir = "0.7.3"
+palette = "0.7.3"
+markdown_rs = { rev="5f781cdbf08801706479032d22c6c4fb64dc6c7d", package="markdown", git="https://github.com/wooorm/markdown-rs" }
+regex = "1.10.3"
+rustler = { version = "0.34", optional = true }
+thiserror = "1.0.24"
+itertools = "0.12.1"
+located_yaml = "0.2.1"
+lightningcss = "1.0.0-alpha.55"
+csscolorparser = "0.6.2"
+rust_decimal = { version = "1.35.0", features = [] }
+pathdiff = "0.2.1"
+schemars = "0.8.21"
+
+[dev-dependencies]
+ts-rs = { version = "7.1.1", features = ["no-serde-warnings"] }
+pretty_assertions = "1.1.0"
+tl = "0.7.7"
+criterion = { version = "0.3", features = ["html_reports"] }
+stacker = "0.1"
+# Override psm (stacker depdendency) version to fix build errors caused by 0.1.22
+psm = "=0.1.21"

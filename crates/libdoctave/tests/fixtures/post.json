@@ -1,0 +1,63 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "An API",
+    "version": "0.8.0",
+    "description": "An API.",
+    "contact": {
+      "name": "An ",
+      "email": "api@example.com",
+      "url": "https://docs.example.co"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0"
+    }
+  },
+  "tags": [
+    {
+      "name": "Users",
+      "description": "All general user related paths."
+    },
+  ],
+  "servers": [
+    {
+      "url": "https://sandbox.api.example.io",
+      "description": "Sandbox Environment"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "parameters": [
+      ],
+      "post": {
+        "operationId": "create_user",
+        "summary": "Create a user",
+        "description": "Create a user",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "oauth-client-credentials": [
+              "users:admin"
+            ]
+          }
+        ],
+        "parameters": [
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": REPLACE_WITH_SCHEMA,
+              "example": {}
+            }
+          }
+        },
+        "responses": {}
+      }
+    },
+  },
+  "components": {
+  }
+}
