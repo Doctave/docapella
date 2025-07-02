@@ -1,0 +1,14 @@
+[package]
+name = "docapella"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.37", features = ["derive"] }
+owo-colors = { version = "*", features = ["supports-colors"] }
+indoc = "2"
+libdoctave = { path = "../libdoctave" }
+thiserror = "2.0.12"
+
+[dev-dependencies]
+temp-dir = "0.1.14"

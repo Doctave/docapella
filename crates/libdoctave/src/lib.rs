@@ -66,7 +66,7 @@ use std::path::{Path, PathBuf};
 pub const NAVIGATION_FILE_NAME: &str = "navigation.yaml";
 pub const STRUCTURE_FILE_NAME: &str = "structure.yaml";
 pub const DEPRECATED_NAVIGATION_FILE_NAME: &str = "_Navigation.md";
-pub const SETTINGS_FILE_NAME: &str = "doctave.yaml";
+pub const SETTINGS_FILE_NAME: &str = "docapella.yaml";
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -86,6 +86,7 @@ impl Error {
     pub const MISSING_DOCTAVE_YAML: usize = 10;
     pub const INVALID_DOCTAVE_YAML: usize = 11;
     pub const INVALID_STRUCTURE_YAML: usize = 12;
+    pub const EMPTY_PROJECT: usize = 13;
     pub const MISSING_ROOT_README: usize = 20;
     pub const MISSING_NAVIGATION: usize = 30;
     pub const INVALID_NAVIGATION: usize = 31;

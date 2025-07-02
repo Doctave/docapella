@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use crate::{
     breadcrumb::{self, Breadcrumb},
@@ -16,6 +16,10 @@ pub struct PageHandle<'a> {
 }
 
 impl PageHandle<'_> {
+    pub fn out_path(&self) -> PathBuf {
+        self.page.out_path()
+    }
+
     pub fn uri_path(&self) -> &str {
         self.page.uri_path()
     }

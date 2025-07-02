@@ -1,7 +1,11 @@
 [workspace]
 resolver = "2"
 
-members = [
+members = [ "crates/docapella",
     "crates/libdoctave",
     "crates/openapi_parser",
 ]
+
+[profile.bench]
+debug = true
+

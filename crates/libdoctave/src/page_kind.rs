@@ -3,7 +3,7 @@ use crate::open_api::ast::PageAst;
 use crate::utils::capitalize;
 use crate::{render_context::RenderContext, MarkdownPage, OpenApiPage, Result};
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[cfg(test)]
 use ts_rs::TS;
@@ -57,6 +57,25 @@ pub(crate) struct OutgoingLink {
 }
 
 impl PageKind {
+    pub fn out_path(&self) -> PathBuf {
+        match self {
+            Self::Markdown(md) => {
+                // If we have a README.md, the file name should be `index.md` but the path should
+                // be otherwise the same.
+                let mut out = md.path.clone();
+
+                if out.ends_with("README.md") {
+                    out.set_file_name("index.md");
+                }
+                out.set_extension("html");
+                out
+            },
+            Self::OpenApi(oapi) => {
+                PathBuf::from(&oapi.uri_path).with_extension("html")
+            }
+        }
+    }
+
     pub fn uri_path(&self) -> &str {
         match self {
             Self::Markdown(md) => &md.uri_path,
