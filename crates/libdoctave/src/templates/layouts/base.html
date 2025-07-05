@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if page.title %}{{ page.title }} · {% endif %}{{ project.settings.title }}</title>
+</head>
+<body>
+    {% if page.status == "ok" %}
+        {% if page.ast.kind == "markdown" %}
+            <article>
+                {{ render_markdown_node(page.ast.root)|safe }}
+            </article>
+        {% else %}
+            <div>Unsupported content type: {{ page.ast.kind }}</div>
+        {% endif %}
+    {% else %}
+        <div>Page error: {{ page.status }}</div>
+    {% endif %}
+</body>
+</html>

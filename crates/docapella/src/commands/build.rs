@@ -1,5 +1,5 @@
 use crate::file_gatherer::gather_files;
-use libdoctave::Project;
+use libdoctave::{renderer::Renderer, ContentApiResponse, Project, ResponseContext};
 
 use owo_colors::{OwoColorize as _, Stream};
 
@@ -22,6 +22,8 @@ pub fn run<'a, W: std::io::Write>(args: BuildArgs<'a, W>) -> crate::Result<()> {
         )));
     }
 
+    let renderer = Renderer::new().expect("Failed to create renderer");
+
     match Project::from_file_list(files) {
         Ok(project) => {
             let start = std::time::Instant::now();
@@ -33,9 +35,17 @@ pub fn run<'a, W: std::io::Write>(args: BuildArgs<'a, W>) -> crate::Result<()> {
                 if !path.exists() {
                     std::fs::create_dir_all(path.parent().unwrap())?;
                 }
+                println!("Rendering {}", page.uri_path());
+
+                let ctx = ResponseContext::default();
+                let response = ContentApiResponse::content(page, &project, ctx);
+
+                let rendered = renderer.render_page(response).map_err(|e| {
+                    crate::Error::General(format!("Failed to render page: {:?}", e))
+                })?;
 
                 println!("About to write {}", path.display());
-                std::fs::write(path, format!("Fake content for {}", page.uri_path()))?;
+                std::fs::write(path, rendered)?;
             }
 
             let duration = start.elapsed();
@@ -70,7 +80,11 @@ mod tests {
         let out_dir = TempDir::new().unwrap();
         let mut fake_stdout = std::io::sink();
 
-        fs::write(working_dir.path().join("doctave.yaml"), "---\ntitle: Hello World").unwrap();
+        fs::write(
+            working_dir.path().join("doctave.yaml"),
+            "---\ntitle: Hello World",
+        )
+        .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
 
         let result = run(BuildArgs {

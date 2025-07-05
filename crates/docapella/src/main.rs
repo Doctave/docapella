@@ -1,8 +1,8 @@
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
-use docapella::commands::init::{run as init, InitArgs};
 use docapella::commands::build::{run as build, BuildArgs};
+use docapella::commands::init::{run as init, InitArgs};
 
 #[derive(Parser, Debug, Clone)]
 #[command(about = "Docapella, a documentation generator", long_about = None)]

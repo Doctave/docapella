@@ -55,6 +55,8 @@ csscolorparser = "0.6.2"
 rust_decimal = { version = "1.35.0", features = [] }
 pathdiff = "0.2.1"
 schemars = "0.8.21"
+minijinja = "2.11.0"
+minijinja-embed = "2.11.0"
 
 [dev-dependencies]
 ts-rs = { version = "7.1.1", features = ["no-serde-warnings"] }
@@ -64,3 +66,6 @@ criterion = { version = "0.3", features = ["html_reports"] }
 stacker = "0.1"
 # Override psm (stacker depdendency) version to fix build errors caused by 0.1.22
 psm = "=0.1.21"
+
+[build-dependencies]
+minijinja-embed = "2.11.0"

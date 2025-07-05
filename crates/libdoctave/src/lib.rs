@@ -35,6 +35,7 @@ pub mod structure;
 pub mod structure_v2;
 mod utils;
 pub mod vale;
+pub mod renderer;
 
 pub(crate) use markdown_page::MarkdownPage;
 pub(crate) use open_api_page::OpenApiPage;

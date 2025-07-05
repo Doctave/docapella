@@ -1,0 +1,5 @@
+<p>
+{% for child in node.children %}
+{{ render_markdown_node(child)|safe }}
+{% endfor %}
+</p>
