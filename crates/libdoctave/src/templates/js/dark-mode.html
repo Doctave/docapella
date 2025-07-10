@@ -1,0 +1,51 @@
+<script>
+  function toggleDarkMode() {
+    const body = document.body;
+
+    body.classList.toggle("dark");
+    body.classList.toggle("light");
+  }
+
+  function setLightMode() {
+    const body = document.body;
+
+    body.classList.remove("dark");
+    body.classList.add("light");
+  }
+
+  function setDarkMode() {
+    const body = document.body;
+
+    body.classList.remove("light");
+    body.classList.add("dark");
+  }
+
+  // Set event listener after page loads
+  window.addEventListener("load", function () {
+    const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+
+    if (prefersDarkMode.matches) {
+      setDarkMode();
+    } else {
+      setLightMode();
+    }
+
+    document
+      .getElementById("dark-mode-toggle")
+      .addEventListener("click", function () {
+        toggleDarkMode();
+      });
+  });
+
+  window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", function (e) {
+      const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+
+      if (prefersDarkMode.matches) {
+        setDarkMode();
+      } else {
+        setLightMode();
+      }
+    });
+</script>
