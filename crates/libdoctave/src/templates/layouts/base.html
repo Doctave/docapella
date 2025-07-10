@@ -16,39 +16,48 @@
 <body>
     {% include "components/header.html" %}
 
-    <div class="page-container">
-        {% if page.status == "ok" %}
-            {% if page.ast.kind == "markdown" %}
-            <nav>
-                {% with navigation = project.active_navigation %}
-                    {% include "components/navigation.html" %}
-                {% endwith %}
-            </nav>
-                <div class="markdown-outer-container">
-                    <div class="markdown-inner-container">
-                        <article>
-                            {{ markdown(page.ast.root) }}
-                        </article>
+    <div class="page-outer-container">
+        <div class="page-inner-container">
+            {% if page.status == "ok" %}
+                {% if page.ast.kind == "markdown" %}
+                <nav>
+                    {% with navigation = project.active_navigation %}
+                        {% include "components/navigation.html" %}
+                    {% endwith %}
+                </nav>
+                    <div class="markdown-outer-container">
+                        <div class="markdown-inner-container">
+                            <article>
+                                {{ markdown(page.ast.root) }}
+                                {{ markdown(page.ast.root) }}
+                                {{ markdown(page.ast.root) }}
+                                {{ markdown(page.ast.root) }}
+                                {{ markdown(page.ast.root) }}
+                                {{ markdown(page.ast.root) }}
+                            </article>
 
-                        {% with footer = project.settings.footer %}
-                            {% include "footer.html" %}
-                        {% endwith %}
+                            {% with footer = project.settings.footer %}
+                                {% include "footer.html" %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                <div class="on-this-page-outer-container">
+                    <div class="on-this-page-inner-container">
+                        <p>On this page:</p>
+                        <ul>
+                            {% for item in page.on_this_page_headings %}
+                                <li><a href="#{{ item.anchor }}">{{ item.title }}</a></li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
-            <div class="on-this-page">
-                <p>On this page:</p>
-                <ul>
-                    {% for item in page.on_this_page_headings %}
-                        <li><a href="#{{ item.anchor }}">{{ item.title }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
+                {% else %}
+                    <div>Unsupported content type: {{ page.ast.kind }}</div>
+                {% endif %}
             {% else %}
-                <div>Unsupported content type: {{ page.ast.kind }}</div>
+                <div>Page error: {{ page.status }}</div>
             {% endif %}
-        {% else %}
-            <div>Page error: {{ page.status }}</div>
-        {% endif %}
+        </div>
     </div>
 </body>
 </html>

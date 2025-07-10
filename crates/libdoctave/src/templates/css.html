@@ -17,14 +17,15 @@
     --space-7: 2.5rem;
     --space-8: 3rem;
     --space-9: 4rem;
+
+    --sidebar-width: 15rem;
+    --header-height: 5rem;
   }
 
   body {
     background: var(--background-color);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    gap: var(--space-6);
+    height: 100vh;
+    overflow: hidden;
   }
 
   .dark-only {
@@ -52,9 +53,11 @@
     border-bottom: 1px solid var(--gray-3);
     padding-left: var(--space-4);
     padding-right: var(--space-4);
-    position: sticky;
+    position: fixed;
     top: 0;
     background: var(--background-color);
+    height: var(--header-height);
+    width: 100%;
   }
 
   header .header-content {
@@ -74,12 +77,43 @@
   }
 
   nav {
-    max-width: 17.5rem;
-    min-width: 0;
-    width: 100%;
+    position: relative;
+    width: var(--sidebar-width);
+    display: none;
   }
 
-  .page-container {
+  @media (min-width: 768px) {
+    nav {
+      display: block;
+    }
+  }
+
+  .navigation-container {
+    padding-top: var(--space-7);
+    padding-bottom: var(--space-7);
+    width: var(--sidebar-width);
+    position: fixed;
+    top: 5rem;
+    height: calc(100vh - 5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .page-outer-container {
+    padding-top: calc(var(--header-height) + var(--space-6));
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    display: flex;
+    flex-direction: column;
+
+    flex-grow: 1;
+
+    height: 100vh;
+    overscroll-behavior: contain;
+    overflow: auto;
+  }
+
+  .page-inner-container {
     flex-grow: 1;
 
     width: 100%;
@@ -90,12 +124,11 @@
     display: flex;
     justify-content: space-between;
     gap: var(--space-6);
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
   }
 
   .markdown-outer-container {
     flex-grow: 1;
+    flex-shrink: 1;
     display: flex;
     justify-content: center;
   }
@@ -108,14 +141,29 @@
     justify-content: space-between;
   }
 
-  .on-this-page {
+  .on-this-page-outer-container {
     display: none;
+    overscroll-behavior: contain;
+    position: relative;
+    width: var(--sidebar-width);
   }
 
   @media (min-width: 1280px) {
-    .on-this-page {
+    .on-this-page-outer-container {
       display: block;
     }
+  }
+
+  .on-this-page-inner-container {
+    width: var(--sidebar-width);
+    padding-top: var(--space-7);
+    padding-bottom: var(--space-7);
+    width: var(--sidebar-width);
+    position: fixed;
+    top: 5rem;
+    height: calc(100vh - 5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .footer-content {
