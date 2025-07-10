@@ -1,5 +1,7 @@
+{% from "components/markdown.html" import markdown %}
+
 <a href="{{ node.kind.data.url|safe }}">
 {% for child in node.children %}
-{{ render_markdown_node(child)|safe }}
+{{ markdown(child) }}
 {% endfor %}
 </a>

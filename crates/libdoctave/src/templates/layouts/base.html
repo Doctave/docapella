@@ -1,21 +1,54 @@
+{% from "components/markdown.html" import markdown %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }} · {% endif %}{{ project.settings.title }}</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+
+    {% include "colors.html" %}
+    {% include "font.html" %}
+    {% include "css.html" %}
 </head>
 <body>
-    {% if page.status == "ok" %}
-        {% if page.ast.kind == "markdown" %}
-            <article>
-                {{ render_markdown_node(page.ast.root)|safe }}
-            </article>
+    {% include "components/header.html" %}
+
+    <div class="page-container">
+        {% if page.status == "ok" %}
+            {% if page.ast.kind == "markdown" %}
+            <nav>
+                {% with navigation = project.active_navigation %}
+                    {% include "components/navigation.html" %}
+                {% endwith %}
+            </nav>
+                <div class="markdown-outer-container">
+                    <div class="markdown-inner-container">
+                        <article>
+                            {{ markdown(page.ast.root) }}
+                        </article>
+
+                        {% with footer = project.settings.footer %}
+                            {% include "footer.html" %}
+                        {% endwith %}
+                    </div>
+                </div>
+            <div class="on-this-page">
+                <p>On this page:</p>
+                <ul>
+                    {% for item in page.on_this_page_headings %}
+                        <li><a href="#{{ item.anchor }}">{{ item.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% else %}
+                <div>Unsupported content type: {{ page.ast.kind }}</div>
+            {% endif %}
         {% else %}
-            <div>Unsupported content type: {{ page.ast.kind }}</div>
+            <div>Page error: {{ page.status }}</div>
         {% endif %}
-    {% else %}
-        <div>Page error: {{ page.status }}</div>
-    {% endif %}
+    </div>
 </body>
 </html>

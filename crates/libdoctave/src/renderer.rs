@@ -58,8 +58,6 @@ fn render_markdown_node(
     state: &State,
     node: Value,
 ) -> std::result::Result<String, minijinja::Error> {
-    println!("Rendering markdown node: {:?}", node);
-
     // Get the node kind to determine which template to use
     let tmp = node
         .get_attr("kind")

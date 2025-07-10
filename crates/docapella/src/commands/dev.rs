@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use libdoctave::Result;
 
 pub struct DevArgs {
-    working_dir: PathBuf,
+    _working_dir: PathBuf,
 }
 
-pub fn run(args: DevArgs) -> Result<()> {
+pub fn run(_args: DevArgs) -> Result<()> {
     // Build the project
 
     // Start the dev server

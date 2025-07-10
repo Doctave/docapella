@@ -1,0 +1,10 @@
+<li>
+  <a href="{{ item.url }}">{{ item.label }}</a>
+
+  {% if item.children %}
+  <ul>
+    {% for child in item.children %} {% include
+    "components/navigation_item.html" %} {% endfor %}
+  </ul>
+  {% endif %}
+</li>

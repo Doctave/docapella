@@ -1,5 +1,7 @@
-<h{{ node.level }}>
+{% from "components/markdown.html" import markdown %}
+
+<h{{ node.kind.data.level }} id="{{ node.kind.data.slug }}">
 {% for child in node.children %}
-{{ render_markdown_node(child)|safe }}
+{{ markdown(child) }}
 {% endfor %}
-</h{{ node.level }}>
+</h{{ node.kind.data.level }}>

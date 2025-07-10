@@ -1,0 +1,45 @@
+<footer>
+  <div class="footer-content">
+    <ul class="footer-links">
+      {% for link in footer.links %}
+      <li class="">
+        <a href="{{ link.external }}">{{ link.label }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <ul class="footer-socials">
+      {% if footer.github %}
+      <li class="">
+        <a href="{{ footer.github }}">
+          <img
+            width="20"
+            height="20"
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg"
+          />
+        </a>
+      </li>
+      {% endif %} {% if footer.twitter %}
+      <li class="">
+        <a href="{{ footer.twitter }}">
+          <img
+            width="20"
+            height="20"
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/twitter/twitter-original.svg"
+          />
+        </a>
+      </li>
+      {% endif %} {% if footer.linkedin %}
+      <li class="">
+        <a href="{{ footer.linkedin }}">
+          <img
+            width="20"
+            height="20"
+            src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linkedin/linkedin-plain.svg"
+          />
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</footer>

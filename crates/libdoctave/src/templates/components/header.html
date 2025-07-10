@@ -1,0 +1,21 @@
+<header>
+  <div class="header-content">
+    <h1>{{ project.settings.title }}</h1>
+
+    <div class="header-links">
+      <ul class="header-links">
+        {% for link in project.settings.header.links %}
+        <li class="header-link">
+          <a href="{{ link.external }}">{{ link.label }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+
+      {% if project.settings.header.cta %}
+      <a class="header-cta" href="{{ project.settings.header.cta.external }}"
+        >{{ project.settings.header.cta.label }}</a
+      >
+      {% endif %}
+    </div>
+  </div>
+</header>

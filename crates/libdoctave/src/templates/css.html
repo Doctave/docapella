@@ -1,0 +1,138 @@
+<style>
+  :root {
+    /* Breakpoints */
+    --bp-xs: 520px;
+    --bp-sm: 768px;
+    --bp-md: 1024px;
+    --bp-lg: 1280px;
+    --bp-xl: 1600px;
+
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 2.5rem;
+    --space-8: 3rem;
+    --space-9: 4rem;
+  }
+
+  body {
+    background: var(--background-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    gap: var(--space-6);
+  }
+
+  .dark-only {
+    display: none;
+  }
+
+  .dark .dark-only {
+    display: block;
+  }
+
+  .light-only {
+    display: block;
+  }
+
+  .dark .light-only {
+    display: none;
+  }
+
+  article {
+    max-width: 78ch;
+    width: 100%;
+  }
+
+  header {
+    border-bottom: 1px solid var(--gray-3);
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    position: sticky;
+    top: 0;
+    background: var(--background-color);
+  }
+
+  header .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--bp-xl);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  header .header-links {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    list-style: none;
+  }
+
+  nav {
+    max-width: 17.5rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .page-container {
+    flex-grow: 1;
+
+    width: 100%;
+    max-width: var(--bp-xl);
+    margin-left: auto;
+    margin-right: auto;
+
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-6);
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .markdown-outer-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .markdown-inner-container {
+    flex-grow: 1;
+    max-width: 78ch;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .on-this-page {
+    display: none;
+  }
+
+  @media (min-width: 1280px) {
+    .on-this-page {
+      display: block;
+    }
+  }
+
+  .footer-content {
+    display: flex;
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-6);
+    justify-content: space-between;
+    max-width: var(--bp-xl);
+    margin-left: auto;
+    margin-right: auto;
+    border-top: 1px solid var(--gray-3);
+  }
+
+  .footer-content ul {
+    list-style: none;
+    display: flex;
+    gap: var(--space-4);
+    padding: 0;
+  }
+</style>

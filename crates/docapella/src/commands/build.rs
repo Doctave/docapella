@@ -35,7 +35,6 @@ pub fn run<'a, W: std::io::Write>(args: BuildArgs<'a, W>) -> crate::Result<()> {
                 if !path.exists() {
                     std::fs::create_dir_all(path.parent().unwrap())?;
                 }
-                println!("Rendering {}", page.uri_path());
 
                 let ctx = ResponseContext::default();
                 let response = ContentApiResponse::content(page, &project, ctx);
@@ -44,26 +43,56 @@ pub fn run<'a, W: std::io::Write>(args: BuildArgs<'a, W>) -> crate::Result<()> {
                     crate::Error::General(format!("Failed to render page: {:?}", e))
                 })?;
 
-                println!("About to write {}", path.display());
                 std::fs::write(path, rendered)?;
             }
 
-            let duration = start.elapsed();
+            let build_duration = start.elapsed();
+
+            let start = std::time::Instant::now();
+
+            let verify_results = project.verify(None, None);
+
+            let verify_duration = start.elapsed();
+
+            if let Err(e) = verify_results {
+                writeln!(
+                    args.stdout,
+                    "Found {} issues while building documentation in {:?}",
+                    e.len(),
+                    verify_duration
+                )?;
+
+                for issue in e {
+                    writeln!(
+                        args.stdout,
+                        "--------------------------------------------\n{} {}\n",
+                        issue.message.bold(),
+                        issue
+                            .file
+                            .map(|f| format!("[{}]", f.display()))
+                            .unwrap_or(String::from(""))
+                            .bold()
+                    )?;
+                    writeln!(args.stdout, "{}", issue.description)?;
+                }
+
+                writeln!(args.stdout, "--------------------------------------------",)?;
+            }
 
             writeln!(
                 args.stdout,
-                "{} in {:?}",
-                "Build complete".if_supports_color(Stream::Stdout, |s| s.green()),
-                duration
+                "{} {}",
+                "Build complete in".if_supports_color(Stream::Stdout, |s| s.green()),
+                format!("{:?}", build_duration).if_supports_color(Stream::Stdout, |s| s.bold()),
             )?;
 
             Ok(())
         }
         Err(e) => {
             println!("{:?}", e);
-            return Err(crate::Error::General(String::from(
+            Err(crate::Error::General(String::from(
                 "Failed to build project",
-            )));
+            )))
         }
     }
 }

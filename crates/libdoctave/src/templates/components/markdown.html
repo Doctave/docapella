@@ -1,0 +1,32 @@
+{% macro markdown(node) %}
+  {% if node.kind.name == "root" %}
+    {% include "components/markdown/root.html" %}
+  {% elif node.kind.name == "text" %}
+    {% include "components/markdown/text.html" %}
+  {% elif node.kind.name == "emphasis" %}
+    {% include "components/markdown/emphasis.html" %}
+  {% elif node.kind.name == "strong" %}
+    {% include "components/markdown/strong.html" %}
+  {% elif node.kind.name == "paragraph" %}
+    {% include "components/markdown/paragraph.html" %}
+  {% elif node.kind.name == "heading" %}
+    {% include "components/markdown/heading.html" %}
+  {% elif node.kind.name == "link" %}
+    {% include "components/markdown/link.html" %}
+  {% elif node.kind.name == "list" %}
+    {% include "components/markdown/list.html" %}
+  {% elif node.kind.name == "list_item" %}
+    {% include "components/markdown/list_item.html" %}
+  {% elif node.kind.name == "code_block" %}
+    {% include "components/markdown/code_block.html" %}
+  {% elif node.kind.name == "inline_code" %}
+    {% include "components/markdown/inline_code.html" %}
+  {% else %}
+    <!-- Fallback for unknown node types -->
+    <p>Unknown node type: {{ node.kind.name }}</p>
+    <pre class="unknown-node" data-type="{{ node.kind.name }}">
+    {{ node|tojson }}
+    </pre>
+  {% endif %}
+{% endmacro %}
+

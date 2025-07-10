@@ -55,7 +55,7 @@ csscolorparser = "0.6.2"
 rust_decimal = { version = "1.35.0", features = [] }
 pathdiff = "0.2.1"
 schemars = "0.8.21"
-minijinja = "2.11.0"
+minijinja = { version = "2.11.0", features = ["json"] }
 minijinja-embed = "2.11.0"
 
 [dev-dependencies]
