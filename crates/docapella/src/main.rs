@@ -83,7 +83,8 @@ fn main() {
         }
     };
 
-    if let Err(_e) = result {
+    if let Err(e) = result {
+        println!("{:?}", e);
         std::process::exit(1);
     }
 }

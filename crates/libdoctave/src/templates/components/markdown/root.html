@@ -1,3 +1,5 @@
-{% for child in node.children %}
-{{ render_markdown_node(child)|safe }}
-{% endfor %}
+<article class="prose">
+  {% for child in node.children %}
+  {{ render_markdown_node(child)|safe }}
+  {% endfor %}
+</article>

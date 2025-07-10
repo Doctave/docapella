@@ -21,6 +21,8 @@
     {% include "components/markdown/code_block.html" %}
   {% elif node.kind.name == "inline_code" %}
     {% include "components/markdown/inline_code.html" %}
+  {% elif node.kind.name == "image" %}
+    {% include "components/markdown/image.html" %}
   {% else %}
     <!-- Fallback for unknown node types -->
     <p>Unknown node type: {{ node.kind.name }}</p>

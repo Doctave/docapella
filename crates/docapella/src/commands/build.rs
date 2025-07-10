@@ -11,7 +11,7 @@ pub struct BuildArgs<'a, W: std::io::Write> {
     pub stdout: &'a mut W,
 }
 
-pub fn run<'a, W: std::io::Write>(args: BuildArgs<'a, W>) -> crate::Result<()> {
+pub fn run<W: std::io::Write>(args: BuildArgs<W>) -> crate::Result<()> {
     // Gather the files
     let files = gather_files(&args.working_dir)?;
 
@@ -44,6 +44,21 @@ pub fn run<'a, W: std::io::Write>(args: BuildArgs<'a, W>) -> crate::Result<()> {
                 })?;
 
                 std::fs::write(path, rendered)?;
+            }
+
+            if !project.assets.is_empty() {
+                for asset in &project.assets {
+                    let path = args.out_dir.join(&asset.path);
+
+                    if !path.exists() {
+                        std::fs::create_dir_all(path.parent().unwrap())?;
+                    }
+
+                    std::fs::copy(
+                        args.working_dir.join(&asset.path),
+                        args.out_dir.join(&asset.path),
+                    )?;
+                }
             }
 
             let build_duration = start.elapsed();

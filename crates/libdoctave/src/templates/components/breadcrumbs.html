@@ -1,0 +1,21 @@
+{% if breadcrumbs %}
+<ul class="breadcrumbs">
+  {% for crumb in breadcrumbs %}
+    {% if crumb.kind == "label" %}
+      <li class="breadcrumb-item">
+        {{ crumb.text }}
+      </li>
+    {% else %}
+      <li class="breadcrumb-item">
+        <a href="{{ crumb.href }}">{{ crumb.label }}</a>
+      </li>
+    {% endif %}
+
+    {% if not loop.last %}
+      <li class="breadcrumb-divider">
+        <span>›</span>
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+{% endif %}

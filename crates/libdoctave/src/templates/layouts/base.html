@@ -27,14 +27,13 @@
                 </nav>
                     <div class="markdown-outer-container">
                         <div class="markdown-inner-container">
-                            <article>
+                            <div>
+                                {% with breadcrumbs = page.breadcrumbs %}
+                                    {% include "components/breadcrumbs.html" %}
+                                {% endwith %}
+
                                 {{ markdown(page.ast.root) }}
-                                {{ markdown(page.ast.root) }}
-                                {{ markdown(page.ast.root) }}
-                                {{ markdown(page.ast.root) }}
-                                {{ markdown(page.ast.root) }}
-                                {{ markdown(page.ast.root) }}
-                            </article>
+                            </div>
 
                             {% with footer = project.settings.footer %}
                                 {% include "footer.html" %}
