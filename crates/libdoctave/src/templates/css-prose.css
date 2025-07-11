@@ -2,6 +2,15 @@
   line-height: 1.75;
 }
 
+.prose a {
+  color: var(--accent-11);
+  font-weight: 500;
+}
+
+.prose a:hover {
+  color: var(--accent-9);
+}
+
 .prose img {
   max-width: 100%;
   border-radius: var(--space-2);

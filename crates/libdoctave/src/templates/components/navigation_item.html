@@ -1,10 +1,11 @@
 <li>
   <a href="{{ item.href }}">{{ item.label }}</a>
 
-  {% if item.children %}
+  {% if item.items %}
   <ul>
-    {% for child in item.children %} {% include
-    "components/navigation_item.html" %} {% endfor %}
+    {% for item in item.items %}
+      {% include "components/navigation_item.html" %}
+    {% endfor %}
   </ul>
   {% endif %}
 </li>
