@@ -421,6 +421,7 @@ pub enum VersionVisibility {
 pub enum CurrentPage {
     #[serde(rename = "ok")]
     Page {
+        path: String,
         http_status: u16,
         ast: Ast,
         title: Option<String>,
@@ -432,6 +433,7 @@ pub enum CurrentPage {
     },
     #[serde(rename = "error")]
     Error {
+        path: String,
         http_status: u16,
         errors: Vec<Error>,
         page_options: PageOptions,
@@ -441,6 +443,7 @@ pub enum CurrentPage {
     },
     #[serde(rename = "not_found")]
     NotFound {
+        path: String,
         http_status: u16,
         page_options: PageOptions,
     },
@@ -492,6 +495,7 @@ impl ContentApiResponse {
 
         let page = match page_handle.ast(Some(&ctx.options)) {
             Ok(ast) => CurrentPage::Page {
+                path: page_handle.uri_path().to_string(),
                 http_status: 200,
                 title: page_handle.title().ok().flatten(),
                 description: page_handle
@@ -516,6 +520,7 @@ impl ContentApiResponse {
                 },
             },
             Err(error) => CurrentPage::Error {
+                path: page_handle.uri_path().to_string(),
                 http_status: 400,
                 errors: vec![error],
                 title: page_handle
@@ -606,6 +611,7 @@ impl ContentApiResponse {
 
         ContentApiResponse::Content {
             page: CurrentPage::NotFound {
+                path: uri_path.to_string(),
                 http_status: 404,
                 page_options,
             },

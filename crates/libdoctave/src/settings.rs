@@ -7,11 +7,11 @@ use crate::project::Asset;
 use crate::render_context::RenderContext;
 use crate::structure_v2::{StructureV2, TabDescription};
 use crate::utils::cartesian_product;
-/// Settings for a given site backed by a `doctave.yaml` file.
+/// Settings for a given site backed by a `docapella.yaml` file.
 use crate::{
     color_generator, Error, Project, RenderOptions, Result, Structure, SETTINGS_FILE_NAME,
 };
-/// Settings for a given site backed by a `doctave.yaml` file.
+/// Settings for a given site backed by a `docapella.yaml` file.
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::fmt::{self, Display};
@@ -45,7 +45,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "version")]
-/// Content of the `doctave.yaml` file.
+/// Content of the `docapella.yaml` file.
 #[cfg_attr(test, derive(TS))]
 #[cfg_attr(test, ts(export))]
 pub enum Settings {
@@ -78,8 +78,8 @@ impl Settings {
 
         let values: Value = serde_yaml::from_str(input).map_err(|e| Error {
             code: Error::INVALID_DOCTAVE_YAML,
-            message: "Invalid doctave.yaml".to_owned(),
-            description: format!("There was an error parsing your doctave.yaml:\n\n{}", e),
+            message: "Invalid docapella.yaml".to_owned(),
+            description: format!("There was an error parsing your docapella.yaml:\n\n{}", e),
             file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
             position: None,
         })?;
@@ -93,9 +93,9 @@ impl Settings {
                 1 => Ok(Settings::V1(Box::new(
                     serde_yaml::from_str::<SettingsV1>(input).map_err(|e| Error {
                         code: Error::INVALID_DOCTAVE_YAML,
-                        message: "Invalid doctave.yaml".to_owned(),
+                        message: "Invalid docapella.yaml".to_owned(),
                         description: format!(
-                            "There was an error parsing your doctave.yaml:\n\n{}",
+                            "There was an error parsing your docapella.yaml:\n\n{}",
                             e
                         ),
                         file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
@@ -105,9 +105,9 @@ impl Settings {
                 2 => Ok(Settings::V2(Box::new(
                     serde_yaml::from_str::<SettingsV2>(input).map_err(|e| Error {
                         code: Error::INVALID_DOCTAVE_YAML,
-                        message: "Invalid doctave.yaml".to_owned(),
+                        message: "Invalid docapella.yaml".to_owned(),
                         description: format!(
-                            "There was an error parsing your doctave.yaml:\n\n{}",
+                            "There was an error parsing your docapella.yaml:\n\n{}",
                             e
                         ),
                         file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
@@ -116,9 +116,9 @@ impl Settings {
                 ))),
                 other => Err(Error {
                     code: Error::INVALID_DOCTAVE_YAML,
-                    message: "Invalid doctave.yaml".to_owned(),
+                    message: "Invalid docapella.yaml".to_owned(),
                     description: format!(
-                        "Unexpected doctave.yaml version. Expected 1 or 2, found {}",
+                        "Unexpected docapella.yaml version. Expected 1 or 2, found {}",
                         other
                     ),
                     file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
@@ -129,8 +129,11 @@ impl Settings {
             Ok(Settings::V1(Box::new(
                 serde_yaml::from_str::<SettingsV1>(input).map_err(|e| Error {
                     code: Error::INVALID_DOCTAVE_YAML,
-                    message: "Invalid doctave.yaml".to_owned(),
-                    description: format!("There was an error parsing your doctave.yaml:\n\n{}", e),
+                    message: "Invalid docapella.yaml".to_owned(),
+                    description: format!(
+                        "There was an error parsing your docapella.yaml:\n\n{}",
+                        e
+                    ),
                     file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
                     position: None,
                 })?,
@@ -469,7 +472,7 @@ impl Settings {
                     code: Error::INVALID_DOCTAVE_YAML,
                     message: String::from("OpenAPI URI prefix should contain a path."),
                     description: format!(
-                        "Define a uri_prefix for the OpenAPI spec \"{}\" in doctave.yaml. For example, uri_prefix: /api.",
+                        "Define a uri_prefix for the OpenAPI spec \"{}\" in docapella.yaml. For example, uri_prefix: /api.",
                         &o.spec_file.display()
                     ),
                     file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
@@ -1655,7 +1658,7 @@ impl HeaderLink {
                     };
                     errors.push(Error {
                         code: Error::INVALID_DOCTAVE_YAML,
-                        message: format!("Invalid {thing} link in found in doctave.yaml"),
+                        message: format!("Invalid {thing} link in found in docapella.yaml"),
                         description: format!(
                             "Found \"{}\", which is not an external link.",
                             &link.external
@@ -1743,29 +1746,6 @@ mod test {
 
     use super::*;
     use std::path::Path;
-
-    #[test]
-    fn rebuild_jsonschemas() {
-        use schemars::schema_for;
-
-        let libdoctave_path = env!("CARGO_MANIFEST_DIR");
-
-        let settings_schema = schema_for!(SettingsV2);
-        let settings_json = serde_json::to_string_pretty(&settings_schema).unwrap();
-
-        let navigation_schema = schema_for!(Vec<SectionDescription>);
-        let navigation_json = serde_json::to_string_pretty(&navigation_schema).unwrap();
-
-        let settings_schema_path = format!(
-            "{libdoctave_path}/../desktop/frontend-vue/src/app-v2/schemas/doctave-yaml-schema.json"
-        );
-        let navigation_schema_path = format!(
-            "{libdoctave_path}/../desktop/frontend-vue/src/app-v2/schemas/navigation-yaml-schema.json"
-        );
-
-        std::fs::write(Path::new(&settings_schema_path), settings_json).unwrap();
-        std::fs::write(Path::new(&navigation_schema_path), navigation_json).unwrap();
-    }
 
     #[test]
     fn rewrite_logo_and_favicon_links() {
@@ -3038,7 +3018,7 @@ mod test {
 
             let err = Settings::parse(input).unwrap_err();
             println!("{:#?}", err);
-            assert_eq!(err.description, "There was an error parsing your doctave.yaml:\n\ntheme: invalid type: string \"color_mode:\\\"kettle\", expected struct Theme at line 6 column 3");
+            assert_eq!(err.description, "There was an error parsing your docapella.yaml:\n\ntheme: invalid type: string \"color_mode:\\\"kettle\", expected struct Theme at line 6 column 3");
         }
 
         #[test]

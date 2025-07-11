@@ -1,5 +1,5 @@
 <li>
-  <a href="{{ item.href }}">{{ item.label }}</a>
+  <a data-current="{{ item.href == page.path }}" href="{{ item.href }}">{{ item.label }}</a>
 
   {% if item.items %}
   <ul>

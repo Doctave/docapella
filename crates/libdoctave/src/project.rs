@@ -158,8 +158,8 @@ impl Project {
             } else {
                 Err(Error {
                     code: Error::MISSING_DOCTAVE_YAML,
-                    message: "Missing doctave.yaml".to_string(),
-                    description: "No doctave.yaml file found in the root of your project."
+                    message: "Missing docapella.yaml".to_string(),
+                    description: "No docapella.yaml file found in the root of your project."
                         .to_owned(),
                     file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
                     position: None,
@@ -1995,7 +1995,7 @@ mod test {
         );
         assert_eq!(
             error.description,
-            "No custom user preferences defined in doctave.yaml."
+            "No custom user preferences defined in docapella.yaml."
         );
     }
 
@@ -2395,7 +2395,7 @@ mod test {
             error.description,
             "OpenAPI spec at \"openapi.json\" not found. Is it in the correct location?"
         );
-        assert_eq!(error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -2463,9 +2463,9 @@ mod test {
         assert_eq!(error.message, "OpenAPI URI prefix should contain a path.");
         assert_eq!(
             error.description,
-            "Define a uri_prefix for the OpenAPI spec \"openapi.json\" in doctave.yaml. For example, uri_prefix: /api."
+            "Define a uri_prefix for the OpenAPI spec \"openapi.json\" in docapella.yaml. For example, uri_prefix: /api."
         );
-        assert_eq!(error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -2620,7 +2620,7 @@ mod test {
             settings_error.description,
             r#"Redirect source "/bar" already exists as a page. Delete or rename the page, or change the redirect source."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -2678,7 +2678,7 @@ mod test {
             settings_error.description,
             r#"Redirect destination "/foo" does not exist."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -2778,7 +2778,7 @@ mod test {
             errors.iter().any(|e| {
                 e.message == "Invalid redirect detected"
                     && e.description == r#"Redirect source "baz" must start with a forward slash."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "redirect leading / verification failed"
         );
@@ -2788,7 +2788,7 @@ mod test {
                 e.message == "Invalid redirect detected"
                     && e.description
                         == r#"Redirect destination "foo" must start with a forward slash, or be an external URL."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "redirect leading / verification failed"
         );
@@ -2879,7 +2879,7 @@ mod test {
             errors.iter().any(|e| {
                 e.message == "Invalid redirect detected"
                     && e.description == r#"Redirect source "/baz.md" must not end with .md."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "redirect trailing .md verification failed"
         );
@@ -2888,7 +2888,7 @@ mod test {
             errors.iter().any(|e| {
                 e.message == "Invalid redirect detected"
                     && e.description == r#"Redirect destination "/foo.md" must not end with .md."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "redirect trailing .md verification failed"
         );
@@ -2949,7 +2949,7 @@ mod test {
             settings_error.description,
             r#"Redirect source "/baz" should include a wildcard when `to` has path parameters."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -3007,7 +3007,7 @@ mod test {
             settings_error.description,
             r#"Redirect source "/baz/:path" can't include path parameters."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -3065,7 +3065,7 @@ mod test {
             settings_error.description,
             r#"Redirect source "/baz/*/**" with a wildcard should end with `.../*` or `.../**`."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -3123,7 +3123,7 @@ mod test {
             settings_error.description,
             r#"Redirect source "/baz/**/baz" with a wildcard should end with `.../*` or `.../**`."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -3181,7 +3181,7 @@ mod test {
             settings_error.description,
             r#"Redirect destination "/bar/:pat.h/foo" path parameters can only contain alphanumerics and underscores."#
         );
-        assert_eq!(settings_error.file, Some(PathBuf::from("doctave.yaml")));
+        assert_eq!(settings_error.file, Some(PathBuf::from("docapella.yaml")));
     }
 
     #[test]
@@ -3295,7 +3295,7 @@ mod test {
             errors.iter().any(|e| {
                 e.message == "Broken link detected"
                     && e.description == r#"Header link "/doctave" points to an unknown file."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "header internal link verification failed"
         );
@@ -3347,7 +3347,7 @@ mod test {
             errors.iter().any(|e| {
                 e.message == "Broken link detected"
                     && e.description == r#"Footer link "/doctave" points to an unknown file."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "footer internal link verification failed"
         );
@@ -3396,9 +3396,9 @@ mod test {
 
         assert!(
             errors.iter().any(|e| {
-                e.message == "Invalid header link in found in doctave.yaml"
+                e.message == "Invalid header link in found in docapella.yaml"
                     && e.description == r#"Found "/doctave", which is not an external link."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "header external link verification failed"
         );
@@ -3448,9 +3448,9 @@ mod test {
 
         assert!(
             errors.iter().any(|e| {
-                e.message == "Invalid footer link in found in doctave.yaml"
+                e.message == "Invalid footer link in found in docapella.yaml"
                     && e.description == r#"Found "/doctave", which is not an external link."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "footer external link verification failed"
         );
@@ -3503,7 +3503,7 @@ mod test {
                 e.message == "Broken asset link detected"
                     && e.description
                         == r#"Header link "_assets/doctave" points to an unknown file."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "header download link verification failed"
         );
@@ -3557,7 +3557,7 @@ mod test {
                 e.message == "Broken asset link detected"
                     && e.description
                         == r#"Footer link "_assets/doctave" points to an unknown file."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "footer download link verification failed"
         );
@@ -3608,7 +3608,7 @@ mod test {
                 e.message == "Invalid redirect detected"
                     && e.description
                         == r#"Redirect source "/baz" and destination "/baz" must be different."#
-                    && e.file == Some(PathBuf::from("doctave.yaml"))
+                    && e.file == Some(PathBuf::from("docapella.yaml"))
             }),
             "redirect identical source and destination verification failed"
         );

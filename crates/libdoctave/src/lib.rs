@@ -29,13 +29,13 @@ mod page_kind;
 pub mod project;
 mod render_context;
 mod render_options;
+pub mod renderer;
 pub mod settings;
 mod slug;
 pub mod structure;
 pub mod structure_v2;
 mod utils;
 pub mod vale;
-pub mod renderer;
 
 pub(crate) use markdown_page::MarkdownPage;
 pub(crate) use open_api_page::OpenApiPage;
@@ -524,7 +524,7 @@ mod test {
         let error = errors.first().unwrap();
 
         assert_eq!(error.code, Error::MISSING_DOCTAVE_YAML);
-        assert_eq!(&error.message, "Missing doctave.yaml");
+        assert_eq!(&error.message, "Missing docapella.yaml");
     }
 
     #[test]

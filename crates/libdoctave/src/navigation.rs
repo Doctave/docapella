@@ -473,7 +473,7 @@ fn verify_user_preference_filter_keys(
                         filter_key
                     )
                 } else {
-                    "No custom user preferences defined in doctave.yaml.".to_string()
+                    "No custom user preferences defined in docapella.yaml.".to_string()
                 },
                 file: Some(PathBuf::from(crate::NAVIGATION_FILE_NAME)),
                 position: None,
