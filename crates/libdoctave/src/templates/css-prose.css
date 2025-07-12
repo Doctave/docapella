@@ -1,5 +1,7 @@
 .prose {
   line-height: 1.75;
+  min-width: 0;
+  width: 100%;
 }
 
 .prose a {
@@ -30,6 +32,25 @@
 .prose h5,
 .prose h6 {
   font-weight: 700;
+}
+
+.prose pre {
+  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  padding: var(--space-3);
+  border-radius: var(--space-2);
+  background: var(--gray-2);
+  border: 1px solid var(--gray-3);
+}
+
+.prose pre code {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre; /* Preserve formatting */
+  word-wrap: normal; /* Prevent breaking */
 }
 
 /* Special margin rules for nicer spacing ala Tailwind Typography */

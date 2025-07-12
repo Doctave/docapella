@@ -17,8 +17,8 @@
     {% include "components/markdown/list.html" %}
   {% elif node.kind.name == "list_item" %}
     {% include "components/markdown/list_item.html" %}
-  {% elif node.kind.name == "code_block" %}
-    {% include "components/markdown/code_block.html" %}
+  {% elif node.kind.name == "code" %}
+    {% include "components/markdown/code.html" %}
   {% elif node.kind.name == "inline_code" %}
     {% include "components/markdown/inline_code.html" %}
   {% elif node.kind.name == "image" %}
