@@ -1,54 +1,69 @@
 <script>
+  const STORAGE_KEY = "darkModePreference";
+  const EXPIRY_DAYS = 7;
+
+  function savePreference(mode) {
+    const preference = {
+      value: mode,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preference));
+  }
+
+  function getStoredPreference() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return null;
+
+      const preference = JSON.parse(stored);
+      const now = Date.now();
+      const expiryTime =
+        preference.timestamp + EXPIRY_DAYS * 24 * 60 * 60 * 1000;
+
+      if (now > expiryTime) {
+        localStorage.removeItem(STORAGE_KEY);
+        return null;
+      }
+
+      return preference.value;
+    } catch (error) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+  }
+
   function toggleDarkMode() {
-    const body = document.body;
+    const isDark = document.documentElement.classList.contains("dark");
 
-    if (body.classList.contains("dark")) {
-      setLightMode();
+    if (isDark) {
+      document.documentElement.classList.remove("dark");
+      savePreference("light");
     } else {
-      setDarkMode();
+      document.documentElement.classList.add("dark");
+      savePreference("dark");
     }
   }
 
-  function setLightMode() {
-    const body = document.body;
-
-    body.classList.remove("dark");
-    body.classList.add("light");
-  }
-
-  function setDarkMode() {
-    const body = document.body;
-
-    body.classList.remove("light");
-    body.classList.add("dark");
-  }
-
-  // Set event listener after page loads
-  window.addEventListener("load", function () {
-    const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
-
-    if (prefersDarkMode.matches) {
-      setDarkMode();
-    } else {
-      setLightMode();
+  // Set up toggle button when DOM is ready
+  document.addEventListener("DOMContentLoaded", function () {
+    const toggleButton = document.getElementById("dark-mode-toggle");
+    if (toggleButton) {
+      toggleButton.addEventListener("click", toggleDarkMode);
     }
-
-    document
-      .getElementById("dark-mode-toggle")
-      .addEventListener("click", function () {
-        toggleDarkMode();
-      });
   });
 
+  // Only respond to system preference changes if no user preference is stored
   window
     .matchMedia("(prefers-color-scheme: dark)")
     .addEventListener("change", function (e) {
-      const prefersDarkMode = window.matchMedia("(prefers-color-scheme: dark)");
+      const storedPreference = getStoredPreference();
 
-      if (prefersDarkMode.matches) {
-        setDarkMode();
-      } else {
-        setLightMode();
+      if (storedPreference === null) {
+        if (e.matches) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
       }
     });
 </script>

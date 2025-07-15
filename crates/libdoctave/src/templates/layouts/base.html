@@ -7,9 +7,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }} · {% endif %}{{ project.settings.title }}</title>
 
+    <script>
+      (function() {
+        const STORAGE_KEY = 'darkModePreference';
+        const EXPIRY_DAYS = 7;
+
+        function getStoredPreference() {
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (!stored) return null;
+
+            const preference = JSON.parse(stored);
+            const now = Date.now();
+            const expiryTime = preference.timestamp + (EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+
+            if (now > expiryTime) {
+              localStorage.removeItem(STORAGE_KEY);
+              return null;
+            }
+
+            return preference.value;
+          } catch (error) {
+            localStorage.removeItem(STORAGE_KEY);
+            return null;
+          }
+        }
+
+        // Set theme immediately during HTML parsing
+        const storedPreference = getStoredPreference();
+        const isDark = storedPreference === 'dark' || 
+          (storedPreference === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
 
- 
     {% include "colors.html" %}
     {% include "font.html" %}
     {% include "css.html" %}
