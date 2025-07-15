@@ -2,8 +2,11 @@
   function toggleDarkMode() {
     const body = document.body;
 
-    body.classList.toggle("dark");
-    body.classList.toggle("light");
+    if (body.classList.contains("dark")) {
+      setLightMode();
+    } else {
+      setDarkMode();
+    }
   }
 
   function setLightMode() {

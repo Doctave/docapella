@@ -1,0 +1,11 @@
+{% from "components/markdown.html" import markdown %}
+
+<{{ node.kind.data.name }}
+  {% for attr in node.kind.data.attributes %}
+    {{ attr.key }}="{{ attr.value }}"
+  {% endfor %}
+  >
+  {% for child in node.children %}
+    {{ markdown(child) }}
+  {% endfor %}
+</{{ node.kind.data.name }}>

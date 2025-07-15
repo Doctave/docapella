@@ -1,0 +1,43 @@
+<script type="module">
+  import { codeToHtml } from "https://esm.sh/shiki@3.0.0";
+
+  // After the page loads, we can highlight the code blocks
+  window.addEventListener("load", function () {
+    let codeBlocks = document.querySelectorAll(
+      ".page-inner-container pre[data-highlight=true]",
+    );
+
+    codeBlocks.forEach(async (block) => {
+      // Detect the language of the code block
+      const language = block.className.split("-")[1];
+
+      // Highlight the code block
+      let highlightedHtml = await codeToHtml(block.innerText, {
+        lang: language || "text",
+        themes: {
+          light: "github-light",
+          dark: "github-dark",
+        },
+
+        colorReplacements: {
+          "github-dark": {
+            "#24292e": "var(--gray-2)",
+          },
+          "github-light": {
+            "#fff": "var(--gray-1)",
+          },
+        },
+      });
+
+      // Create a new element and replace the original
+      const tempDiv = document.createElement("div");
+      tempDiv.innerHTML = highlightedHtml;
+      const newElement = tempDiv.firstElementChild;
+
+      // Copy over any additional attributes from the original
+      newElement.setAttribute("data-highlight", "true");
+
+      block.parentNode.replaceChild(newElement, block);
+    });
+  });
+</script>

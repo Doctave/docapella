@@ -11,6 +11,8 @@
     {% include "components/markdown/paragraph.html" %}
   {% elif node.kind.name == "heading" %}
     {% include "components/markdown/heading.html" %}
+  {% elif node.kind.name == "html_block" %}
+    {% include "components/markdown/html_block.html" %}
   {% elif node.kind.name == "link" %}
     {% include "components/markdown/link.html" %}
   {% elif node.kind.name == "list" %}

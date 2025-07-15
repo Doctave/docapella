@@ -1,5 +1,7 @@
+{% from "components/markdown.html" import markdown %}
+
 <article class="prose">
   {% for child in node.children %}
-  {{ render_markdown_node(child)|safe }}
+    {{ markdown(child) }}
   {% endfor %}
 </article>

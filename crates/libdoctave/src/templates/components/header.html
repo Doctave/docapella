@@ -1,7 +1,12 @@
 <header>
-  <div class="header-content">
-    <a href="/" class="">
-      {{ project.settings.title }}
+  <div class="header-top-content">
+    <a href="/" class="logo">
+      {% if project.settings.theme.logo %}
+        <img class="light-only" src="{{ project.settings.theme.logo.src }}" alt="{{ project.settings.title }}" />
+        <img class="dark-only" src="{{ project.settings.theme.logo.src_dark }}" alt="{{ project.settings.title }}" />
+      {% else %}
+      <span>{{ project.settings.title }}</span>
+      {% endif %}
     </a>
 
     <div class="header-links">
@@ -14,7 +19,7 @@
       </ul>
 
       {% if project.settings.header.cta %}
-      <a class="header-cta" href="{{ project.settings.header.cta.external }}"
+      <a class="header-cta docapella-button" data-variant="primary" data-size="md" href="{{ project.settings.header.cta.external }}"
         >{{ project.settings.header.cta.label }}</a
       >
       {% endif %}

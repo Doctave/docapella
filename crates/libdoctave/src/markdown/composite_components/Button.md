@@ -44,12 +44,12 @@ attributes:
 ---
 
 
-<a if={@download_as} download={@download_as} class="d-button" href={@href} data-variant={@variant} data-size={@size} data-width={@width} target="_blank">
+<a if={@download_as} download={@download_as} class="docapella-button" href={@href} data-variant={@variant} data-size={@size} data-width={@width} target="_blank">
   <Slot />
 </a>
-<a elseif={@download} download="" class="d-button" href={@href} data-variant={@variant} data-size={@size} data-width={@width} target="_blank">
+<a elseif={@download} download="" class="docapella-button" href={@href} data-variant={@variant} data-size={@size} data-width={@width} target="_blank">
   <Slot />
 </a>
-<a else class="d-button" target={@target} href={@href} data-variant={@variant} data-size={@size} data-width={@width}>
+<a else class="docapella-button" target={@target} href={@href} data-variant={@variant} data-size={@size} data-width={@width}>
   <Slot />
 </a>
