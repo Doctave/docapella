@@ -52,7 +52,9 @@
 
     /* Structure */
     --sidebar-width: 15rem;
-    --header-height: 3rem;
+    --header-top-height: 4rem;
+    --header-bottom-height: 2.5rem;
+    --header-height: calc(var(--header-top-height) + var(--header-bottom-height));
   }
 
   :target {
@@ -92,6 +94,14 @@
     display: none;
   }
 
+  /* Misc */
+
+  .divider[data-orientation="vertical"] {
+    width: 1px;
+    height: var(--space-4);
+    background-color: var(--gray-4);
+  }
+
   /* Page elements */
   article {
     max-width: 78ch;
@@ -121,7 +131,18 @@
     margin-left: auto;
     margin-right: auto;
 
-    height: 4rem;
+    height: var(--header-top-height);
+  }
+
+  header .header-bottom-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: var(--bp-xl);
+    margin-left: auto;
+    margin-right: auto;
+
+    height: var(--header-bottom-height);
   }
 
   header .header-links {
@@ -143,6 +164,40 @@
     color: var(--accent-11);
   }
 
+  header .header-tabs {
+    display: flex;
+    gap: var(--space-5);
+    align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  header .header-tabs a {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: var(--line-height-sm);
+    text-decoration: none;
+    color: var(--gray-11);
+    height: var(--header-bottom-height);
+
+    box-sizing: border-box;
+    border-bottom: 2px solid transparent;
+
+    display: flex;
+    align-items: center;
+  }
+
+  header .header-tabs a:hover {
+    color: var(--gray-12);
+    border-bottom-color: var(--gray-10);
+  }
+
+  header .header-tabs a[data-current="true"] {
+    color: var(--gray-12);
+    border-bottom-color: var(--accent-11);
+  }
+
   nav {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
@@ -156,16 +211,16 @@
   }
 
   .navigation-container {
-    padding-top: var(--space-7);
-    padding-bottom: var(--space-7);
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
     padding-left: 1rem;
     margin-left: -1rem;
-    padding-right: var(--space-2);
+    padding-right: var(--space-4);
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
     position: fixed;
-    top: 5rem;
-    height: calc(100vh - 10rem);
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height) - calc(var(--space-8) * 2));
     overflow-y: auto;
     overscroll-behavior: contain;
 
@@ -329,13 +384,13 @@
 
   .on-this-page-inner-container {
     pointer-events: all;
-    padding-top: var(--space-7);
-    padding-bottom: var(--space-7);
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-8);
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
     position: fixed;
-    top: 5rem;
-    height: calc(100vh - 5rem);
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height) - calc(var(--space-8) * 2));
     overflow-y: auto;
     overscroll-behavior: contain;
 
