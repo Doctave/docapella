@@ -44,11 +44,14 @@
     }
   }
 
-  // Set up toggle button when DOM is ready
+  // Set up toggle buttons when DOM is ready
   document.addEventListener("DOMContentLoaded", function () {
-    const toggleButton = document.getElementById("dark-mode-toggle");
-    if (toggleButton) {
-      toggleButton.addEventListener("click", toggleDarkMode);
+    const toggleButtons = document.querySelectorAll(".dark-mode-toggle");
+
+    if (toggleButtons) {
+      toggleButtons.forEach((toggleButton) => {
+        toggleButton.addEventListener("click", toggleDarkMode);
+      });
     }
   });
 
