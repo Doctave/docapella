@@ -1,7 +1,4 @@
-use crate::file_gatherer::gather_files;
-use libdoctave::{renderer::Renderer, ContentApiResponse, Project, ResponseContext};
-
-use owo_colors::{OwoColorize as _, Stream};
+use crate::builder::build;
 
 use std::path::PathBuf;
 
@@ -11,105 +8,8 @@ pub struct BuildArgs<'a, W: std::io::Write> {
     pub stdout: &'a mut W,
 }
 
-pub fn run<W: std::io::Write>(args: BuildArgs<W>) -> crate::Result<()> {
-    // Gather the files
-    let files = gather_files(&args.working_dir)?;
-
-    if files.is_empty() {
-        return Err(crate::Error::General(format!(
-            "No files found in directory: {}",
-            args.working_dir.display()
-        )));
-    }
-
-    let renderer = Renderer::new().expect("Failed to create renderer");
-
-    match Project::from_file_list(files) {
-        Ok(project) => {
-            let start = std::time::Instant::now();
-
-            for page in project.pages() {
-                let mut path = args.out_dir.clone();
-                path.push(page.out_path());
-
-                if !path.exists() {
-                    std::fs::create_dir_all(path.parent().unwrap())?;
-                }
-
-                let ctx = ResponseContext::default();
-                let response = ContentApiResponse::content(page, &project, ctx);
-
-                let rendered = renderer.render_page(response).map_err(|e| {
-                    crate::Error::General(format!("Failed to render page: {:?}", e))
-                })?;
-
-                std::fs::write(path, rendered)?;
-            }
-
-            if !project.assets.is_empty() {
-                for asset in &project.assets {
-                    let path = args.out_dir.join(&asset.path);
-
-                    if !path.exists() {
-                        std::fs::create_dir_all(path.parent().unwrap())?;
-                    }
-
-                    std::fs::copy(
-                        args.working_dir.join(&asset.path),
-                        args.out_dir.join(&asset.path),
-                    )?;
-                }
-            }
-
-            let build_duration = start.elapsed();
-
-            let start = std::time::Instant::now();
-
-            let verify_results = project.verify(None, None);
-
-            let verify_duration = start.elapsed();
-
-            if let Err(e) = verify_results {
-                writeln!(
-                    args.stdout,
-                    "Found {} issues while building documentation in {:?}",
-                    e.len(),
-                    verify_duration
-                )?;
-
-                for issue in e {
-                    writeln!(
-                        args.stdout,
-                        "--------------------------------------------\n{} {}\n",
-                        issue.message.bold(),
-                        issue
-                            .file
-                            .map(|f| format!("[{}]", f.display()))
-                            .unwrap_or(String::from(""))
-                            .bold()
-                    )?;
-                    writeln!(args.stdout, "{}", issue.description)?;
-                }
-
-                writeln!(args.stdout, "--------------------------------------------",)?;
-            }
-
-            writeln!(
-                args.stdout,
-                "{} {}",
-                "Build complete in".if_supports_color(Stream::Stdout, |s| s.green()),
-                format!("{:?}", build_duration).if_supports_color(Stream::Stdout, |s| s.bold()),
-            )?;
-
-            Ok(())
-        }
-        Err(e) => {
-            println!("{:?}", e);
-            Err(crate::Error::General(String::from(
-                "Failed to build project",
-            )))
-        }
-    }
+pub fn run<W: std::io::Write>(mut args: BuildArgs<W>) -> crate::Result<()> {
+    build(&mut args.stdout, &args.working_dir, &args.out_dir)
 }
 
 #[cfg(test)]

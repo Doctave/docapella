@@ -7,6 +7,7 @@ pub mod commands {
 }
 
 pub mod file_gatherer;
+mod builder;
 
 pub type Result<T> = std::result::Result<T, Error>;
 

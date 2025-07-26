@@ -65,16 +65,12 @@ fn main() {
             title: None,
             stdout: &mut stdout,
         }),
-        Some(Commands::Build { working_dir }) => {
-            println!("Building project...");
-            build(BuildArgs {
-                out_dir: working_dir.join("_build"),
-                working_dir,
-                stdout: &mut stdout,
-            })
-        }
+        Some(Commands::Build { working_dir }) => build(BuildArgs {
+            out_dir: working_dir.join("_build"),
+            working_dir,
+            stdout: &mut stdout,
+        }),
         Some(Commands::Dev { .. }) => {
-            println!("Starting dev server...");
             todo!()
         }
         None => {

@@ -62,16 +62,24 @@ impl PageKind {
             Self::Markdown(md) => {
                 // If we have a README.md, the file name should be `index.md` but the path should
                 // be otherwise the same.
-                let mut out = md.path.clone();
+                let mut out = PathBuf::from(md.uri_path.strip_prefix('/').unwrap_or(&md.uri_path));
 
-                if out.ends_with("README.md") {
-                    out.set_file_name("index.md");
+                // TODO(Nik): This is a bit hacky...
+                if md.path.ends_with("README.md") || out == Path::new("") {
+                    out.set_file_name("index");
                 }
+
                 out.set_extension("html");
                 out
-            },
+            }
             Self::OpenApi(oapi) => {
-                PathBuf::from(&oapi.uri_path).with_extension("html")
+                let out = PathBuf::from(&oapi.uri_path).with_extension("html");
+
+                if out.starts_with("/") {
+                    out.strip_prefix("/").unwrap().to_path_buf()
+                } else {
+                    out
+                }
             }
         }
     }
