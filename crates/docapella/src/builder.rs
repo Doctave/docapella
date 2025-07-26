@@ -61,10 +61,6 @@ pub(crate) fn build<W: std::io::Write>(
             let start = std::time::Instant::now();
 
             for page in project.pages() {
-                println!("Page out path: {:?}", page.out_path());
-            }
-
-            for page in project.pages() {
                 let mut path = out_dir.to_path_buf();
                 path.push(page.out_path());
 

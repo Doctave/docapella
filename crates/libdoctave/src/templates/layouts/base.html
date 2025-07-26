@@ -23,12 +23,12 @@
     <div class="page-outer-container">
         <div class="page-inner-container">
             {% if page.status == "ok" %}
-                {% if page.ast.kind == "markdown" %}
                 <nav>
                     {% with navigation = project.active_navigation %}
                         {% include "components/navigation.html" %}
                     {% endwith %}
                 </nav>
+                {% if page.ast.kind == "markdown" %}
                     <div class="markdown-outer-container">
                         <div class="markdown-inner-container">
                             <div>
@@ -44,24 +44,24 @@
                             {% endwith %}
                         </div>
                     </div>
-                <div class="on-this-page-outer-container">
-                    <div class="on-this-page-inner-container">
-                        <div>
-                            <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-      <path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 2 10Z" clip-rule="evenodd" />
-    </svg>
+                    <div class="on-this-page-outer-container">
+                        <div class="on-this-page-inner-container">
+                            <div>
+                                <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 2 10Z" clip-rule="evenodd" />
+        </svg>
 
-                            <span>On this page</span>
+                                <span>On this page</span>
+                            </div>
+                            <ul>
+                                {% for item in page.on_this_page_headings %}
+                                    <li><a data-level="{{ item.level }}" href="#{{ item.anchor }}">{{ item.title }}</a></li>
+                                {% endfor %}
+                            </ul>
                         </div>
-                        <ul>
-                            {% for item in page.on_this_page_headings %}
-                                <li><a data-level="{{ item.level }}" href="#{{ item.anchor }}">{{ item.title }}</a></li>
-                            {% endfor %}
-                        </ul>
                     </div>
-                </div>
-                {% else %}
-                    <div>Unsupported content type: {{ page.ast.kind }}</div>
+                {% elif page.ast.kind == "open_api" %}
+                    {% include "components/open_api.html" %}
                 {% endif %}
             {% else %}
                 <div>Page error: {{ page.status }}</div>

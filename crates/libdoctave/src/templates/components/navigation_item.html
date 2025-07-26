@@ -13,7 +13,7 @@
   </div>
 
   {% if item.items %}
-  <ul x-show="open" x-transition x-transition.opacity>
+  <ul x-cloak x-show="open" x-transition x-transition.opacity>
     {% for item in item.items %}
       {% include "components/navigation_item.html" %}
     {% endfor %}
