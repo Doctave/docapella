@@ -6,8 +6,8 @@ pub mod commands {
     pub mod init;
 }
 
-pub mod file_gatherer;
 mod builder;
+pub mod file_gatherer;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
