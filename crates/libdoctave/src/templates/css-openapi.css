@@ -13,6 +13,12 @@
   padding-left: 8.5rem;
 }
 
+@media (max-width: 1280px) {
+  .open-api-outer-container {
+    padding-left: 0;
+  }
+}
+
 .open-api-inner-container {
   flex-grow: 1;
   min-width: 0;
@@ -71,4 +77,24 @@
 .open-api-operation-method-post {
   background-color: var(--jade-9);
   color: var(--accent-contrast);
+}
+
+.open-api-operation-inner {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+}
+
+/* Fall back to vertical layout on small screens */
+@media (max-width: 768px) {
+  .open-api-operation-inner {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(2, 1fr);
+  }
+}
+
+.open-api-operation-inner-left {
+}
+
+.open-api-operation-inner-right {
 }
