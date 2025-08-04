@@ -2,6 +2,7 @@ use super::ast::PageAst;
 use crate::settings::OpenApi;
 use indexmap::IndexMap;
 use openapi_parser::openapi30::schemas::parameter::ParameterKind;
+use serde::Serialize;
 use serde_json::{json, Value};
 
 use crate::{markdown, page_kind::OutgoingLink, render_context::RenderContext, Error};
@@ -10,7 +11,6 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
-use super::view::PageView;
 
 #[derive(Debug, Default, Clone)]
 pub(crate) struct Components {
@@ -38,7 +38,7 @@ pub(crate) struct Tag {
     pub description: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub(crate) struct Page {
     pub uri_path: String,
     pub fs_path: PathBuf,
@@ -46,49 +46,24 @@ pub(crate) struct Page {
     pub operations: Vec<Operation>,
 }
 
-pub fn parse_open_api(
-    spec: &OpenApi,
-    content: &str,
-) -> Result<openapi_parser::OpenAPI, Vec<crate::Error>> {
-    match spec.spec_file.extension().and_then(OsStr::to_str) {
-        Some("json") => openapi_parser::openapi30::parser::parse_json(content).map_err(|e| {
-            vec![Error {
-                code: Error::INVALID_OPENAPI_SPEC,
-                message: "Could not parse OpenAPI spec".to_owned(),
-                description: e.to_string(),
-                file: Some(spec.spec_file.clone()),
-                position: None,
-            }]
-        }),
-        Some("yaml") => openapi_parser::openapi30::parser::parse_yaml(content).map_err(|e| {
-            vec![Error {
-                code: Error::INVALID_OPENAPI_SPEC,
-                message: "Could not parse OpenAPI spec".to_owned(),
-                description: e.to_string(),
-                file: Some(spec.spec_file.clone()),
-                position: None,
-            }]
-        }),
-        _ => Err(vec![Error {
-            code: Error::INVALID_OPENAPI_SPEC,
-            message: "Could not parse OpenAPI spec".to_owned(),
-            description: "OpenAPI spec must be a JSON or YAML file.".to_string(),
-            file: Some(spec.spec_file.clone()),
-            position: None,
-        }])?,
-    }
-}
-
 impl Page {
     pub fn ast(&self, ctx: &RenderContext) -> crate::Result<PageAst> {
-        let view = PageView::new(self, ctx);
-        PageAst::from_view(&view)
+        PageAst::from_page(self, ctx)
+    }
+
+    pub fn spec_download_link(&self, ctx: &RenderContext) -> Option<String> {
+        ctx.options.download_url_prefix.as_ref().map(|prefix| {
+            let mut s = String::new();
+            s.push_str(prefix);
+            s.push_str(&format!("{}", self.fs_path.display()));
+            s
+        })
     }
 
     pub fn outgoing_links(&self, ctx: &mut RenderContext) -> crate::Result<Vec<OutgoingLink>> {
         ctx.with_url_base_by_page_uri(&self.uri_path);
 
-        // Step 1: Concat all descrptions together.
+        // Step 1: Concat all descriptions together.
         let mut all_markdown = String::new();
 
         fn concat(out: &mut String, s: &str) {
@@ -96,33 +71,31 @@ impl Page {
             out.push_str("\n\n");
         }
 
-        let page_view = PageView::new(self, ctx);
-
-        for op in page_view.operations() {
-            if let Some(desc) = op.description() {
+        for op in &self.operations {
+            if let Some(desc) = op.description.as_deref() {
                 concat(&mut all_markdown, desc);
             }
 
-            for param in &op.query_parameters() {
-                if let Some(desc) = param.description() {
+            for param in &op.query_parameters {
+                if let Some(desc) = param.description.as_deref() {
                     concat(&mut all_markdown, desc);
                 }
             }
 
-            for param in &op.header_parameters() {
-                if let Some(desc) = param.description() {
+            for param in &op.header_parameters {
+                if let Some(desc) = param.description.as_deref() {
                     concat(&mut all_markdown, desc);
                 }
             }
 
-            for param in &op.path_parameters() {
-                if let Some(desc) = param.description() {
+            for param in &op.path_parameters {
+                if let Some(desc) = param.description.as_deref() {
                     concat(&mut all_markdown, desc);
                 }
             }
 
-            for param in &op.cookie_parameters() {
-                if let Some(desc) = param.description() {
+            for param in &op.cookie_parameters {
+                if let Some(desc) = param.description.as_deref() {
                     concat(&mut all_markdown, desc);
                 }
             }
@@ -133,7 +106,7 @@ impl Page {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) enum SecurityRequirement {
     Http {
         name: String,
@@ -161,27 +134,31 @@ pub(crate) enum SecurityRequirement {
     },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) enum OAuth2Flow {
     Implicit {
         authorization_url: String,
         refresh_url: Option<String>,
+        #[serde(skip)]
         scopes: IndexMap<String, String>,
     },
     Password {
         refresh_url: Option<String>,
         token_url: String,
+        #[serde(skip)]
         scopes: IndexMap<String, String>,
     },
     ClientCredentials {
         refresh_url: Option<String>,
         token_url: String,
+        #[serde(skip)]
         scopes: IndexMap<String, String>,
     },
     AuthorizationCode {
         authorization_url: String,
         token_url: String,
         refresh_url: Option<String>,
+        #[serde(skip)]
         scopes: IndexMap<String, String>,
     },
 }
@@ -254,10 +231,11 @@ impl From<openapi_parser::OAuthFlow> for OAuth2Flow {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Server {
     pub url: String,
     pub description: Option<String>,
+    #[serde(skip)]
     pub variables: IndexMap<String, ServerVariable>,
 }
 
@@ -275,7 +253,7 @@ impl Server {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct ServerVariable {
     pub r#enum: Option<Vec<String>>,
     pub default: String,
@@ -292,7 +270,7 @@ impl ServerVariable {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct Operation {
     pub method: String,
     pub route_pattern: String,
@@ -508,9 +486,22 @@ impl Operation {
     ) -> crate::Result<Self> {
         Operation::from_parsed(spec, "webhook".into(), "".into(), None, security_schemes)
     }
+
+    // Template-friendly methods moved from view layer
+    pub fn identifier(&self) -> String {
+        format!(
+            "{}-{}-{}",
+            self.method,
+            self.route_pattern,
+            self.summary
+                .as_ref()
+                .map(|s| s.trim().replace(' ', "-"))
+                .unwrap_or_else(|| String::from("operation"))
+        )
+    }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct Response {
     pub status: String,
     pub description: String,
@@ -544,7 +535,7 @@ impl Response {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct Header {
     pub name: String,
     pub description: Option<String>,
@@ -576,7 +567,7 @@ impl Header {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct Parameter {
     pub name: String,
     pub contained_in: String,
@@ -631,9 +622,10 @@ impl Parameter {
             schema,
         })
     }
+
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) enum SchemaKind {
     SingleType(Type),
     OneOf {
@@ -684,7 +676,7 @@ struct SchemaOpts {
     mediatype: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize)]
 pub(crate) struct Schema {
     pub schema_kind: SchemaKind,
     pub title: Option<String>,
@@ -695,6 +687,7 @@ pub(crate) struct Schema {
     pub default: Option<Value>,
     pub mediatype: Option<String>,
     pub nullable: bool,
+    #[serde(skip)]
     pub metadata: Option<openapi_parser::Metadata>,
     pub expanded: bool,
 }
@@ -859,18 +852,6 @@ impl Schema {
         }
     }
 
-    pub fn single_nested_schema(&self) -> Option<&Schema> {
-        match &self.schema_kind {
-            SchemaKind::SingleType(Type::Array { items, .. }) => {
-                if let Some(i) = items {
-                    Some(i.as_ref())
-                } else {
-                    None
-                }
-            }
-            _ => None,
-        }
-    }
 
     pub fn nested_schemas(&self) -> &[Schema] {
         match &self.schema_kind {
@@ -1021,7 +1002,7 @@ impl Schema {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 /// TODO: Missing a few
 /// https://docs.rs/openapiv3/1.0.1/openapiv3/struct.NumberType.html
 pub(crate) enum Type {
@@ -1138,7 +1119,7 @@ impl Type {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct RequestBody {
     pub required: bool,
     pub description: Option<String>,
@@ -1158,9 +1139,10 @@ impl RequestBody {
             content,
         })
     }
+
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct MediaType {
     pub name: String,
     pub schemas: Vec<Schema>,
@@ -1231,9 +1213,10 @@ impl MediaType {
             examples,
         })
     }
+
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub(crate) struct Example {
     pub name: String,
     pub summary: Option<String>,
@@ -1399,6 +1382,12 @@ impl Example {
                 .expect("Error serializing JSON example"),
         }
     }
+
+    // Template-friendly methods moved from view layer
+    pub fn identifier(&self, parent_id: &str) -> String {
+        format!("example-{}-{}", self.name, parent_id)
+    }
+
 }
 
 fn code_examples_from_parsed(spec: &openapi_parser::Operation) -> Vec<Example> {

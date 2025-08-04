@@ -1,30 +1,30 @@
 {% macro markdown(node) %}
   {% if node.kind.name == "root" %}
-    {% include "components/markdown/root.html" %}
+    {% include "components/markdown/root.html.jinja" %}
   {% elif node.kind.name == "text" %}
-    {% include "components/markdown/text.html" %}
+    {% include "components/markdown/text.html.jinja" %}
   {% elif node.kind.name == "emphasis" %}
-    {% include "components/markdown/emphasis.html" %}
+    {% include "components/markdown/emphasis.html.jinja" %}
   {% elif node.kind.name == "strong" %}
-    {% include "components/markdown/strong.html" %}
+    {% include "components/markdown/strong.html.jinja" %}
   {% elif node.kind.name == "paragraph" %}
-    {% include "components/markdown/paragraph.html" %}
+    {% include "components/markdown/paragraph.html.jinja" %}
   {% elif node.kind.name == "heading" %}
-    {% include "components/markdown/heading.html" %}
+    {% include "components/markdown/heading.html.jinja" %}
   {% elif node.kind.name == "html_block" %}
-    {% include "components/markdown/html_block.html" %}
+    {% include "components/markdown/html_block.html.jinja" %}
   {% elif node.kind.name == "link" %}
-    {% include "components/markdown/link.html" %}
+    {% include "components/markdown/link.html.jinja" %}
   {% elif node.kind.name == "list" %}
-    {% include "components/markdown/list.html" %}
+    {% include "components/markdown/list.html.jinja" %}
   {% elif node.kind.name == "list_item" %}
-    {% include "components/markdown/list_item.html" %}
+    {% include "components/markdown/list_item.html.jinja" %}
   {% elif node.kind.name == "code" %}
-    {% include "components/markdown/code.html" %}
+    {% include "components/markdown/code.html.jinja" %}
   {% elif node.kind.name == "inline_code" %}
-    {% include "components/markdown/inline_code.html" %}
+    {% include "components/markdown/inline_code.html.jinja" %}
   {% elif node.kind.name == "image" %}
-    {% include "components/markdown/image.html" %}
+    {% include "components/markdown/image.html.jinja" %}
   {% else %}
     <!-- Fallback for unknown node types -->
     <p>Unknown node type: {{ node.kind.name }}</p>

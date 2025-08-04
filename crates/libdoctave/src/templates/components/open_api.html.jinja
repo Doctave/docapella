@@ -1,10 +1,10 @@
-{% from "components/markdown.html" import markdown %}
+{% from "components/markdown.html.jinja" import markdown %}
 
 <div class="open-api-outer-container">
   <div class="open-api-inner-container">
     <div class="open-api-page-header">
       {% with breadcrumbs = page.breadcrumbs %}
-          {% include "components/breadcrumbs.html" %}
+          {% include "components/breadcrumbs.html.jinja" %}
       {% endwith %}
 
       <div class="prose open-api-tag-header">
@@ -62,7 +62,7 @@
 
                   {% for param in operation.query_params %}
                     {% with schema = param.schema, show_anonymous = false, is_root = true %}
-                      {% include "components/open_api_schema.html" %}
+                      {% include "components/open_api_schema.html.jinja" %}
                     {% endwith %}
                   {% endfor %}
                 </div>
@@ -97,6 +97,6 @@
   </div>
 
   {% with footer = project.settings.footer %}
-    {% include "footer.html" %}
+    {% include "footer.html.jinja" %}
   {% endwith %}
 </div>

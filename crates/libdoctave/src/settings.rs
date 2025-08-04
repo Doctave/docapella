@@ -1742,7 +1742,6 @@ pub struct OpenApi {
 
 #[cfg(test)]
 mod test {
-    use crate::navigation::SectionDescription;
 
     use super::*;
     use std::path::Path;

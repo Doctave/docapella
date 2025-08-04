@@ -1,4 +1,4 @@
-{% from "components/markdown.html" import markdown %}
+{% from "components/markdown.html.jinja" import markdown %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -7,25 +7,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% if page.title %}{{ page.title }} · {% endif %}{{ project.settings.title }}</title>
 
-    {% include "js/dark-mode-preload.html" %}
+    {% include "js/dark-mode-preload.html.jinja" %}
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
 
-    {% include "colors.html" %}
-    {% include "font.html" %}
-    {% include "css.html" %}
+    {% include "colors.html.jinja" %}
+    {% include "font.html.jinja" %}
+    {% include "css.html.jinja" %}
 
-    {% include "javascript-libraries.html" %}
+    {% include "javascript-libraries.html.jinja" %}
 </head>
 <body>
-    {% include "components/header.html" %}
+    {% include "components/header.html.jinja" %}
 
     <div class="page-outer-container">
         <div class="page-inner-container">
             {% if page.status == "ok" %}
                 <nav>
                     {% with navigation = project.active_navigation %}
-                        {% include "components/navigation.html" %}
+                        {% include "components/navigation.html.jinja" %}
                     {% endwith %}
                 </nav>
                 {% if page.ast.kind == "markdown" %}
@@ -33,14 +33,14 @@
                         <div class="markdown-inner-container">
                             <div>
                                 {% with breadcrumbs = page.breadcrumbs %}
-                                    {% include "components/breadcrumbs.html" %}
+                                    {% include "components/breadcrumbs.html.jinja" %}
                                 {% endwith %}
 
                                 {{ markdown(page.ast.root) }}
                             </div>
 
                             {% with footer = project.settings.footer %}
-                                {% include "footer.html" %}
+                                {% include "footer.html.jinja" %}
                             {% endwith %}
                         </div>
                     </div>
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                 {% elif page.ast.kind == "open_api" %}
-                    {% include "components/open_api.html" %}
+                    {% include "components/open_api.html.jinja" %}
                 {% endif %}
             {% else %}
                 <div>Page error: {{ page.status }}</div>

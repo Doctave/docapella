@@ -33,7 +33,7 @@ impl Renderer {
 
                 let template = self
                     .env
-                    .get_template("layouts/base.html")
+                    .get_template("layouts/base.html.jinja")
                     .expect("Failed to get template");
 
                 let rendered = template

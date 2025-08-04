@@ -1,4 +1,4 @@
-{% from "components/markdown.html" import markdown %}
+{% from "components/markdown.html.jinja" import markdown %}
 
 <h{{ node.kind.data.level }} id="{{ node.kind.data.slug }}">
 {% for child in node.children %}

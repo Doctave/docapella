@@ -14,7 +14,6 @@ use crate::{
     error_renderer::{self, Highlight, Location},
     expressions::Value,
     markdown::ast,
-    open_api::view::{Header, MediaType, Parameter, RequestBody, Schema, Status},
     primitive_components::{OPENAPI_PATH_KEY, TITLE_KEY},
     render_context::RenderContext,
     renderable_ast::Node,
@@ -22,13 +21,7 @@ use crate::{
     Result,
 };
 
-use super::{
-    model::Schema as SchemaModel,
-    view::{
-        Example, ExampleParent, MediaTypeParent, Operation, PageView, RequestExamples,
-        SecurityRequirement,
-    },
-};
+use super::model::Schema as SchemaModel;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -140,29 +133,30 @@ pub struct PageAst {
 }
 
 impl PageAst {
-    pub(crate) fn from_view(view: &PageView) -> Result<Self> {
-        let description_ast = if let Some(desc) = view.page.tag.description.as_ref() {
-            Some(ast_for_openapi(desc, view.ctx)?)
+    pub(crate) fn from_page(page: &super::model::Page, ctx: &crate::render_context::RenderContext) -> Result<Self> {
+        let description_ast = if let Some(desc) = page.tag.description.as_ref() {
+            Some(ast_for_openapi(desc, ctx)?)
         } else {
             None
         };
 
-        let download_url = view.spec_download_link();
+        let download_url = page.spec_download_link(ctx);
 
         let mut operations = vec![];
-        for op in view.operations() {
-            operations.push(OperationAst::from_view(&op)?);
+        for op in &page.operations {
+            operations.push(OperationAst::from_model(op, ctx)?);
         }
 
         Ok(PageAst {
             tag: Tag {
-                name: view.page.tag.name.to_owned(),
+                name: page.tag.name.to_owned(),
                 description_ast,
             },
             operations,
             download_url,
         })
     }
+
 }
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(test, derive(TS))]
@@ -199,72 +193,69 @@ pub struct OperationAst {
 }
 
 impl OperationAst {
-    pub(crate) fn from_view(view: &Operation) -> Result<Self> {
-        let description_ast = view
-            .description()
+    pub(crate) fn from_model(operation: &super::model::Operation, ctx: &crate::render_context::RenderContext) -> Result<Self> {
+        let description_ast = operation
+            .description
             .as_ref()
-            .and_then(|description| ast_for_openapi(description, view.ctx).ok());
+            .and_then(|description| ast_for_openapi(description, ctx).ok());
 
         let mut header_params = vec![];
-        for param in view.header_parameters() {
-            header_params.push(ParameterAst::from_view(&param)?);
+        for param in &operation.header_parameters {
+            header_params.push(ParameterAst::from_model(param, ctx, &operation.identifier())?);
         }
 
         let mut query_params = vec![];
-        for param in view.query_parameters() {
-            query_params.push(ParameterAst::from_view(&param)?);
+        for param in &operation.query_parameters {
+            query_params.push(ParameterAst::from_model(param, ctx, &operation.identifier())?);
         }
 
         let mut path_params = vec![];
-        for param in view.path_parameters() {
-            path_params.push(ParameterAst::from_view(&param)?);
+        for param in &operation.path_parameters {
+            path_params.push(ParameterAst::from_model(param, ctx, &operation.identifier())?);
         }
 
         let mut cookie_params = vec![];
-        for param in view.cookie_parameters() {
-            cookie_params.push(ParameterAst::from_view(&param)?);
+        for param in &operation.cookie_parameters {
+            cookie_params.push(ParameterAst::from_model(param, ctx, &operation.identifier())?);
         }
 
         let mut responses = vec![];
-        for status in view.response_examples().statuses {
-            responses.push(StatusAst::from_view(&status)?);
+        for response in &operation.responses {
+            responses.push(StatusAst::from_model(response)?);
         }
 
-        let request_body = if let Some(req_body) = view.request_body() {
-            Some(RequestBodyAst::from_view(&req_body)?)
+        let request_body = if let Some(req_body) = &operation.request_body {
+            Some(RequestBodyAst::from_model(req_body, &operation.identifier())?)
         } else {
             None
         };
 
         let mut security_requirements = vec![];
-        for req in view.security_requirements() {
-            security_requirements.push(SecurityRequirementAst::from_view(&req)?);
+        for req in &operation.security_requirements {
+            security_requirements.push(SecurityRequirementAst::from_model(req)?);
         }
 
         let mut request_examples = vec![];
-        let _request_examples = view.request_examples();
-
-        for code_sample in _request_examples.code_samples() {
-            request_examples.push(ExampleAst::from_view(&code_sample.example())?);
+        for code_sample in &operation.code_examples {
+            request_examples.push(ExampleAst::from_model(code_sample, "code")?);
         }
 
-        let server_route_patterns = view
-            .inner
+        let server_route_patterns = operation
             .servers
             .iter()
             .map(|s| {
                 let url = s.url.trim_end_matches('/');
-                let route = view.route_pattern().trim_start_matches('/');
+                let route = operation.route_pattern.trim_start_matches('/');
                 format!("{}/{}", url, route)
             })
             .collect::<Vec<String>>();
 
         Ok(OperationAst {
-            summary: view.summary().map(|s| s.to_owned()),
+            summary: operation.summary.clone(),
             description_ast,
-            method: view.method().to_owned(),
-            anchor_tag: view.anchor_tag().to_owned(),
-            route_pattern: view.route_pattern().to_owned(),
+            method: operation.method.clone(),
+            anchor_tag: operation.anchor_tag.clone(),
+            route_pattern: operation.route_pattern.clone(),
             header_params,
             query_params,
             path_params,
@@ -276,6 +267,7 @@ impl OperationAst {
             server_route_patterns,
         })
     }
+
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -295,62 +287,18 @@ pub struct ExampleAst {
 }
 
 impl ExampleAst {
-    pub(crate) fn from_view(view: &Example) -> Result<Self> {
-        let description_ast = view
-            .description()
-            .as_ref()
-            .and_then(|description| ast_for_openapi(description, view.ctx).ok());
-
-        let summary = if view.has_summary() {
-            Some(view.summary().to_owned())
-        } else {
-            None
-        };
-
-        match view.parent_view {
-            ExampleParent::MediaType(m) => match m.parent_view {
-                MediaTypeParent::Status(status) => Ok(ExampleAst {
-                    name: view.inner.name.to_owned(),
-                    summary,
-                    description_ast,
-                    identifier: view.identifier().to_owned(),
-                    value: view.value().to_owned(),
-                    group_name: RequestExamples::_prettify_language(status.code()),
-                    language: Some("json".to_string()),
-                    rendered_value: None,
-                }),
-                MediaTypeParent::RequestBody(_) => Ok(ExampleAst {
-                    name: view.inner.name.clone(),
-                    summary,
-                    description_ast,
-                    identifier: view.identifier().to_owned(),
-                    value: view.value().to_owned(),
-                    group_name: RequestExamples::_prettify_language(m.name()),
-                    language: Some("json".to_string()),
-                    rendered_value: None,
-                }),
-            },
-            ExampleParent::Request(code) => Ok(ExampleAst {
-                name: view.name().to_owned(),
-                summary,
-                description_ast: None,
-                identifier: view.identifier().to_owned(),
-                value: view.value().to_owned(),
-                group_name: RequestExamples::_prettify_language(code.language()),
-                language: Some(RequestExamples::language_aliases(code.language())),
-                rendered_value: None,
-            }),
-            ExampleParent::Schema(schema) => Ok(ExampleAst {
-                name: view.name().to_owned(),
-                summary,
-                description_ast,
-                identifier: view.identifier().to_owned(),
-                value: view.value().to_owned(),
-                group_name: RequestExamples::_prettify_language(&schema.type_name()),
-                language: None,
-                rendered_value: None,
-            }),
-        }
+    pub(crate) fn from_model(example: &super::model::Example, parent_id: &str) -> Result<Self> {
+        Ok(ExampleAst {
+            name: example.name.clone(),
+            summary: example.summary.clone(),
+            description_ast: example.description.as_ref()
+                .and_then(|d| ast_for_openapi(d, &crate::render_context::RenderContext::new()).ok()),
+            identifier: example.identifier(parent_id),
+            value: example.value.clone(),
+            group_name: parent_id.to_string(),
+            language: Some("json".to_string()),
+            rendered_value: None,
+        })
     }
 }
 
@@ -368,19 +316,15 @@ pub struct RequestBodyAst {
 }
 
 impl RequestBodyAst {
-    pub(crate) fn from_view(view: &RequestBody) -> Result<Self> {
-        let description_ast = view
-            .description()
-            .as_ref()
-            .and_then(|description| ast_for_openapi(description, view.ctx).ok());
-
+    pub(crate) fn from_model(request_body: &super::model::RequestBody, operation_id: &str) -> Result<Self> {
         let mut media_types = vec![];
-        for val in view.media_types() {
-            media_types.push(MediaTypeAst::from_view(&val)?);
+        for media_type in &request_body.content {
+            media_types.push(MediaTypeAst::from_model(media_type, operation_id)?);
         }
 
         Ok(RequestBodyAst {
-            description_ast,
+            description_ast: request_body.description.as_ref()
+                .and_then(|d| ast_for_openapi(d, &crate::render_context::RenderContext::new()).ok()),
             media_types,
         })
     }
@@ -400,27 +344,28 @@ pub struct StatusAst {
 }
 
 impl StatusAst {
-    pub(crate) fn from_view(view: &Status) -> Result<Self> {
-        let description_ast = ast_for_openapi(view.description(), view.ctx)
-            .unwrap_or(ast_for_openapi("", view.ctx).unwrap());
+    pub(crate) fn from_model(response: &super::model::Response) -> Result<Self> {
+        let description_ast = ast_for_openapi(&response.description, &crate::render_context::RenderContext::new())
+            .unwrap_or(ast_for_openapi("", &crate::render_context::RenderContext::new()).unwrap());
 
         let mut media_types = vec![];
-        for val in view.media_types() {
-            media_types.push(MediaTypeAst::from_view(&val)?);
+        for media_type in &response.content {
+            media_types.push(MediaTypeAst::from_model(media_type, &response.status)?);
         }
 
         let mut headers = vec![];
-        for val in view.headers() {
-            headers.push(HeaderAst::from_view(&val)?);
+        for header in &response.headers {
+            headers.push(HeaderAst::from_model(header)?);
         }
 
         Ok(StatusAst {
-            code: view.code().to_owned(),
+            code: response.status.clone(),
             media_types,
             headers,
             description_ast,
         })
     }
+
 }
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(test, derive(TS))]
@@ -433,12 +378,13 @@ pub struct HeaderAst {
 }
 
 impl HeaderAst {
-    pub(crate) fn from_view(view: &Header) -> Result<Self> {
+    pub(crate) fn from_model(header: &super::model::Header) -> Result<Self> {
         Ok(HeaderAst {
-            name: view.name().to_owned(),
-            schema: SchemaAst::from_view(&view.schema())?,
+            name: header.name.clone(),
+            schema: SchemaAst::from_model(&header.schema, &crate::render_context::RenderContext::new(), false)?,
         })
     }
+
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -456,23 +402,24 @@ pub struct MediaTypeAst {
 }
 
 impl MediaTypeAst {
-    pub(crate) fn from_view(view: &MediaType) -> Result<Self> {
+    pub(crate) fn from_model(media_type: &super::model::MediaType, parent_id: &str) -> Result<Self> {
         let mut schemas = vec![];
-        for val in view.schemas() {
-            schemas.push(SchemaAst::from_view(&val)?);
+        for schema in &media_type.schemas {
+            schemas.push(SchemaAst::from_model(schema, &crate::render_context::RenderContext::new(), false)?);
         }
 
         let mut examples = vec![];
-        for val in view.examples() {
-            examples.push(ExampleAst::from_view(&val)?);
+        for example in &media_type.examples {
+            examples.push(ExampleAst::from_model(example, parent_id)?);
         }
 
         Ok(MediaTypeAst {
-            name: view.name().to_owned(),
+            name: media_type.name.clone(),
             schemas,
             examples,
         })
     }
+
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -489,14 +436,14 @@ pub struct ParameterAst {
 }
 
 impl ParameterAst {
-    pub(crate) fn from_view(view: &Parameter) -> Result<Self> {
-        let description_ast = view
-            .description()
+    pub(crate) fn from_model(parameter: &super::model::Parameter, ctx: &crate::render_context::RenderContext, _operation_id: &str) -> Result<Self> {
+        let description_ast = parameter
+            .description
             .as_ref()
-            .and_then(|description| ast_for_openapi(description, view.ctx).ok());
+            .and_then(|description| ast_for_openapi(description, ctx).ok());
 
-        let schema = if let Some(s) = view.schema().as_ref() {
-            Some(SchemaAst::from_view(s)?)
+        let schema = if let Some(s) = parameter.schema.as_ref() {
+            Some(SchemaAst::from_model(s, ctx, false)?)
         } else {
             None
         };
@@ -506,6 +453,7 @@ impl ParameterAst {
             description_ast,
         })
     }
+
 }
 
 fn is_false(input: &bool) -> bool {
@@ -661,48 +609,6 @@ impl SchemaAst {
         Ok(schema)
     }
 
-    pub(crate) fn from_view(view: &Schema) -> Result<Self> {
-        let description_ast = view
-            .description()
-            .as_ref()
-            .and_then(|description| ast_for_openapi(description, view.ctx).ok());
-
-        let mut schemas = vec![];
-        for schema in view.schemas() {
-            schemas.push(SchemaAst::from_view(&schema)?);
-        }
-
-        let mut schema = SchemaAst {
-            schemas,
-            required: view.required(),
-            description_ast: description_ast.map(Box::new),
-            title: view.title().map(|v| v.to_owned()),
-            type_name: view.type_name(),
-            format: view.format().map(|v| v.to_owned()),
-            pattern: view.pattern().map(|v| v.to_owned()),
-            default: view
-                .default()
-                .map(|v| serde_json::to_string_pretty(v).unwrap()),
-            deprecated: view.deprecated(),
-            minimum: view.minimum(),
-            maximum: view.maximum(),
-            multiple_of: view.multiple_of(),
-            min_length: view.min_length(),
-            max_length: view.max_length(),
-            enumeration: view.enumeration().map(|v| v.to_owned()),
-            example_string: view.example_string().map(|v| v.to_owned()),
-            combination_explanation: None,
-            media_type: view.media_type().map(|v| v.to_owned()),
-            metadata: view.inner.metadata.as_ref().map(|m| m.clone().into()),
-            expanded: view.inner.expanded,
-        };
-
-        if view.has_child_schemas() {
-            schema.combination_explanation = Some(view.combination_explanation().to_owned());
-        }
-
-        Ok(schema)
-    }
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -739,91 +645,38 @@ pub enum SecurityRequirementAst {
 }
 
 impl SecurityRequirementAst {
-    pub(crate) fn from_view(view: &SecurityRequirement) -> Result<Self> {
+    pub(crate) fn from_model(requirement: &super::model::SecurityRequirement) -> Result<Self> {
         use super::model::SecurityRequirement::*;
-
-        match &view.inner {
-            Http {
-                name,
-                description,
-                scheme,
-                bearer_format,
-            } => {
-                let description_ast = if let Some(desc) = description.as_ref() {
-                    ast_for_openapi(desc, view.ctx).ok()
-                } else {
-                    None
-                };
-
-                Ok(SecurityRequirementAst::Http {
-                    name: name.clone(),
-                    description_ast,
-                    scheme: scheme.clone(),
-                    bearer_format: bearer_format.clone(),
-                })
-            }
-            ApiKey {
-                name,
-                description,
-                key_name,
-                key_location,
-            } => {
-                let description_ast = if let Some(desc) = description.as_ref() {
-                    ast_for_openapi(desc, view.ctx).ok()
-                } else {
-                    None
-                };
-
-                Ok(SecurityRequirementAst::ApiKey {
-                    name: name.clone(),
-                    description_ast,
-                    key_name: key_name.clone(),
-                    key_location: key_location.clone(),
-                })
-            }
-            OAuth2 {
-                name,
-                description,
-                all_scopes,
-                required_scopes,
-                flows,
-            } => {
-                let description_ast = if let Some(desc) = description.as_ref() {
-                    ast_for_openapi(desc, view.ctx).ok()
-                } else {
-                    None
-                };
-
-                let mut flows_copy = vec![];
-                for flow in flows {
-                    flows_copy.push(OAuth2FlowAst::from_model(flow)?);
-                }
-
-                Ok(SecurityRequirementAst::OAuth2 {
-                    name: name.clone(),
-                    description_ast,
-                    all_scopes: all_scopes.clone(),
-                    required_scopes: required_scopes.clone(),
-                    flows: flows_copy,
-                })
-            }
-            OpenID {
-                name,
-                description,
-                open_id_connect_url,
-            } => {
-                let description_ast = if let Some(desc) = description.as_ref() {
-                    ast_for_openapi(desc, view.ctx).ok()
-                } else {
-                    None
-                };
-
-                Ok(SecurityRequirementAst::OpenID {
-                    name: name.clone(),
-                    description_ast,
-                    open_id_connect_url: open_id_connect_url.clone(),
-                })
-            }
+        
+        match requirement {
+            Http { name, description, scheme, bearer_format } => Ok(SecurityRequirementAst::Http {
+                name: name.clone(),
+                description_ast: description.as_ref()
+                    .and_then(|d| ast_for_openapi(d, &crate::render_context::RenderContext::new()).ok()),
+                scheme: scheme.clone(),
+                bearer_format: bearer_format.clone(),
+            }),
+            ApiKey { name, description, key_name, key_location } => Ok(SecurityRequirementAst::ApiKey {
+                name: name.clone(),
+                description_ast: description.as_ref()
+                    .and_then(|d| ast_for_openapi(d, &crate::render_context::RenderContext::new()).ok()),
+                key_name: key_name.clone(),
+                key_location: key_location.clone(),
+            }),
+            OAuth2 { name, description, all_scopes, required_scopes, flows: _ } => Ok(SecurityRequirementAst::OAuth2 {
+                name: name.clone(),
+                description_ast: description.as_ref()
+                    .and_then(|d| ast_for_openapi(d, &crate::render_context::RenderContext::new()).ok()),
+                all_scopes: all_scopes.clone(),
+                required_scopes: required_scopes.clone(),
+                flows: vec![], // TODO: Convert OAuth2Flow to OAuth2FlowAst
+            }),
+            OpenID { name, description, open_id_connect_url } => Ok(SecurityRequirementAst::OpenID {
+                name: name.clone(),
+                description_ast: description.as_ref()
+                    .and_then(|d| ast_for_openapi(d, &crate::render_context::RenderContext::new()).ok()),
+                open_id_connect_url: open_id_connect_url.clone(),
+            }),
         }
     }
 }
@@ -857,59 +710,11 @@ pub enum OAuth2FlowAst {
     },
 }
 
-impl OAuth2FlowAst {
-    /// Yes, this is different from the rest. The `View` version is not very ergonimic for this
-    /// translation, let's use the model underneath.
-    fn from_model(model: &super::model::OAuth2Flow) -> Result<OAuth2FlowAst> {
-        use super::model::OAuth2Flow::*;
-        match model {
-            Implicit {
-                authorization_url,
-                refresh_url,
-                scopes,
-            } => Ok(OAuth2FlowAst::Implicit {
-                authorization_url: authorization_url.clone(),
-                refresh_url: refresh_url.clone(),
-                scopes: scopes.clone().into_iter().collect(),
-            }),
-            Password {
-                refresh_url,
-                token_url,
-                scopes,
-            } => Ok(OAuth2FlowAst::Password {
-                token_url: token_url.clone(),
-                refresh_url: refresh_url.clone(),
-                scopes: scopes.clone().into_iter().collect(),
-            }),
-            ClientCredentials {
-                refresh_url,
-                token_url,
-                scopes,
-            } => Ok(OAuth2FlowAst::ClientCredentials {
-                token_url: token_url.clone(),
-                refresh_url: refresh_url.clone(),
-                scopes: scopes.clone().into_iter().collect(),
-            }),
-            AuthorizationCode {
-                authorization_url,
-                token_url,
-                refresh_url,
-                scopes,
-            } => Ok(OAuth2FlowAst::AuthorizationCode {
-                authorization_url: authorization_url.clone(),
-                token_url: token_url.clone(),
-                refresh_url: refresh_url.clone(),
-                scopes: scopes.clone().into_iter().collect(),
-            }),
-        }
-    }
-}
 
 #[cfg(test)]
 mod test {
     use crate::{page_kind::PageKind, render_context::RenderContext, settings::Settings};
 
-    use super::super::view::PageView;
     use super::super::OpenApi;
     use super::PageAst;
 
@@ -1077,8 +882,7 @@ mod test {
         let page = &tag_pages[0];
 
         let ctx = &RenderContext::new();
-        let view = PageView::new(page, ctx);
-        let page_ast = PageAst::from_view(&view).unwrap();
+        let page_ast = PageAst::from_page(page, ctx).unwrap();
 
         serde_json::to_value(page_ast).unwrap()
     }
@@ -1466,8 +1270,7 @@ mod test {
         let mut ctx = RenderContext::new();
         ctx.with_settings(&settings);
 
-        let view = PageView::new(page, &ctx);
-        let page_ast = PageAst::from_view(&view).unwrap();
+        let page_ast = PageAst::from_page(page, &ctx).unwrap();
 
         let tag_desc = page_ast.tag.description_ast.unwrap();
 

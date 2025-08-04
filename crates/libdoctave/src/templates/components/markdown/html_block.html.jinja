@@ -1,4 +1,4 @@
-{% from "components/markdown.html" import markdown %}
+{% from "components/markdown.html.jinja" import markdown %}
 
 <{{ node.kind.data.name }}
   {% for attr in node.kind.data.attributes %}

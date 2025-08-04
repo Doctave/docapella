@@ -1,7 +1,6 @@
 pub mod ast;
 pub mod model;
 pub mod overview;
-pub mod view;
 
 use std::path::PathBuf;
 

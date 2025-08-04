@@ -1,4 +1,4 @@
-{% from "components/markdown.html" import markdown %}
+{% from "components/markdown.html.jinja" import markdown %}
 
 <a href="{{ node.kind.data.url|safe }}">
 {% for child in node.children %}
