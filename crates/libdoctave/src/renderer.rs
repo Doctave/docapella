@@ -1,5 +1,5 @@
 use crate::{ContentApiResponse, Result};
-use minijinja::{self, context, Environment, State, Value};
+use minijinja::{self, context, value, Environment, Error, Value};
 use serde_json;
 
 pub struct Renderer {
@@ -11,7 +11,7 @@ impl Renderer {
         let mut env = Environment::new();
         minijinja_embed::load_templates!(&mut env);
 
-        env.add_function("render_markdown_node", render_markdown_node);
+        env.add_function("initial_openapi_tab_index", initial_openapi_tab_index);
 
         Ok(Renderer { env })
     }
@@ -54,49 +54,19 @@ impl Renderer {
     }
 }
 
-fn render_markdown_node(
-    state: &State,
-    node: Value,
-) -> std::result::Result<String, minijinja::Error> {
-    // Get the node kind to determine which template to use
-    let tmp = node
-        .get_attr("kind")
-        .and_then(|k| k.get_attr("name"))
-        .expect("Failed to get node kind");
-
-    let kind = tmp.as_str().expect("Failed to get node kind as string");
-
-    // Get the current environment from context
-    let env = state.env();
-
-    // Determine template path based on node kind
-    let template_path = match kind {
-        "root" => "components/markdown/root.html",
-        "text" => "components/markdown/text.html",
-        "paragraph" => "components/markdown/paragraph.html",
-        "heading" => "components/markdown/heading.html",
-        "strong" => "components/markdown/strong.html",
-        "emphasis" => "components/markdown/emphasis.html",
-        "link" => "components/markdown/link.html",
-        "list" => "components/markdown/list.html",
-        "list_item" => "components/markdown/list_item.html",
-        "code" => "components/markdown/code.html",
-        "code_block" => "components/markdown/code_block.html",
-        "break" => "components/markdown/break.html",
-        "thematic_break" => "components/markdown/thematic_break.html",
-        _ => {
-            todo!("Unknown node kind: {}", kind);
-        }
-    };
-
-    // Load and render the template
-    let template = env
-        .get_template(template_path)
-        .expect("Failed to get template");
-
-    let rendered = template
-        .render(context! { node => node })
-        .expect("Failed to render template");
-
-    Ok(rendered)
+/// Returns the index of the initial openapi operation tab
+fn initial_openapi_tab_index(value: &Value) -> std::result::Result<usize, Error> {
+    if value.get_attr("request_body")? != Value::UNDEFINED {
+        Ok(0)
+    } else if value.get_attr("query_params")? != Value::UNDEFINED {
+        Ok(1)
+    } else if value.get_attr("header_params")? != Value::UNDEFINED {
+        Ok(2)
+    } else if value.get_attr("path_params")? != Value::UNDEFINED {
+        Ok(3)
+    } else if value.get_attr("cookie_params")? != Value::UNDEFINED {
+        Ok(4)
+    } else {
+        Ok(0)
+    }
 }

@@ -31,7 +31,7 @@
             {{ markdown(operation.description_ast) }}
           {% endif %}
 
-          <div class="open-api-operation-tabs" x-data="{ activeIndex: 0 }">
+          <div class="open-api-operation-tabs" x-data="{ activeIndex: {{ initial_openapi_tab_index(operation) }} }">
             <div class="open-api-operation-tabs-header">
               {% if operation.request_body %}
                 <button class="open-api-operation-tab" @click="activeIndex = 0">Request Body</button>
