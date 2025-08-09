@@ -1,0 +1,127 @@
+{#- OpenAPI Schema Attributes Component
+    Shows field name, type, required/deprecated flags, description, and detailed attributes
+-#}
+
+{% from "components/markdown.html.jinja" import markdown %}
+
+{%- set is_anonymous = not schema.metadata or not schema.metadata.field_name -%}
+{%- set hide_top_row = is_anonymous and not schema.required and not schema.deprecated -%}
+{%- set has_attributes = schema.pattern or schema.format or schema.default or schema.minimum or schema.maximum or schema.min_length or schema.max_length or schema.multiple_of or (schema.enumeration and schema.enumeration | length > 0) or schema.example_string or schema.media_type -%}
+
+<div>
+  {%- if not hide_top_row %}
+    <div>
+      {%- if schema.metadata and schema.metadata.field_name %}
+        <code>{{ schema.metadata.field_name }}</code>
+      {%- endif %}
+      
+      {#- In this case, we've shown the type elsewhere -#}
+      {%- if not is_anonymous %}
+        <code>{{ actual_type_name(schema) }}</code>
+      {%- endif %}
+      
+      {%- if schema.required %}
+        <span>required</span>
+      {%- endif %}
+      
+      {%- if schema.deprecated %}
+        <span>deprecated</span>
+      {%- endif %}
+    </div>
+  {%- endif %}
+  
+  {%- if schema.description_ast %}
+    <div>
+      {{ markdown(schema.description_ast) }}
+    </div>
+  {%- endif %}
+</div>
+
+{%- if has_attributes %}
+  <dl>
+    {%- if schema.format %}
+      <div>
+        <dt>Format</dt>
+        <dd>{{ schema.format }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.pattern %}
+      <div>
+        <dt>Pattern</dt>
+        <dd>{{ schema.pattern }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.media_type %}
+      <div>
+        <dt>Content Type</dt>
+        <dd>{{ schema.media_type }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.default %}
+      <div>
+        <dt>Default</dt>
+        <dd>{{ schema.default }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.minimum %}
+      <div>
+        <dt>Min</dt>
+        <dd>{{ schema.minimum }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.maximum %}
+      <div>
+        <dt>Max</dt>
+        <dd>{{ schema.maximum }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.min_length %}
+      <div>
+        <dt>Min Length</dt>
+        <dd>{{ schema.min_length }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.max_length %}
+      <div>
+        <dt>Max Length</dt>
+        <dd>{{ schema.max_length }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.multiple_of %}
+      <div>
+        <dt>Multiple Of</dt>
+        <dd>{{ schema.multiple_of }}</dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.enumeration and schema.enumeration | length > 0 %}
+      <div>
+        <dt>Enum</dt>
+        <dd>
+          <ul>
+            {%- for enum_val in schema.enumeration %}
+              <li>
+                {%- if enum_val is not none %}{{ enum_val }}{%- else %}null{%- endif %}
+              </li>
+            {%- endfor %}
+          </ul>
+        </dd>
+      </div>
+    {%- endif %}
+    
+    {%- if schema.example_string %}
+      <div>
+        <dt>Example</dt>
+        <dd>{{ schema.example_string }}</dd>
+      </div>
+    {%- endif %}
+  </dl>
+{%- endif %}

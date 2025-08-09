@@ -31,7 +31,8 @@
             {{ markdown(operation.description_ast) }}
           {% endif %}
 
-          <div class="open-api-operation-tabs" x-data="{ activeIndex: {{ initial_openapi_tab_index(operation) }} }">
+          {%- set initial_tab_index = initial_openapi_tab_index(operation) -%}
+          <div class="open-api-operation-tabs" x-data="{ activeIndex: {{ initial_tab_index }} }">
             <div class="open-api-operation-tabs-header">
               {% if operation.request_body %}
                 <button class="open-api-operation-tab" @click="activeIndex = 0">Request Body</button>
@@ -52,12 +53,34 @@
 
             <div class="open-api-operation-tabs-content">
               {% if operation.request_body %}
-                <div class="open-api-operation-tab-content" x-show="activeIndex == 0">
+                <div class="open-api-operation-tab-content" x-show="activeIndex == 0"{% if initial_tab_index != 0 %} x-cloak{% endif %}>
                   <h3>Request Body</h3>
+                  
+                  <div x-data="{ selectedMediaType: '{{ operation.request_body.media_types[0].name }}' }">
+                    <!-- Media type dropdown -->
+                    <div>
+                      <select x-model="selectedMediaType">
+                        {% for media_type in operation.request_body.media_types %}
+                          <option value="{{ media_type.name }}">{{ media_type.name }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    
+                    <!-- Content for each media type -->
+                    {% for media_type in operation.request_body.media_types %}
+                      <div x-show="selectedMediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
+                        {% for schema in media_type.schemas %}
+                          {% with schema = schema, show_anonymous = false, is_root = true %}
+                            {% include "components/open_api_schema.html.jinja" %}
+                          {% endwith %}
+                        {% endfor %}
+                      </div>
+                    {% endfor %}
+                  </div>
                 </div>
               {% endif %}
               {% if operation.query_params %}
-                <div class="open-api-operation-tab-content" x-show="activeIndex == 1">
+                <div class="open-api-operation-tab-content" x-show="activeIndex == 1"{% if initial_tab_index != 1 %} x-cloak{% endif %}>
                   <h3>Query Params</h3>
 
                   {% for param in operation.query_params %}
@@ -68,18 +91,36 @@
                 </div>
               {% endif %}
               {% if operation.header_params %}
-                <div class="open-api-operation-tab-content" x-show="activeIndex == 2">
+                <div class="open-api-operation-tab-content" x-show="activeIndex == 2"{% if initial_tab_index != 2 %} x-cloak{% endif %}>
                   <h3>Header Params</h3>
+
+                  {% for param in operation.header_params %}
+                    {% with schema = param.schema, show_anonymous = false, is_root = true %}
+                      {% include "components/open_api_schema.html.jinja" %}
+                    {% endwith %}
+                  {% endfor %}
                 </div>
               {% endif %}
               {% if operation.path_params %}
-                <div class="open-api-operation-tab-content" x-show="activeIndex == 3">
+                <div class="open-api-operation-tab-content" x-show="activeIndex == 3"{% if initial_tab_index != 3 %} x-cloak{% endif %}>
                   <h3>Path Params</h3>
+
+                  {% for param in operation.path_params %}
+                    {% with schema = param.schema, show_anonymous = false, is_root = true %}
+                      {% include "components/open_api_schema.html.jinja" %}
+                    {% endwith %}
+                  {% endfor %}
                 </div>
               {% endif %}
               {% if operation.cookie_params %}
-                <div class="open-api-operation-tab-content" x-show="activeIndex == 4">
+                <div class="open-api-operation-tab-content" x-show="activeIndex == 4"{% if initial_tab_index != 4 %} x-cloak{% endif %}>
                   <h3>Cookie Params</h3>
+
+                  {% for param in operation.cookie_params %}
+                    {% with schema = param.schema, show_anonymous = false, is_root = true %}
+                      {% include "components/open_api_schema.html.jinja" %}
+                    {% endwith %}
+                  {% endfor %}
                 </div>
               {% endif %}
             </div>

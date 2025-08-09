@@ -1,3 +1,120 @@
-<div class="open-api-schema">
-  <h4>{{ schema.title }}</h4>
+{%- set is_anonymous = not schema.metadata or not schema.metadata.field_name -%}
+
+<div>
+  {%- if (show_anonymous and is_anonymous) or not is_anonymous %}
+    {% include "components/open_api_schema_attributes.html.jinja" %}
+  {%- endif %}
+
+  <div>
+    {%- if schema.schemas and schema.schemas | length > 0 %}
+      {%- if startswith(schema.type_name, "array") %}
+        {#- Array case -#}
+        {%- set array_item_schema = schema.schemas[0] -%}
+        <p>Array of {{ array_item_schema.type_name.lower() }}s</p>
+        
+        {%- if array_item_schema.type_name == "object" %}
+          {#- Array of objects - render object's children -#}
+          <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
+            <div>
+              <button @click="open = !open">
+                <span x-text="open ? 'Hide array items' : 'Show array items'">Show array items</span>
+                <span x-text="open ? '-' : '+'">+</span>
+              </button>
+            </div>
+            <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
+              <div>
+                {%- for child_schema in array_item_schema.schemas %}
+                  {% with schema = child_schema, show_anonymous = false, is_root = false %}
+                    {% include "components/open_api_schema.html.jinja" %}
+                  {% endwith %}
+                {%- endfor %}
+              </div>
+            </div>
+          </div>
+        {%- else %}
+          {#- Array of primitives - render items directly -#}
+          <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
+            <div>
+              <button @click="open = !open">
+                <span x-text="open ? 'Hide array items' : 'Show array items'">Show array items</span>
+                <span x-text="open ? '-' : '+'">+</span>
+              </button>
+            </div>
+            <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
+              <div>
+                {%- for child_schema in schema.schemas %}
+                  {% with schema = child_schema, show_anonymous = false, is_root = false %}
+                    {% include "components/open_api_schema.html.jinja" %}
+                  {% endwith %}
+                {%- endfor %}
+              </div>
+            </div>
+          </div>
+        {%- endif %}
+      {%- elif schema.type_name == "Any Of" or schema.type_name == "One Of" %}
+        {#- Any/One Of case -#}
+        <p>Must match {{ schema.type_name.lower() }}</p>
+        
+        <div x-data="{ selectedOption: 0, open: {{ 'true' if is_root else 'false' }} }">
+          <div>
+            <button @click="open = !open">
+              <span x-text="open ? 'Hide ' + '{{ schema.type_name }}' + ' options' : 'Show ' + '{{ schema.type_name }}' + ' options'">Show {{ schema.type_name }} options</span>
+              <span x-text="open ? '-' : '+'">+</span>
+            </button>
+          </div>
+          <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
+            {#- Option selector dropdown -#}
+            <div>
+              <select x-model="selectedOption">
+                {%- for option_schema in schema.schemas %}
+                  <option value="{{ loop.index0 }}">
+                    {{ option_schema.title or option_schema.metadata.component_name or option_schema.type_name }}
+                    ({{ option_schema.type_name }})
+                  </option>
+                {%- endfor %}
+              </select>
+            </div>
+            
+            {#- Content for each option -#}
+            {%- for option_schema in schema.schemas %}
+              <div x-show="selectedOption == {{ loop.index0 }}"{% if not loop.first %} x-cloak{% endif %}>
+                {%- if not startswith(option_schema.type_name, "object") %}
+                  {#- Non-object option - show with anonymous flag -#}
+                  {% with schema = option_schema, show_anonymous = true, is_root = false %}
+                    {% include "components/open_api_schema.html.jinja" %}
+                  {% endwith %}
+                {%- else %}
+                  {#- Object option - show its children -#}
+                  {%- for child_schema in option_schema.schemas %}
+                    {% with schema = child_schema, show_anonymous = false, is_root = false %}
+                      {% include "components/open_api_schema.html.jinja" %}
+                    {% endwith %}
+                  {%- endfor %}
+                {%- endif %}
+              </div>
+            {%- endfor %}
+          </div>
+        </div>
+      {%- else %}
+        {#- Regular nested schemas case -#}
+        <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
+          <div>
+            <button @click="open = !open">
+              <span x-text="open ? 'Hide nested attributes' : 'Show nested attributes'">Show nested attributes</span>
+              <span x-text="open ? '-' : '+'">+</span>
+            </button>
+          </div>
+          <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
+            <div>
+              {%- for child_schema in schema.schemas %}
+                {% with schema = child_schema, show_anonymous = false, is_root = false %}
+                  {% include "components/open_api_schema.html.jinja" %}
+                {% endwith %}
+              {%- endfor %}
+            </div>
+          </div>
+        </div>
+      {%- endif %}
+    {%- endif %}
+  </div>
 </div>
