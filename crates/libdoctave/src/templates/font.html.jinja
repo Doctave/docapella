@@ -1,12 +1,15 @@
 <style>
   :root {
-    font-family: system-ui, sans-serif;
+    --font-sans: system-ui, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo,
+
+    Consolas, "DejaVu Sans Mono", monospace;
+    font-family: var(--font-sans);
     font-weight: normal;
   }
 
   code {
-    font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo,
-      Consolas, "DejaVu Sans Mono", monospace;
+    font-family: var(--font-mono);
     font-weight: normal;
   }
 </style>

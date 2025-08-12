@@ -1,6 +1,6 @@
 {%- set is_anonymous = not schema.metadata or not schema.metadata.field_name -%}
 
-<div>
+<div class="open-api-schema">
   {%- if (show_anonymous and is_anonymous) or not is_anonymous %}
     {% include "components/open_api_schema_attributes.html.jinja" %}
   {%- endif %}
@@ -10,8 +10,7 @@
       {%- if startswith(schema.type_name, "array") %}
         {#- Array case -#}
         {%- set array_item_schema = schema.schemas[0] -%}
-        <p>Array of {{ array_item_schema.type_name.lower() }}s</p>
-        
+
         {%- if array_item_schema.type_name == "object" %}
           {#- Array of objects - render object's children -#}
           <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
@@ -97,15 +96,13 @@
         </div>
       {%- else %}
         {#- Regular nested schemas case -#}
-        <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
-          <div>
-            <button @click="open = !open">
-              <span x-text="open ? 'Hide nested attributes' : 'Show nested attributes'">Show nested attributes</span>
-              <span x-text="open ? '-' : '+'">+</span>
-            </button>
-          </div>
-          <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
-            <div>
+        <div class="open-api-nested-schema" x-data="{ open: {{ 'true' if is_root else 'false' }} }">
+          <button @click="open = !open">
+            <span x-text="open ? 'Hide nested attributes' : 'Show nested attributes'">Show nested attributes</span>
+            <span x-text="open ? '-' : '+'">+</span>
+          </button>
+          <div class="open-api-nested-schema-content" x-show="open"{% if not is_root %} x-cloak{% endif %}>
+            <div class="open-api-schema-list">
               {%- for child_schema in schema.schemas %}
                 {% with schema = child_schema, show_anonymous = false, is_root = false %}
                   {% include "components/open_api_schema.html.jinja" %}

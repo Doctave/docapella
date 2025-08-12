@@ -1,4 +1,4 @@
-{% macro markdown(node) %}
+{% macro markdown(node, small=false) %}
   {% if node.kind.name == "root" %}
     {% include "components/markdown/root.html.jinja" %}
   {% elif node.kind.name == "text" %}

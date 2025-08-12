@@ -8,16 +8,16 @@
 {%- set hide_top_row = is_anonymous and not schema.required and not schema.deprecated -%}
 {%- set has_attributes = schema.pattern or schema.format or schema.default or schema.minimum or schema.maximum or schema.min_length or schema.max_length or schema.multiple_of or (schema.enumeration and schema.enumeration | length > 0) or schema.example_string or schema.media_type -%}
 
-<div>
+<div class="open-api-schema-attributes">
   {%- if not hide_top_row %}
-    <div>
+    <div class="open-api-schema-attributes-top">
       {%- if schema.metadata and schema.metadata.field_name %}
-        <code>{{ schema.metadata.field_name }}</code>
+        <code class="schema-name">{{ schema.metadata.field_name }}</code>
       {%- endif %}
       
       {#- In this case, we've shown the type elsewhere -#}
       {%- if not is_anonymous %}
-        <code>{{ actual_type_name(schema) }}</code>
+        <code class="schema-type">{{ actual_type_name(schema) }}</code>
       {%- endif %}
       
       {%- if schema.required %}
@@ -32,7 +32,7 @@
   
   {%- if schema.description_ast %}
     <div>
-      {{ markdown(schema.description_ast) }}
+      {{ markdown(schema.description_ast, true) }}
     </div>
   {%- endif %}
 </div>
@@ -42,85 +42,87 @@
     {%- if schema.format %}
       <div>
         <dt>Format</dt>
-        <dd>{{ schema.format }}</dd>
+        <dd><span class="attr-value">{{ schema.format }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.pattern %}
       <div>
         <dt>Pattern</dt>
-        <dd>{{ schema.pattern }}</dd>
+        <dd><span class="attr-value">{{ schema.pattern }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.media_type %}
       <div>
         <dt>Content Type</dt>
-        <dd>{{ schema.media_type }}</dd>
+        <dd><span class="attr-value">{{ schema.media_type }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.default %}
       <div>
         <dt>Default</dt>
-        <dd>{{ schema.default }}</dd>
+        <dd><span class="attr-value">{{ schema.default }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.minimum %}
       <div>
         <dt>Min</dt>
-        <dd>{{ schema.minimum }}</dd>
+        <dd><span class="attr-value">{{ schema.minimum }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.maximum %}
       <div>
         <dt>Max</dt>
-        <dd>{{ schema.maximum }}</dd>
+        <dd><span class="attr-value">{{ schema.maximum }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.min_length %}
       <div>
         <dt>Min Length</dt>
-        <dd>{{ schema.min_length }}</dd>
+        <dd><span class="attr-value">{{ schema.min_length }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.max_length %}
       <div>
         <dt>Max Length</dt>
-        <dd>{{ schema.max_length }}</dd>
+        <dd><span class="attr-value">{{ schema.max_length }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.multiple_of %}
       <div>
         <dt>Multiple Of</dt>
-        <dd>{{ schema.multiple_of }}</dd>
+        <dd><span class="attr-value">{{ schema.multiple_of }}</span></dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.enumeration and schema.enumeration | length > 0 %}
       <div>
         <dt>Enum</dt>
         <dd>
-          <ul>
+          <ul class="open-api-schema-enum">
             {%- for enum_val in schema.enumeration %}
               <li>
-                {%- if enum_val is not none %}{{ enum_val }}{%- else %}null{%- endif %}
+                <span class="attr-value">
+                  {%- if enum_val is not none %}{{ enum_val }}{%- else %}null{%- endif %}
+                </span>
               </li>
             {%- endfor %}
           </ul>
         </dd>
       </div>
     {%- endif %}
-    
+
     {%- if schema.example_string %}
       <div>
         <dt>Example</dt>
-        <dd>{{ schema.example_string }}</dd>
+        <dd><span class="attr-value">{{ schema.example_string }}</span></dd>
       </div>
     {%- endif %}
   </dl>

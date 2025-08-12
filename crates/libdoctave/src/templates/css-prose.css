@@ -1,9 +1,23 @@
+/* Base prose with scaling support */
 .prose {
+  /* Core scaling variables */
+  --prose-scale: 1;
+  --prose-font-size: calc(var(--text-base) * var(--prose-scale));
+
+  /* Base styles */
+  font-size: var(--prose-font-size);
   line-height: 1.75;
   min-width: 0;
   width: 100%;
 }
 
+/* Small prose modifier - just change the scale */
+.prose-sm {
+  --prose-scale: 0.875; /* 14px / 16px */
+  line-height: calc(24 / 14); /* Slightly tighter for small text */
+}
+
+/* Base prose styles */
 .prose a {
   color: var(--accent-11);
   font-weight: 500;
@@ -51,51 +65,50 @@
   background-color: var(--gray-2);
 }
 
-/* Special margin rules for nicer spacing ala Tailwind Typography */
-
+/* Spacing rules with calc() for scaling */
 .prose p {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
 }
 
 .prose [class~="lead"] {
-  margin-top: 1.2em;
-  margin-bottom: 1.2em;
+  margin-top: calc(1.2em * var(--prose-scale));
+  margin-bottom: calc(1.2em * var(--prose-scale));
 }
 
 .prose blockquote {
-  margin-top: 1.6em;
-  margin-bottom: 1.6em;
+  margin-top: calc(1.6em * var(--prose-scale));
+  margin-bottom: calc(1.6em * var(--prose-scale));
 }
 
 .prose h1 {
   margin-top: 0;
-  margin-bottom: 0.8888889em;
+  margin-bottom: calc(0.8888889em * var(--prose-scale));
 }
 
 .prose h2 {
-  margin-top: 2em;
-  margin-bottom: 1em;
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(1em * var(--prose-scale));
 }
 
 .prose h3 {
-  margin-top: 1.6em;
-  margin-bottom: 0.6em;
+  margin-top: calc(1.6em * var(--prose-scale));
+  margin-bottom: calc(0.6em * var(--prose-scale));
 }
 
 .prose h4 {
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  margin-top: calc(1.5em * var(--prose-scale));
+  margin-bottom: calc(0.5em * var(--prose-scale));
 }
 
 .prose img {
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
 }
 
 .prose picture {
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
 }
 
 .prose picture > img {
@@ -104,75 +117,76 @@
 }
 
 .prose video {
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
 }
 
 .prose pre {
-  margin-top: 1.7142857em;
-  margin-bottom: 1.7142857em;
+  margin-top: calc(1.7142857em * var(--prose-scale));
+  margin-bottom: calc(1.7142857em * var(--prose-scale));
 }
 
 .prose ol {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
 }
 
 .prose ul {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  padding-left: var(--space-4);
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
 }
 
 .prose li {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin-top: calc(0.5em * var(--prose-scale));
+  margin-bottom: calc(0.5em * var(--prose-scale));
 }
 
 .prose > ul > li p {
-  margin-top: 0.75em;
-  margin-bottom: 0.75em;
+  margin-top: calc(0.75em * var(--prose-scale));
+  margin-bottom: calc(0.75em * var(--prose-scale));
 }
 
 .prose > ul > li > p:first-child {
-  margin-top: 1.25em;
+  margin-top: calc(1.25em * var(--prose-scale));
 }
 
 .prose > ul > li > p:last-child {
-  margin-bottom: 1.25em;
+  margin-bottom: calc(1.25em * var(--prose-scale));
 }
 
 .prose > ol > li > p:first-child {
-  margin-top: 1.25em;
+  margin-top: calc(1.25em * var(--prose-scale));
 }
 
 .prose > ol > li > p:last-child {
-  margin-bottom: 1.25em;
+  margin-bottom: calc(1.25em * var(--prose-scale));
 }
 
 .prose ul ul,
 .prose ul ol,
 .prose ol ul,
 .prose ol ol {
-  margin-top: 0.75em;
-  margin-bottom: 0.75em;
+  margin-top: calc(0.75em * var(--prose-scale));
+  margin-bottom: calc(0.75em * var(--prose-scale));
 }
 
 .prose dl {
-  margin-top: 1.25em;
-  margin-bottom: 1.25em;
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
 }
 
 .prose dt {
-  margin-top: 1.25em;
+  margin-top: calc(1.25em * var(--prose-scale));
 }
 
 .prose dd {
-  margin-top: 0.5em;
+  margin-top: calc(0.5em * var(--prose-scale));
 }
 
 .prose hr {
-  margin-top: 3em;
-  margin-bottom: 3em;
+  margin-top: calc(3em * var(--prose-scale));
+  margin-bottom: calc(3em * var(--prose-scale));
 }
 
 .prose hr + * {
@@ -192,8 +206,8 @@
 }
 
 .prose figure {
-  margin-top: 2em;
-  margin-bottom: 2em;
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
 }
 
 .prose figure > * {
@@ -202,7 +216,7 @@
 }
 
 .prose figcaption {
-  margin-top: 0.8571429em;
+  margin-top: calc(0.8571429em * var(--prose-scale));
 }
 
 .prose > :first-child {
