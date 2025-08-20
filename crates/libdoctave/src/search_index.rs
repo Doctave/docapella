@@ -10,24 +10,27 @@ pub struct SearchIndex {
 
 impl SearchIndex {
     pub fn new(project: &Project) -> Result<Self> {
-        let eindex = elasticlunr::Index::new(&[
-            "title",
-            "lvl0",
-            "lvl1",
-            "lvl2",
-            "lvl3",
-            "lvl4",
-            "lvl5",
-            "text",
-            "code",
-            "alt",
-            "openapi_tag",
-            "openapi_summary",
-            "openapi_description",
-            "openapi_path",
-            "openapi_method",
-            "page_kind",
-        ]);
+        let eindex = elasticlunr::IndexBuilder::new()
+            .add_fields(&[
+                "title",
+                "lvl0",
+                "lvl1",
+                "lvl2",
+                "lvl3",
+                "lvl4",
+                "lvl5",
+                "text",
+                "code",
+                "alt",
+                "openapi_tag",
+                "openapi_summary",
+                "openapi_description",
+                "openapi_path",
+                "openapi_method",
+                "page_kind",
+            ])
+            .save_docs(true)
+            .build();
 
         let mut index = Self {
             index: eindex,

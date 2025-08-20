@@ -1,0 +1,52 @@
+<div
+  class="search-modal-background"
+  x-cloak
+  x-data="{ open: false, index: null, query: '', results: [] }"
+  x-show="open"
+  @open-search-modal.window="open = true"
+  x-init="index = elasticlunr.Index.load(await (await fetch('/_assets/search.json')).json())"
+  @keydown.escape.window="open = false"
+  @keydown.meta.k.prevent.window="open = !open"
+  @keydown.ctrl.k.prevent.window="open = !open"
+  >
+  <div class="search-modal" x-show="open" @click.outside="open = false" >
+    <input
+      type="text"
+      placeholder="Search..."
+      x-model="query"
+      x-on:change.debounce.500ms="results = index.search($event.target.value, {
+        fields: {
+          title: { boost: 10 },
+          openapi_tag: { boost: 9 },
+          lvl0: { boost: 8 },
+          openapi_path: { boost: 7 },
+          lvl1: { boost: 7 },
+          lvl2: { boost: 6 },
+          lvl3: { boost: 5 },
+          lvl4: { boost: 4 },
+          lvl5: { boost: 3 },
+          text: { boost: 2 },
+          openapi_summary: { boost: 2 },
+          openapi_description: { boost: 2 },
+          code: { boost: 2 },
+          alt: { boost: 1 },
+        },
+      })"
+    >
+
+    <div class="search-results">
+      <div x-show="results.length > 0">
+        <div x-show="results.length === 1">
+          Found 1 result
+        </div>
+        <div x-show="results.length > 1">
+          Found <span x-text="results.length"></span> results
+        </div>
+      </div>
+
+      <template x-for="result in results" :key="result.ref">
+        <p x-text="JSON.stringify(index.documentStore.getDoc(result.ref))"></p>
+      </template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,55 @@
+<script>
+    /*
+  INDEX = null;
+
+    fetch("/_assets/search.json")
+    .then(function (response) {
+        if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+        }
+        return response.json();
+    })
+    .then(function (json) {
+        INDEX = elasticlunr.Index.load(json)
+        console.log("Search index loaded", json)
+    });
+
+    function showSearchModal() {
+        const searchModal = document.querySelector(".search-modal-background");
+        searchModal.style.display = "block";
+
+        // add esc listener
+        document.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") {
+            hideSearchModal();
+            event.preventDefault();
+
+            // Clear esc listener
+            document.removeEventListener("keydown", arguments.callee);
+          }
+        });
+    }
+
+    function hideSearchModal() {
+      const searchModal = document.querySelector(".search-modal-background");
+      searchModal.style.display = "none";
+    }
+
+    // Wait for page to load before adding the click listeners
+    window.addEventListener("load", function () {
+      const searchButton = document.querySelector("#header-search-button");
+      searchButton.addEventListener("click", showSearchModal);
+
+      // Keyboard shortcut to open search modal
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+          showSearchModal();
+          event.preventDefault();
+        }
+      });
+
+      const searchModalBackground = document.querySelector(".search-modal-background");
+      searchModalBackground.addEventListener("click", hideSearchModal);
+    });
+    */
+</script>

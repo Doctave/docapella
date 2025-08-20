@@ -96,6 +96,17 @@ pub(crate) fn build<W: std::io::Write>(
                 }
             }
 
+            // Generate the search index
+            if let Ok(index) = project.search_index() {
+                std::fs::create_dir_all(out_dir.join("_assets"))?;
+                std::fs::write(out_dir.join("_assets/search.json"), index.to_json())?;
+            } else {
+                writeln!(
+                    stdout,
+                    "Failed to generate search index. This is not a fatal error, but you may not be able to search your project."
+                )?;
+            }
+
             let build_duration = start.elapsed();
 
             writeln!(
