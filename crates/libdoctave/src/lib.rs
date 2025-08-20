@@ -30,6 +30,7 @@ pub mod project;
 mod render_context;
 mod render_options;
 pub mod renderer;
+mod search_index;
 pub mod settings;
 mod slug;
 pub mod structure;
@@ -53,6 +54,8 @@ pub use error_options::ErrorOptions;
 pub use render_options::RenderOptions;
 
 pub use shared_ast::{Point, Position};
+
+pub use search_index::SearchIndex;
 
 use markdown::*;
 

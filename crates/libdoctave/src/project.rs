@@ -19,6 +19,7 @@ use crate::page_kind::PageKind;
 use crate::render_context::{FileContext, RenderContext};
 use crate::settings::Settings;
 use crate::structure::{self, Structure};
+use crate::SearchIndex;
 
 use crate::vale::{vale_results_to_errors, vale_runtime_error_to_error};
 use crate::{
@@ -973,6 +974,10 @@ impl Project {
                 out
             })
             .collect()
+    }
+
+    pub fn search_index(&self) -> crate::Result<SearchIndex> {
+        SearchIndex::new(&self)
     }
 
     pub fn boilerplate_file_list() -> Vec<(PathBuf, Vec<u8>)> {
@@ -5946,5 +5951,30 @@ mod test {
             errors[0].description,
             "Use \".vale.ini\", or remove the \".\" from the start of the config file name \".vale.inia\"."
         );
+    }
+
+    #[test]
+    fn creates_an_elasticlunr_search_index() {
+        let files = vec![
+            InputFile {
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
+            },
+            InputFile {
+                path: PathBuf::from(SETTINGS_FILE_NAME),
+                content: InputContent::Text(String::from("---\ntitle: An Project\n")),
+            },
+            InputFile {
+                path: PathBuf::from("README.md"),
+                content: InputContent::Text("# A heading\n\nA paragraph".to_string()),
+            },
+        ];
+
+        let project = Project::from_file_list(files).unwrap();
+
+        let index = project.search_index().unwrap();
+
+        assert!(index.to_json().contains("A heading"));
+        assert!(index.to_json().contains("A paragraph"));
     }
 }
