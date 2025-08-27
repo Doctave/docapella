@@ -11,8 +11,6 @@ pub use serde_json;
 use ts_rs::TS;
 
 pub mod breadcrumb;
-pub mod color_generator;
-pub mod colors;
 pub mod content_api;
 mod description_extractor;
 mod error_options;

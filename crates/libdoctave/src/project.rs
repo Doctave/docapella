@@ -4447,9 +4447,12 @@ mod test {
         let errors = project.verify(Some(&opts), None).unwrap_err();
 
         let error = &errors[0];
-        assert!(&error
-            .description
-            .starts_with("Invalid color `lolnotacolor` found"));
+
+        assert!(
+            &error.description.starts_with("Expected a HEX color code"),
+            "Unexpected error: {:?}",
+            error
+        )
     }
 
     #[test]

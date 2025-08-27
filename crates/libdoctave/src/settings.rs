@@ -8,9 +8,7 @@ use crate::render_context::RenderContext;
 use crate::structure_v2::{StructureV2, TabDescription};
 use crate::utils::cartesian_product;
 /// Settings for a given site backed by a `docapella.yaml` file.
-use crate::{
-    color_generator, Error, Project, RenderOptions, Result, Structure, SETTINGS_FILE_NAME,
-};
+use crate::{Error, Project, RenderOptions, Result, Structure, SETTINGS_FILE_NAME};
 /// Settings for a given site backed by a `docapella.yaml` file.
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
@@ -447,18 +445,15 @@ impl Settings {
     }
 
     fn verify_v2_theme(&self, errors: &mut Vec<Error>) {
-        if let Some(Err(msg)) = self
+        if let Some(false) = self
             .theme()
             .map(|t| t.colors.original_accent.clone())
-            .map(color_generator::color_utils::hex_to_hsla)
+            .map(|s| is_hex_color(&s))
         {
             errors.push(Error {
                 code: Error::INVALID_DOCTAVE_YAML,
                 message: String::from("Invalid accent color in theme"),
-                description: format!(
-                    "{}\n\nExpected a HEX color code, or a valid CSS color name.",
-                    msg
-                ),
+                description: format!("Expected a HEX color code, or a valid CSS color name."),
                 file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
                 position: None,
             });
@@ -885,7 +880,7 @@ pub struct ColorsV2 {
 
 impl From<ColorsV2Description> for ColorsV2 {
     fn from(value: ColorsV2Description) -> Self {
-        let accent = if color_generator::color_utils::hex_to_hsla(value.accent.clone()).is_err() {
+        let accent = if !is_hex_color(&value.accent) {
             ColorsV2::default().accent.clone()
         } else {
             value.accent.clone()
@@ -1738,6 +1733,13 @@ pub struct OpenApi {
     pub uri_prefix: String,
     #[serde(default)]
     pub experimental: bool,
+}
+
+/// Check if a string is a valid hex color.
+///
+/// Expects the first character to be `#`, followed by 6 or 8 hex digits.
+fn is_hex_color(s: &str) -> bool {
+    s.starts_with('#') && s.chars().skip(1).all(|c| c.is_ascii_hexdigit())
 }
 
 #[cfg(test)]
