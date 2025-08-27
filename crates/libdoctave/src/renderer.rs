@@ -1,4 +1,5 @@
 use crate::{ContentApiResponse, Result};
+use color_generator::{Appearance, ColorGenerator};
 use minijinja::{self, context, Environment, Error, Value};
 use serde_json;
 
@@ -14,6 +15,7 @@ impl Renderer {
         env.add_function("initial_openapi_tab_index", initial_openapi_tab_index);
         env.add_function("actual_type_name", actual_type_name);
         env.add_function("startswith", startswith);
+        env.add_function("color_scale_css", color_scale_css);
 
         Ok(Renderer { env })
     }
@@ -80,22 +82,32 @@ fn actual_type_name(schema: &Value) -> std::result::Result<String, Error> {
         .as_str()
         .unwrap_or("")
         .to_string();
-    
+
     let mut result_type_name = type_name.clone();
     let is_array = type_name.starts_with("array");
     let is_object = type_name.starts_with("object");
-    
+
     if is_array {
         result_type_name = "array".to_string();
-        
+
         // Check for metadata title or component_name
         if let Ok(metadata) = schema.get_attr("metadata") {
             if metadata != Value::UNDEFINED {
-                let title = metadata.get_attr("title").ok()
-                    .and_then(|v| if v == Value::UNDEFINED { None } else { v.as_str().map(|s| s.to_string()) });
-                let component_name = metadata.get_attr("component_name").ok()
-                    .and_then(|v| if v == Value::UNDEFINED { None } else { v.as_str().map(|s| s.to_string()) });
-                
+                let title = metadata.get_attr("title").ok().and_then(|v| {
+                    if v == Value::UNDEFINED {
+                        None
+                    } else {
+                        v.as_str().map(|s| s.to_string())
+                    }
+                });
+                let component_name = metadata.get_attr("component_name").ok().and_then(|v| {
+                    if v == Value::UNDEFINED {
+                        None
+                    } else {
+                        v.as_str().map(|s| s.to_string())
+                    }
+                });
+
                 if let Some(name) = title.or(component_name) {
                     result_type_name = format!("array [{}]", name);
                 }
@@ -103,23 +115,58 @@ fn actual_type_name(schema: &Value) -> std::result::Result<String, Error> {
         }
     } else if is_object {
         result_type_name = "object".to_string();
-        
-        // Check for metadata title or component_name  
+
+        // Check for metadata title or component_name
         if let Ok(metadata) = schema.get_attr("metadata") {
             if metadata != Value::UNDEFINED {
-                let title = metadata.get_attr("title").ok()
-                    .and_then(|v| if v == Value::UNDEFINED { None } else { v.as_str().map(|s| s.to_string()) });
-                let component_name = metadata.get_attr("component_name").ok()
-                    .and_then(|v| if v == Value::UNDEFINED { None } else { v.as_str().map(|s| s.to_string()) });
-                
+                let title = metadata.get_attr("title").ok().and_then(|v| {
+                    if v == Value::UNDEFINED {
+                        None
+                    } else {
+                        v.as_str().map(|s| s.to_string())
+                    }
+                });
+                let component_name = metadata.get_attr("component_name").ok().and_then(|v| {
+                    if v == Value::UNDEFINED {
+                        None
+                    } else {
+                        v.as_str().map(|s| s.to_string())
+                    }
+                });
+
                 if let Some(name) = title.or(component_name) {
                     result_type_name = format!("object ({})", name);
                 }
             }
         }
     }
-    
+
     Ok(result_type_name)
+}
+
+fn color_scale_css(accent: &Value, gray_scale: &Value) -> std::result::Result<String, Error> {
+    let accent = accent.as_str().ok_or_else(|| {
+        Error::new(
+            minijinja::ErrorKind::InvalidOperation,
+            "color_scale_css first argument must be a string",
+        )
+    })?;
+    let gray_scale = gray_scale.as_str().ok_or_else(|| {
+        Error::new(
+            minijinja::ErrorKind::InvalidOperation,
+            "color_scale_css second argument must be a string",
+        )
+    })?;
+
+    let generator = ColorGenerator::new();
+
+    let light_palette = generator.generate_scale(Appearance::Light, accent, gray_scale, "#ffffff");
+    let dark_palette = generator.generate_scale(Appearance::Dark, accent, gray_scale, "#000000");
+
+    let light_css = light_palette.generate_css("accent", ":root, .light, .light-theme");
+    let dark_css = dark_palette.generate_css("accent", ".dark, .dark-theme");
+
+    Ok(format!("{}\n\n{}", light_css, dark_css))
 }
 
 /// Returns whether a string starts with a given prefix
@@ -127,16 +174,16 @@ fn startswith(string: &Value, prefix: &Value) -> std::result::Result<bool, Error
     let Some(string_str) = string.as_str() else {
         return Err(Error::new(
             minijinja::ErrorKind::InvalidOperation,
-            "startswith first argument must be a string"
+            "startswith first argument must be a string",
         ));
     };
-    
+
     let Some(prefix_str) = prefix.as_str() else {
         return Err(Error::new(
             minijinja::ErrorKind::InvalidOperation,
-            "startswith second argument must be a string"
+            "startswith second argument must be a string",
         ));
     };
-    
+
     Ok(string_str.starts_with(prefix_str))
 }

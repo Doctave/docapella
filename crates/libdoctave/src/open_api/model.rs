@@ -11,7 +11,6 @@ use std::collections::{HashMap, HashSet};
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
-
 #[derive(Debug, Default, Clone)]
 pub(crate) struct Components {
     pub schemas: HashMap<String, Schema>,
@@ -622,7 +621,6 @@ impl Parameter {
             schema,
         })
     }
-
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -851,7 +849,6 @@ impl Schema {
             _ => "Child attributes",
         }
     }
-
 
     pub fn nested_schemas(&self) -> &[Schema] {
         match &self.schema_kind {
@@ -1139,7 +1136,6 @@ impl RequestBody {
             content,
         })
     }
-
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -1213,7 +1209,6 @@ impl MediaType {
             examples,
         })
     }
-
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -1387,7 +1382,6 @@ impl Example {
     pub fn identifier(&self, parent_id: &str) -> String {
         format!("example-{}-{}", self.name, parent_id)
     }
-
 }
 
 fn code_examples_from_parsed(spec: &openapi_parser::Operation) -> Vec<Example> {

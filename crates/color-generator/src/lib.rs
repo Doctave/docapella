@@ -4,19 +4,19 @@
 // serde = { version = "1.0", features = ["derive"] }
 // serde_json = "1.0"
 
-use palette::{FromColor, IntoColor, Lab, LinSrgb, Oklch, OklabHue, Srgb};
+use palette::{FromColor, IntoColor, Lab, LinSrgb, OklabHue, Oklch, Srgb};
 use std::collections::HashMap;
 
-mod colors;
+pub mod colors;
 
 mod radix_scales {
     use super::*;
-    use std::collections::HashMap;
     use once_cell::sync::Lazy;
+    use std::collections::HashMap;
 
     static LIGHT_SCALES: Lazy<HashMap<String, ArrayOf12<Oklch>>> = Lazy::new(|| {
         let mut scales = HashMap::new();
-        
+
         scales.insert("amber".to_string(), colors::amber::light());
         scales.insert("blue".to_string(), colors::blue::light());
         scales.insert("bronze".to_string(), colors::bronze::light());
@@ -48,13 +48,13 @@ mod radix_scales {
         scales.insert("tomato".to_string(), colors::tomato::light());
         scales.insert("violet".to_string(), colors::violet::light());
         scales.insert("yellow".to_string(), colors::yellow::light());
-        
+
         scales
     });
 
     static DARK_SCALES: Lazy<HashMap<String, ArrayOf12<Oklch>>> = Lazy::new(|| {
         let mut scales = HashMap::new();
-        
+
         scales.insert("amber".to_string(), colors::amber::dark());
         scales.insert("blue".to_string(), colors::blue::dark());
         scales.insert("bronze".to_string(), colors::bronze::dark());
@@ -86,33 +86,33 @@ mod radix_scales {
         scales.insert("tomato".to_string(), colors::tomato::dark());
         scales.insert("violet".to_string(), colors::violet::dark());
         scales.insert("yellow".to_string(), colors::yellow::dark());
-        
+
         scales
     });
 
     static LIGHT_GRAY_SCALES: Lazy<HashMap<String, ArrayOf12<Oklch>>> = Lazy::new(|| {
         let mut scales = HashMap::new();
-        
+
         scales.insert("gray".to_string(), colors::gray::light());
         scales.insert("mauve".to_string(), colors::mauve::light());
         scales.insert("slate".to_string(), colors::slate::light());
         scales.insert("sage".to_string(), colors::sage::light());
         scales.insert("olive".to_string(), colors::olive::light());
         scales.insert("sand".to_string(), colors::sand::light());
-        
+
         scales
     });
 
     static DARK_GRAY_SCALES: Lazy<HashMap<String, ArrayOf12<Oklch>>> = Lazy::new(|| {
         let mut scales = HashMap::new();
-        
+
         scales.insert("gray".to_string(), colors::gray::dark());
         scales.insert("mauve".to_string(), colors::mauve::dark());
         scales.insert("slate".to_string(), colors::slate::dark());
         scales.insert("sage".to_string(), colors::sage::dark());
         scales.insert("olive".to_string(), colors::olive::dark());
         scales.insert("sand".to_string(), colors::sand::dark());
-        
+
         scales
     });
 
@@ -137,9 +137,8 @@ type ArrayOf12<T> = [T; 12];
 
 const GRAY_SCALE_NAMES: &[&str] = &["gray", "mauve", "slate", "sage", "olive", "sand"];
 
-
 #[derive(Debug, Clone)]
-pub struct RadixColors {
+pub struct Scale {
     pub accent_scale: ArrayOf12<String>,
     pub accent_scale_alpha: ArrayOf12<String>,
     pub accent_scale_wide_gamut: ArrayOf12<String>,
@@ -172,6 +171,130 @@ pub struct ColorGenerator {
     dark_gray_colors: &'static HashMap<String, ArrayOf12<Oklch>>,
 }
 
+impl Scale {
+    pub fn generate_css(&self, color_name: &str, theme_selector: &str) -> String {
+        let mut css = String::new();
+
+        // Regular hex values
+        css.push_str(&format!("{} {{\n", theme_selector));
+
+        // Accent scale (1-12)
+        for (i, color) in self.accent_scale.iter().enumerate() {
+            css.push_str(&format!("  --{}-{}: {};\n", color_name, i + 1, color));
+        }
+        css.push_str("\n");
+
+        // Accent alpha scale (a1-a12)
+        for (i, color) in self.accent_scale_alpha.iter().enumerate() {
+            css.push_str(&format!("  --{}-a{}: {};\n", color_name, i + 1, color));
+        }
+        css.push_str("\n");
+
+        // Gray scale (1-12)
+        for (i, color) in self.gray_scale.iter().enumerate() {
+            css.push_str(&format!("  --gray-{}: {};\n", i + 1, color));
+        }
+        css.push_str("\n");
+
+        // Gray alpha scale (a1-a12)
+        for (i, color) in self.gray_scale_alpha.iter().enumerate() {
+            css.push_str(&format!("  --gray-a{}: {};\n", i + 1, color));
+        }
+        css.push_str("\n");
+
+        // Accent special colors
+        css.push_str(&format!(
+            "  --{}-contrast: {};\n",
+            color_name, self.accent_contrast
+        ));
+        css.push_str(&format!(
+            "  --{}-surface: {};\n",
+            color_name, self.accent_surface
+        ));
+        css.push_str(&format!(
+            "  --{}-indicator: {};\n",
+            color_name, self.accent_scale[8]
+        )); // step 9
+        css.push_str(&format!(
+            "  --{}-track: {};\n",
+            color_name, self.accent_scale[8]
+        )); // step 9
+
+        // Gray special colors
+        css.push_str(&format!("  --gray-surface: {};\n", self.gray_surface));
+
+        // Background
+        css.push_str(&format!("  --background: {};\n", self.background));
+
+        css.push_str("}\n\n");
+
+        // P3 wide-gamut support
+        css.push_str("@supports (color: color(display-p3 1 1 1)) {\n");
+        css.push_str("  @media (color-gamut: p3) {\n");
+        css.push_str(&format!("    {} {{\n", theme_selector));
+
+        // P3 accent scale (1-12)
+        for (i, color) in self.accent_scale_wide_gamut.iter().enumerate() {
+            css.push_str(&format!("      --{}-{}: {};\n", color_name, i + 1, color));
+        }
+        css.push_str("\n");
+
+        // P3 accent alpha scale (a1-a12)
+        for (i, color) in self.accent_scale_alpha_wide_gamut.iter().enumerate() {
+            css.push_str(&format!("      --{}-a{}: {};\n", color_name, i + 1, color));
+        }
+        css.push_str("\n");
+
+        // P3 gray scale (1-12)
+        for (i, color) in self.gray_scale_wide_gamut.iter().enumerate() {
+            css.push_str(&format!("      --gray-{}: {};\n", i + 1, color));
+        }
+        css.push_str("\n");
+
+        // P3 gray alpha scale (a1-a12)
+        for (i, color) in self.gray_scale_alpha_wide_gamut.iter().enumerate() {
+            css.push_str(&format!("      --gray-a{}: {};\n", i + 1, color));
+        }
+        css.push_str("\n");
+
+        // P3 accent special colors
+        css.push_str(&format!(
+            "      --{}-contrast: {};\n",
+            color_name, self.accent_contrast
+        ));
+        css.push_str(&format!(
+            "      --{}-surface: {};\n",
+            color_name, self.accent_surface_wide_gamut
+        ));
+        css.push_str(&format!(
+            "      --{}-indicator: {};\n",
+            color_name, self.accent_scale_wide_gamut[8]
+        )); // step 9
+        css.push_str(&format!(
+            "      --{}-track: {};\n",
+            color_name, self.accent_scale_wide_gamut[8]
+        )); // step 9
+
+        // P3 gray special colors
+        css.push_str(&format!(
+            "      --gray-surface: {};\n",
+            self.gray_surface_wide_gamut
+        ));
+
+        css.push_str("    }\n");
+        css.push_str("  }\n");
+        css.push_str("}\n");
+
+        css
+    }
+}
+
+impl Default for ColorGenerator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ColorGenerator {
     pub fn new() -> Self {
         ColorGenerator {
@@ -182,13 +305,13 @@ impl ColorGenerator {
         }
     }
 
-    pub fn generate_radix_colors(
+    pub fn generate_scale(
         &self,
         appearance: Appearance,
         accent: &str,
         gray: &str,
         background: &str,
-    ) -> RadixColors {
+    ) -> Scale {
         let all_scales = match appearance {
             Appearance::Light => &self.light_colors,
             Appearance::Dark => &self.dark_colors,
@@ -212,7 +335,7 @@ impl ColorGenerator {
         // Handle pure white or black accent colors
         let accent_hex = to_hex(accent_base_color);
         if accent_hex == "#000000" || accent_hex == "#ffffff" {
-            accent_scale_colors = gray_scale_colors.clone();
+            accent_scale_colors = gray_scale_colors;
         }
 
         // Get step 9 colors
@@ -220,8 +343,7 @@ impl ColorGenerator {
             self.get_step9_colors(&accent_scale_colors, accent_base_color);
 
         accent_scale_colors[8] = accent9_color;
-        accent_scale_colors[9] =
-            self.get_button_hover_color(accent9_color, &[accent_scale_colors.clone()]);
+        accent_scale_colors[9] = self.get_button_hover_color(accent9_color, &[accent_scale_colors]);
 
         // Limit saturation of text colors
         accent_scale_colors[10].chroma = accent_scale_colors[10].chroma.min(
@@ -287,7 +409,7 @@ impl ColorGenerator {
             }
         };
 
-        RadixColors {
+        Scale {
             accent_scale: accent_scale_hex,
             accent_scale_alpha: accent_scale_alpha_hex,
             accent_scale_wide_gamut,
@@ -432,6 +554,7 @@ impl ColorGenerator {
                     let max_ratio = 1.5;
                     let meta_ratio = (ratio_l - 1.0) * (max_ratio / (max_ratio - 1.0));
 
+                    #[allow(clippy::needless_range_loop)]
                     for i in 0..4 {
                         ease[i] = if ratio_l > max_ratio {
                             0.0
@@ -477,7 +600,11 @@ impl ColorGenerator {
             l + 0.03 / (l + 0.1)
         };
 
-        let new_c = if l > 0.4 && !h.into_inner().is_nan() { c * 0.93 } else { c };
+        let new_c = if l > 0.4 && !h.into_inner().is_nan() {
+            c * 0.93
+        } else {
+            c
+        };
 
         let mut button_hover = Oklch::new(new_l, new_c, h);
 
@@ -523,6 +650,26 @@ fn parse_hex(hex: &str) -> Srgb {
     Srgb::new(r, g, b)
 }
 
+fn parse_oklch_string(oklch_str: &str) -> Oklch {
+    // Parse OKLCH string like "oklch(62% 0.0915 230.7)"
+    let inner = oklch_str.trim_start_matches("oklch(").trim_end_matches(')');
+    let parts: Vec<&str> = inner.split_whitespace().collect();
+
+    if parts.len() != 3 {
+        return Oklch::new(0.5, 0.0, 0.0);
+    }
+
+    let l = parts[0]
+        .trim_end_matches('%')
+        .parse::<f32>()
+        .unwrap_or(50.0)
+        / 100.0;
+    let c = parts[1].parse::<f32>().unwrap_or(0.0);
+    let h = parts[2].parse::<f32>().unwrap_or(0.0);
+
+    Oklch::new(l, c, OklabHue::from_degrees(h))
+}
+
 fn format_hex(hex: &str) -> String {
     if !hex.starts_with('#') {
         return hex.to_string();
@@ -550,12 +697,12 @@ fn format_hex(hex: &str) -> String {
 
 fn to_hex(color: Oklch) -> String {
     let srgb: Srgb = color.into_color();
-    let hex = format!(
-        "#{:02x}{:02x}{:02x}",
-        (srgb.red * 255.0).round() as u8,
-        (srgb.green * 255.0).round() as u8,
-        (srgb.blue * 255.0).round() as u8
-    );
+    // Match the original's rounding precision exactly
+    let r = (srgb.red * 255.0).round().clamp(0.0, 255.0) as u8;
+    let g = (srgb.green * 255.0).round().clamp(0.0, 255.0) as u8;
+    let b = (srgb.blue * 255.0).round().clamp(0.0, 255.0) as u8;
+
+    let hex = format!("#{:02x}{:02x}{:02x}", r, g, b);
     format_hex(&hex)
 }
 
@@ -566,7 +713,14 @@ fn to_oklch_string(color: Oklch) -> String {
     let c = (color.chroma * 10000.0).round() / 10000.0; // 4 decimal precision
     let h = (color.hue.into_inner() * 10.0).round() / 10.0; // 1 decimal precision
 
-    format!("oklch({}% {} {})", l_percent, c, h)
+    // Match exact format from original (no unnecessary decimals)
+    if c == 0.0 {
+        format!("oklch({}% 0 {})", l_percent, h)
+    } else if c.fract() == 0.0 {
+        format!("oklch({}% {} {})", l_percent, c as i32, h)
+    } else {
+        format!("oklch({}% {} {})", l_percent, c, h)
+    }
 }
 
 fn delta_e_ok(color1: Oklch, color2: Oklch) -> f32 {
@@ -583,7 +737,11 @@ fn mix_colors(color1: Oklch, color2: Oklch, ratio: f32) -> Oklch {
         color1.l * (1.0 - ratio) + color2.l * ratio,
         color1.chroma * (1.0 - ratio) + color2.chroma * ratio,
         // Hue mixing needs special handling for circular values
-        OklabHue::from_degrees(mix_hue(color1.hue.into_inner(), color2.hue.into_inner(), ratio)),
+        OklabHue::from_degrees(mix_hue(
+            color1.hue.into_inner(),
+            color2.hue.into_inner(),
+            ratio,
+        )),
     )
 }
 
@@ -672,14 +830,13 @@ fn get_alpha_color_srgb(target: &str, background: &str, target_alpha: Option<f32
 }
 
 fn get_alpha_color_p3(target: &str, background: &str, target_alpha: Option<f32>) -> String {
-    // Full P3 color space implementation
-    let target_color = parse_color(target);
-    let bg_color = parse_color(background);
-
-    // Convert to P3 color space (palette crate may need extension for P3)
-    // For now using sRGB as proxy but noting P3 has wider gamut
-    let target_srgb: Srgb = target_color.into_color();
-    let bg_srgb: Srgb = bg_color.into_color();
+    // Parse colors properly - handle both hex and OKLCH input
+    let target_srgb = if target.starts_with("oklch(") {
+        parse_oklch_string(target).into_color()
+    } else {
+        parse_hex(target)
+    };
+    let bg_srgb = parse_hex(background);
 
     let (r, g, b, a) = get_alpha_color(
         [target_srgb.red, target_srgb.green, target_srgb.blue],
@@ -689,14 +846,8 @@ fn get_alpha_color_p3(target: &str, background: &str, target_alpha: Option<f32>)
         target_alpha,
     );
 
-    // Format as P3 color string with proper precision
-    format!(
-        "color(display-p3 {:.4} {:.4} {:.4} / {:.1}%)",
-        r,
-        g,
-        b,
-        (a * 100.0).round() / 10.0 * 10.0
-    )
+    // Format as P3 color string with proper precision and percentage format
+    format!("color(display-p3 {:.4} {:.4} {:.4} / {:.3})", r, g, b, a)
 }
 
 // Browser-specific alpha blending that matches how browsers composite colors
@@ -797,7 +948,6 @@ fn transpose_progression_start(to: f32, arr: &[f32], curve: [f32; 4]) -> Vec<f32
         .collect()
 }
 
-
 fn bezier_ease(t: f32, curve: [f32; 4]) -> f32 {
     // Proper cubic bezier implementation
     // This solves for the y value given t on the curve defined by (0,0), (x1,y1), (x2,y2), (1,1)
@@ -857,14 +1007,107 @@ mod tests {
     #[test]
     fn test_color_generation() {
         let generator = ColorGenerator::new();
-        
+
         // Test that we can create a generator and it has the expected scales
         let light_scales = generator.light_colors;
         assert!(light_scales.contains_key("blue"));
         assert!(light_scales.contains_key("red"));
-        
+
         // Test that a scale has 12 colors
         let blue_scale = &light_scales["blue"];
         assert_eq!(blue_scale.len(), 12);
+    }
+
+    #[test]
+    fn test_css_generation() {
+        // Create a sample Scale struct for testing
+        let colors = Scale {
+            accent_scale: [
+                "#f9fcfd".to_string(),
+                "#f3f8fb".to_string(),
+                "#e2f3fc".to_string(),
+                "#d2ecfa".to_string(),
+                "#c1e3f5".to_string(),
+                "#aed8ee".to_string(),
+                "#95c9e3".to_string(),
+                "#6bb3d6".to_string(),
+                "#4490b3".to_string(),
+                "#3683a6".to_string(),
+                "#257597".to_string(),
+                "#193644".to_string(),
+            ],
+            accent_scale_alpha: [
+                "#2aa9d406".to_string(),
+                "#157fbf0c".to_string(),
+                "#089eed1d".to_string(),
+                "#0599e82d".to_string(),
+                "#048fd93e".to_string(),
+                "#0387cc51".to_string(),
+                "#027fbe6a".to_string(),
+                "#007cb994".to_string(),
+                "#006898bb".to_string(),
+                "#00628ec9".to_string(),
+                "#005e85da".to_string(),
+                "#002030e6".to_string(),
+            ],
+            accent_scale_wide_gamut: [
+                "oklch(98.9% 0.0031 230.7)".to_string(),
+                "oklch(97.7% 0.0072 230.7)".to_string(),
+                "oklch(95.4% 0.0213 230.7)".to_string(),
+                "oklch(92.8% 0.0331 230.7)".to_string(),
+                "oklch(89.7% 0.0431 230.7)".to_string(),
+                "oklch(86% 0.0529 230.7)".to_string(),
+                "oklch(80.8% 0.0655 230.7)".to_string(),
+                "oklch(73.3% 0.0881 230.7)".to_string(),
+                "oklch(62% 0.0915 230.7)".to_string(),
+                "oklch(57.8% 0.0915 230.7)".to_string(),
+                "oklch(53% 0.0915 230.7)".to_string(),
+                "oklch(31.7% 0.0432 230.7)".to_string(),
+            ],
+            accent_scale_alpha_wide_gamut: [
+                "color(display-p3 0.0157 0.5059 0.7529 / 0.016)".to_string(),
+                "color(display-p3 0.0157 0.4078 0.702 / 0.04)".to_string(),
+                "color(display-p3 0.0078 0.5216 0.8784 / 0.099)".to_string(),
+                "color(display-p3 0.0039 0.5137 0.8471 / 0.154)".to_string(),
+                "color(display-p3 0.0039 0.4824 0.7961 / 0.213)".to_string(),
+                "color(display-p3 0.0039 0.4588 0.749 / 0.284)".to_string(),
+                "color(display-p3 0.0039 0.4275 0.6784 / 0.371)".to_string(),
+                "color(display-p3 0 0.4078 0.6588 / 0.512)".to_string(),
+                "color(display-p3 0 0.3255 0.5294 / 0.654)".to_string(),
+                "color(display-p3 0 0.302 0.4902 / 0.705)".to_string(),
+                "color(display-p3 0 0.2784 0.451 / 0.76)".to_string(),
+                "color(display-p3 0 0.0941 0.1569 / 0.875)".to_string(),
+            ],
+            accent_contrast: "#fff".to_string(),
+            gray_scale: core::array::from_fn(|_| "#000000".to_string()),
+            gray_scale_alpha: core::array::from_fn(|_| "#00000000".to_string()),
+            gray_scale_wide_gamut: core::array::from_fn(|_| "oklch(0% 0 0)".to_string()),
+            gray_scale_alpha_wide_gamut: core::array::from_fn(|_| {
+                "color(display-p3 0 0 0 / 0)".to_string()
+            }),
+            gray_surface: "#ffffffcc".to_string(),
+            gray_surface_wide_gamut: "color(display-p3 1 1 1 / 80%)".to_string(),
+            accent_surface: "#f0f6facc".to_string(),
+            accent_surface_wide_gamut: "color(display-p3 0.9451 0.9647 0.9804 / 0.8)".to_string(),
+            background: "#ffffff".to_string(),
+        };
+
+        let css = colors.generate_css("blue", ":root, .light, .light-theme");
+
+        // Test that the CSS contains expected elements
+        assert!(css.contains("--blue-1: #f9fcfd;"));
+        assert!(css.contains("--blue-a1: #2aa9d406;"));
+        assert!(css.contains("--blue-contrast: #fff;"));
+        assert!(css.contains("--blue-surface: #f0f6facc;"));
+
+        // Test grayscale variables are generated
+        assert!(css.contains("--gray-1: #000000;"));
+        assert!(css.contains("--gray-a1: #00000000;"));
+        assert!(css.contains("--gray-surface: #ffffffcc;"));
+        assert!(css.contains("--background: #ffffff;"));
+
+        assert!(css.contains("@supports (color: color(display-p3 1 1 1))"));
+        assert!(css.contains("oklch(98.9% 0.0031 230.7)"));
+        assert!(css.contains("color(display-p3 0.0157 0.5059 0.7529 / 0.016)"));
     }
 }

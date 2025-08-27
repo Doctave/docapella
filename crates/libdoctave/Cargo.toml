@@ -27,6 +27,7 @@ rustler = ["dep:rustler"]
 
 [dependencies]
 openapi_parser = { path = "../openapi_parser" }
+color-generator = { path = "../color-generator" }
 serde = { version = "1.0.145", features = ["derive"] }
 serde_yaml = "0.9"
 serde_json = { version = "1", features = ["preserve_order"] }
