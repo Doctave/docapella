@@ -1,9 +1,11 @@
 [workspace]
 resolver = "2"
 
-members = [ "crates/docapella",
+members = [
+    "crates/docapella",
     "crates/libdoctave",
     "crates/openapi_parser",
+    "crates/color-generator",
 ]
 
 [profile.bench]

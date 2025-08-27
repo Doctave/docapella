@@ -1,0 +1,33 @@
+// Auto-generated color modules
+
+pub mod amber;
+pub mod blue;
+pub mod bronze;
+pub mod brown;
+pub mod crimson;
+pub mod cyan;
+pub mod gold;
+pub mod grass;
+pub mod gray;
+pub mod green;
+pub mod indigo;
+pub mod iris;
+pub mod jade;
+pub mod lime;
+pub mod mauve;
+pub mod mint;
+pub mod olive;
+pub mod orange;
+pub mod pink;
+pub mod plum;
+pub mod purple;
+pub mod red;
+pub mod ruby;
+pub mod sage;
+pub mod sand;
+pub mod sky;
+pub mod slate;
+pub mod teal;
+pub mod tomato;
+pub mod violet;
+pub mod yellow;
