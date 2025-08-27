@@ -13,6 +13,7 @@ impl SearchIndex {
         let eindex = elasticlunr::IndexBuilder::new()
             .add_fields(&[
                 "title",
+                "page_url",
                 "lvl0",
                 "lvl1",
                 "lvl2",
@@ -27,7 +28,7 @@ impl SearchIndex {
                 "openapi_description",
                 "openapi_path",
                 "openapi_method",
-                "page_kind",
+                "kind",
             ])
             .save_docs(true)
             .build();
@@ -42,10 +43,28 @@ impl SearchIndex {
                 Ok(ast) => {
                     match ast {
                         crate::Ast::Markdown(ast) => {
-                            index_markdown(&mut index, ast, page.uri_path());
+                            index_markdown(
+                                &mut index,
+                                ast,
+                                &page
+                                    .title()
+                                    .map(|t| {
+                                        t.unwrap_or_else(|| project.settings().title().to_owned())
+                                    })
+                                    .unwrap_or_default(),
+                                page.uri_path(),
+                            );
                         }
                         crate::Ast::OpenApi(ast) => {
-                            index_openapi(&mut index, ast, page.uri_path());
+                            index_openapi(
+                                &mut index,
+                                ast,
+                                &page
+                                    .title()
+                                    .map(|t| t.unwrap_or_default())
+                                    .unwrap_or_default(),
+                                page.uri_path(),
+                            );
                         }
                     };
                 }
@@ -71,6 +90,7 @@ impl SearchIndex {
 #[derive(Debug)]
 struct DocumentBuilder {
     title: String,
+    page_url: String,
     lvl0: String,
     lvl1: String,
     lvl2: String,
@@ -85,13 +105,14 @@ struct DocumentBuilder {
     openapi_description: String,
     openapi_path: String,
     openapi_method: String,
-    page_kind: String,
+    kind: String,
 }
 
 impl DocumentBuilder {
     fn markdown() -> Self {
         Self {
             title: String::new(),
+            page_url: String::new(),
             lvl0: String::new(),
             lvl1: String::new(),
             lvl2: String::new(),
@@ -106,13 +127,14 @@ impl DocumentBuilder {
             openapi_description: String::new(),
             openapi_path: String::new(),
             openapi_method: String::new(),
-            page_kind: "markdown".to_string(),
+            kind: "markdown".to_string(),
         }
     }
 
     fn openapi() -> Self {
         Self {
             title: String::new(),
+            page_url: String::new(),
             lvl0: String::new(),
             lvl1: String::new(),
             lvl2: String::new(),
@@ -127,12 +149,14 @@ impl DocumentBuilder {
             openapi_description: String::new(),
             openapi_path: String::new(),
             openapi_method: String::new(),
-            page_kind: "openapi".to_string(),
+            kind: "openapi".to_string(),
         }
     }
 
     fn as_elasticlunr_document(&self) -> Vec<&str> {
         vec![
+            &self.title,
+            &self.page_url,
             &self.lvl0,
             &self.lvl1,
             &self.lvl2,
@@ -147,12 +171,17 @@ impl DocumentBuilder {
             &self.openapi_description,
             &self.openapi_path,
             &self.openapi_method,
-            &self.page_kind,
+            &self.kind,
         ]
     }
 }
 
-fn index_markdown(index: &mut SearchIndex, ast: crate::markdown::Node, title: &str) {
+fn index_markdown(
+    index: &mut SearchIndex,
+    ast: crate::markdown::Node,
+    title: &str,
+    page_url: &str,
+) {
     fn index_node(node: &crate::markdown::Node, doc: &mut DocumentBuilder) {
         match &node.kind {
             NodeKind::Heading { level, .. } => match level {
@@ -204,16 +233,18 @@ fn index_markdown(index: &mut SearchIndex, ast: crate::markdown::Node, title: &s
 
     let mut doc = DocumentBuilder::markdown();
     doc.title = title.to_string();
+    doc.page_url = page_url.to_string();
 
     index_node(&ast, &mut doc);
 
     index.add_doc(&doc.as_elasticlunr_document());
 }
 
-fn index_openapi(index: &mut SearchIndex, ast: PageAst, title: &str) {
+fn index_openapi(index: &mut SearchIndex, ast: PageAst, title: &str, page_url: &str) {
     for operation in &ast.operations {
         let mut doc = DocumentBuilder::openapi();
         doc.title = title.to_string();
+        doc.page_url = format!("{}#{}", page_url, operation.anchor_tag);
         doc.openapi_tag = ast.tag.name.clone();
         doc.openapi_path = operation.route_pattern.clone();
         doc.openapi_method = operation.method.clone();

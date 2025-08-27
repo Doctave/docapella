@@ -69,6 +69,14 @@
   text-transform: uppercase;
 }
 
+.open-api-operation-method.small {
+  padding-left: var(--space-1);
+  padding-right: var(--space-1);
+  height: var(--space-4);
+  font-size: calc(var(--text-xs) * 0.8);
+  border-radius: var(--radius-2);
+}
+
 .open-api-operation-method-get {
   background-color: var(--blue-9);
   color: var(--accent-contrast);

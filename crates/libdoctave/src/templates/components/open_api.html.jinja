@@ -18,7 +18,7 @@
 
     <div class="open-api-operations">
       {% for operation in page.ast.root.operations %}
-        <div class="open-api-operation">
+        <div class="open-api-operation" id="{{ operation.anchor_tag }}">
           <div class="open-api-operation-header">
             <div>
               <span class="open-api-operation-method open-api-operation-method-{{ operation.method }}">{{ operation.method }}</span>
