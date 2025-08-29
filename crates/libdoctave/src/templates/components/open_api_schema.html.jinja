@@ -73,7 +73,7 @@
                 {%- endfor %}
               </select>
             </div>
-            
+
             {#- Content for each option -#}
             {%- for option_schema in schema.schemas %}
               <div x-show="selectedOption == {{ loop.index0 }}"{% if not loop.first %} x-cloak{% endif %}>

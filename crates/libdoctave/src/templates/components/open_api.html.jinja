@@ -57,7 +57,7 @@
                 <div class="open-api-operation-tabs-content">
                   {% if operation.request_body %}
                     <div class="open-api-operation-tab-content" x-show="activeIndex == 0"{% if initial_tab_index != 0 %} x-cloak{% endif %}>
-                      <div x-data="{ selectedMediaType: '{{ operation.request_body.media_types[0].name }}' }">
+                      <div class="open-api-media-type" x-data="{ selectedMediaType: '{{ operation.request_body.media_types[0].name }}' }">
                         <!-- Media type dropdown -->
                         <div>
                           <select x-model="selectedMediaType">
@@ -126,6 +126,79 @@
                       </div>
                     </div>
                   {% endif %}
+                </div>
+              </div>
+              <div class="open-api-responses">
+                <h3>Responses</h3>
+                <div class="open-api-response-schemas" x-data='{ openCode: null }" }'>
+                  {% for response in operation.responses %}
+                    <div
+                      class="open-api-response-schema"
+                      x-data="{ headers: false }"
+                      x-cloak
+                      >
+                      <button
+                        class="open-api-response-header"
+                        @click="openCode === '{{ response.code }}' ? openCode = null : openCode = '{{ response.code }}'"
+                        x-bind:data-open='openCode == {{ response.code }}'
+                        >
+                        <span>{{ response.code }}</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                          <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+
+                      <div class="open-api-response-content" x-show="openCode === '{{ response.code }}'">
+                        {{ markdown(response.description_ast, true) }}
+
+                        <div class="open-api-response-body-toggle-container">
+                          <span>Response body</span>
+                          <button class="open-api-response-body-toggle" @click="headers = !headers">
+                            <span x-bind:data-checked="headers ? 'true' : 'false'"></span>
+                          </button>
+                          <span>Headers</span>
+                        </div>
+
+                        {% if response.media_types %}
+                        <div class="open-api-response-body" x-show="!headers">
+                          <div class="open-api-media-type" x-data="{ selectedMediaType: '{{ response.media_types[0].name }}' }">
+                            <div>
+                              <select x-model="selectedMediaType">
+                                {% for media_type in response.media_types %}
+                                  <option value="{{ media_type.name }}">{{ media_type.name }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+
+                            {% for media_type in response.media_types %}
+                              <div x-show="selectedMediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
+                                <div class="open-api-schema-list">
+                                  {% for schema in media_type.schemas %}
+                                    {% with schema = schema, show_anonymous = false, is_root = true %}
+                                      {% include "components/open_api_schema.html.jinja" %}
+                                    {% endwith %}
+                                  {% endfor %}
+                                </div>
+                              </div>
+                            {% endfor %}
+                          </div>
+                        </div>
+                        {% else %}
+                          <p x-show="!headers" class="open-api-response-empty">This response is empty</p>
+                        {% endif %}
+
+                        <div class="open-api-response-headers" x-show="headers" x-cloak>
+                          <div class="open-api-schema-list">
+                            {% for header in response.headers %}
+                              {% with schema = header.schema, show_anonymous = false, is_root = true %}
+                                {% include "components/open_api_schema.html.jinja" %}
+                              {% endwith %}
+                            {% endfor %}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  {% endfor %}
                 </div>
               </div>
             </div>
