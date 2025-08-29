@@ -1,0 +1,215 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+{# Check if we have any request examples at all #}
+{%- set has_code_examples = operation.request_examples and operation.request_examples|length > 0 -%}
+{%- set has_http_examples = operation.request_body and operation.request_body.media_types and operation.request_body.media_types[0].examples and operation.request_body.media_types[0].examples|length > 0 -%}
+
+
+{# Only render if there are actually examples (conditional rendering like V2) #}
+{% if has_code_examples or has_http_examples %}
+<div class="open-api-request-examples">
+  <h3 class="open-api-examples-title">Request examples</h3>
+  
+  <div class="open-api-examples-card">
+    {# Code Examples Section #}
+    {% if has_code_examples %}
+      {%- set example_groups = operation.request_examples | groupby("group_name") -%}
+      
+      {% if example_groups|length > 1 %}
+        {# Multiple groups - show group tabs #}
+        <div x-data="{ activeGroup: '{{ example_groups[0][0] }}' }">
+          <div class="open-api-examples-tabs-header">
+            {% for group_name, examples in example_groups %}
+              <button 
+                :class="{ 'active': activeGroup === '{{ group_name }}' }" 
+                @click="activeGroup = '{{ group_name }}'"
+              >
+                {{ group_name }}
+              </button>
+            {% endfor %}
+          </div>
+
+          {% for group_name, examples in example_groups %}
+            <div x-show="activeGroup === '{{ group_name }}'"{% if not loop.first %} x-cloak{% endif %}>
+              {% if examples|length > 1 %}
+                <div class="open-api-examples-content" x-data="{ activeExample: '{{ examples[0].identifier }}' }">
+                  <div class="open-api-example-selector">
+                    <select x-model="activeExample">
+                      {% for example in examples %}
+                        <option value="{{ example.identifier }}">{{ example.name or example.language or example.summary or "Example" }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  {% for example in examples %}
+                    <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
+                      <div class="open-api-code-block">
+                        <pre data-highlight="true" class="language-{{ example.language or 'json' }}">{{ example.value }}</pre>
+                      </div>
+                      {% if example.description_ast %}
+                        <div class="open-api-example-description">
+                          {{ markdown(example.description_ast, true) }}
+                        </div>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="open-api-examples-content">
+                  <div class="open-api-code-block">
+                    <pre data-highlight="true" class="language-{{ examples[0].language or 'json' }}">{{ examples[0].value }}</pre>
+                  </div>
+                  {% if examples[0].description_ast %}
+                    <div class="open-api-example-description">
+                      {{ markdown(examples[0].description_ast, true) }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        {# Single group - no group tabs needed #}
+        {%- set examples = example_groups[0][1] -%}
+        {% if examples|length > 1 %}
+          <div class="open-api-examples-content" x-data="{ activeExample: '{{ examples[0].identifier }}' }">
+            <div class="open-api-example-selector">
+              <select x-model="activeExample">
+                {% for example in examples %}
+                  <option value="{{ example.identifier }}">{{ example.name or example.language or example.summary or "Example" }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            {% for example in examples %}
+              <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
+                <div class="open-api-code-block">
+                  <pre data-highlight="true" class="language-{{ example.language or 'json' }}">{{ example.value }}</pre>
+                </div>
+                {% if example.description_ast %}
+                  <div class="open-api-example-description">
+                    {{ markdown(example.description_ast, true) }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="open-api-examples-content">
+            <div class="open-api-code-block">
+              <pre data-highlight="true" class="language-{{ examples[0].language or 'json' }}">{{ examples[0].value }}</pre>
+            </div>
+            {% if examples[0].description_ast %}
+              <div class="open-api-example-description">
+                {{ markdown(examples[0].description_ast, true) }}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+
+    {# HTTP Request Examples Section #}
+    {% if has_http_examples %}
+      {% if has_code_examples %}<div class="open-api-examples-separator"></div>{% endif %}
+      
+      {% if operation.request_body.media_types|length > 1 %}
+        <div x-data="{ selectedMediaType: '{{ operation.request_body.media_types[0].name }}' }">
+          <div class="open-api-example-selector">
+            <select x-model="selectedMediaType">
+              {% for media_type in operation.request_body.media_types %}
+                {% if media_type.examples and media_type.examples|length > 0 %}
+                  <option value="{{ media_type.name }}">{{ media_type.name }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          {% for media_type in operation.request_body.media_types %}
+            {% if media_type.examples and media_type.examples|length > 0 %}
+              <div x-show="selectedMediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
+                {% if media_type.examples|length > 1 %}
+                  <div class="open-api-examples-content" x-data="{ activeExample: '{{ media_type.examples[0].identifier }}' }">
+                    <div class="open-api-example-selector">
+                      <select x-model="activeExample">
+                        {% for example in media_type.examples %}
+                          <option value="{{ example.identifier }}">{{ example.name or example.summary or "Example" }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+
+                    {% for example in media_type.examples %}
+                      <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
+                        <div class="open-api-code-block">
+                          <pre data-highlight="true" class="language-json">{{ example.value }}</pre>
+                        </div>
+                        {% if example.description_ast %}
+                          <div class="open-api-example-description">
+                            {{ markdown(example.description_ast, true) }}
+                          </div>
+                        {% endif %}
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div class="open-api-examples-content">
+                    <div class="open-api-code-block">
+                      <pre data-highlight="true" class="language-json">{{ media_type.examples[0].value }}</pre>
+                    </div>
+                    {% if media_type.examples[0].description_ast %}
+                      <div class="open-api-example-description">
+                        {{ markdown(media_type.examples[0].description_ast, true) }}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% else %}
+        {# Single media type #}
+        {%- set media_type = operation.request_body.media_types[0] -%}
+        {% if media_type.examples and media_type.examples|length > 0 %}
+          {% if media_type.examples|length > 1 %}
+            <div class="open-api-examples-content" x-data="{ activeExample: '{{ media_type.examples[0].identifier }}' }">
+              <div class="open-api-example-selector">
+                <select x-model="activeExample">
+                  {% for example in media_type.examples %}
+                    <option value="{{ example.identifier }}">{{ example.name or example.summary or "Example" }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              {% for example in media_type.examples %}
+                <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
+                  <div class="open-api-code-block">
+                    <pre data-highlight="true" class="language-json">{{ example.value }}</pre>
+                  </div>
+                  {% if example.description_ast %}
+                    <div class="open-api-example-description">
+                      {{ markdown(example.description_ast, true) }}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="open-api-examples-content">
+              <div class="open-api-code-block">
+                <pre data-highlight="true" class="language-json">{{ media_type.examples[0].value }}</pre>
+              </div>
+              {% if media_type.examples[0].description_ast %}
+                <div class="open-api-example-description">
+                  {{ markdown(media_type.examples[0].description_ast, true) }}
+                </div>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endif %}

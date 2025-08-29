@@ -29,6 +29,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+.open-api-operation-inner-right {
+  flex-shrink: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
 .open-api-outer-container select {
@@ -105,7 +117,8 @@
   color: var(--accent-contrast);
 }
 
-.open-api-operation-inner {
+.open-api-operation-details {
+  margin-top: var(--space-6);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr;
@@ -113,7 +126,7 @@
 
 /* Fall back to vertical layout on small screens */
 @media (max-width: 768px) {
-  .open-api-operation-inner {
+  .open-api-operation-details {
     grid-template-columns: 1fr;
     grid-template-rows: repeat(2, 1fr);
   }
@@ -151,10 +164,6 @@
 .open-api-operation-tabs-header button.active {
   color: var(--gray-12);
   border-bottom: 2px solid var(--accent-10);
-}
-
-.open-api-operation-inner {
-  margin-top: var(--space-6);
 }
 
 .open-api-schema-list {
@@ -400,4 +409,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+}
+
+.open-api-code-block pre {
+  overflow: auto;
+  padding: var(--space-3);
+  font-size: var(--text-xs);
+  max-height: 24lh;
 }

@@ -52,7 +52,7 @@
         {%- endif %}
       {%- elif schema.type_name == "Any Of" or schema.type_name == "One Of" %}
         {#- Any/One Of case -#}
-        <p>Must match {{ schema.type_name.lower() }}</p>
+        <p>Must match {{ schema.type_name | lower }}</p>
         
         <div x-data="{ selectedOption: 0, open: {{ 'true' if is_root else 'false' }} }">
           <div>
