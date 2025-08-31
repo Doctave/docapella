@@ -16,6 +16,8 @@ impl Renderer {
         env.add_function("actual_type_name", actual_type_name);
         env.add_function("startswith", startswith);
         env.add_function("color_scale_css", color_scale_css);
+        env.add_function("flatten_examples", flatten_examples);
+        env.add_function("flatten_response_examples", flatten_response_examples);
 
         Ok(Renderer { env })
     }
@@ -186,4 +188,73 @@ fn startswith(string: &Value, prefix: &Value) -> std::result::Result<bool, Error
     };
 
     Ok(string_str.starts_with(prefix_str))
+}
+
+/// Flattens examples from request_examples and media_type examples into a single array
+/// Matches V2 logic: (operation.request_body?.media_types || []).flatMap((m) => m.examples).concat(operation.request_examples || [])
+fn flatten_examples(operation: &Value) -> std::result::Result<Value, Error> {
+    let mut all_examples: Vec<Value> = Vec::new();
+
+    // Add request_examples first
+    if let Ok(request_examples) = operation.get_attr("request_examples") {
+        if request_examples != Value::UNDEFINED {
+            if let Ok(examples_iter) = request_examples.try_iter() {
+                for example in examples_iter {
+                    all_examples.push(example);
+                }
+            }
+        }
+    }
+
+    // Add media type examples
+    if let Ok(request_body) = operation.get_attr("request_body") {
+        if request_body != Value::UNDEFINED {
+            if let Ok(media_types) = request_body.get_attr("media_types") {
+                if media_types != Value::UNDEFINED {
+                    if let Ok(media_types_iter) = media_types.try_iter() {
+                        for media_type in media_types_iter {
+                            if let Ok(examples) = media_type.get_attr("examples") {
+                                if examples != Value::UNDEFINED {
+                                    if let Ok(examples_iter) = examples.try_iter() {
+                                        for example in examples_iter {
+                                            all_examples.push(example);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(Value::from_serialize(all_examples))
+}
+
+/// Flattens examples from all media types of a response into a single array
+/// Matches V2 logic: (response?.media_types || []).flatMap((m) => m.examples)
+fn flatten_response_examples(response: &Value) -> std::result::Result<Value, Error> {
+    let mut all_examples: Vec<Value> = Vec::new();
+
+    // Add all examples from all media types
+    if let Ok(media_types) = response.get_attr("media_types") {
+        if media_types != Value::UNDEFINED {
+            if let Ok(media_types_iter) = media_types.try_iter() {
+                for media_type in media_types_iter {
+                    if let Ok(examples) = media_type.get_attr("examples") {
+                        if examples != Value::UNDEFINED {
+                            if let Ok(examples_iter) = examples.try_iter() {
+                                for example in examples_iter {
+                                    all_examples.push(example);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(Value::from_serialize(all_examples))
 }

@@ -1,4 +1,5 @@
 {% from "components/markdown.html.jinja" import markdown %}
+{% from "components/open_api_macros.html.jinja" import render_example_block, render_media_type_selector, render_schema_list, render_example_tabs %}
 
 {%- set initial_tab_index = initial_openapi_tab_index(operation) -%}
 <div class="open-api-operation-tabs" x-data="{ activeIndex: {{ initial_tab_index }} }">
@@ -23,90 +24,46 @@
   <div class="open-api-operation-tabs-content">
     {% if operation.request_body %}
       <div class="open-api-operation-tab-content" x-show="activeIndex == 0"{% if initial_tab_index != 0 %} x-cloak{% endif %}>
-        <div class="open-api-media-type" x-data="{ selectedMediaType: '{{ operation.request_body.media_types[0].name }}' }">
-          <!-- Media type dropdown -->
-          <div>
-            <select x-model="selectedMediaType">
-              {% for media_type in operation.request_body.media_types %}
-                <option value="{{ media_type.name }}">{{ media_type.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <!-- Content for each media type -->
-          {% for media_type in operation.request_body.media_types %}
-            <div x-show="selectedMediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
-              <div class="open-api-schema-list">
-                {% for schema in media_type.schemas %}
-                  {% with schema = schema, show_anonymous = false, is_root = true %}
-                    {% include "components/open_api_schema.html.jinja" %}
-                  {% endwith %}
-                {% endfor %}
-              </div>
-            </div>
-          {% endfor %}
+        <div class="open-api-media-type">
+          {{ render_media_type_selector(operation.request_body.media_types, content_type='schema') }}
         </div>
       </div>
     {% endif %}
     {% if operation.query_params %}
       <div class="open-api-operation-tab-content" x-show="activeIndex == 1"{% if initial_tab_index != 1 %} x-cloak{% endif %}>
-        <div class="open-api-schema-list">
-          {% for param in operation.query_params %}
-            {% with schema = param.schema, show_anonymous = false, is_root = true %}
-              {% include "components/open_api_schema.html.jinja" %}
-            {% endwith %}
-          {% endfor %}
-        </div>
+        {{ render_schema_list(operation.query_params, is_parameters=true) }}
       </div>
     {% endif %}
     {% if operation.header_params %}
       <div class="open-api-operation-tab-content" x-show="activeIndex == 2"{% if initial_tab_index != 2 %} x-cloak{% endif %}>
-        <div class="open-api-schema-list">
-          {% for param in operation.header_params %}
-            {% with schema = param.schema, show_anonymous = false, is_root = true %}
-              {% include "components/open_api_schema.html.jinja" %}
-            {% endwith %}
-          {% endfor %}
-        </div>
+        {{ render_schema_list(operation.header_params, is_parameters=true) }}
       </div>
     {% endif %}
     {% if operation.path_params %}
       <div class="open-api-operation-tab-content" x-show="activeIndex == 3"{% if initial_tab_index != 3 %} x-cloak{% endif %}>
-        <div class="open-api-schema-list">
-          {% for param in operation.path_params %}
-            {% with schema = param.schema, show_anonymous = false, is_root = true %}
-              {% include "components/open_api_schema.html.jinja" %}
-            {% endwith %}
-          {% endfor %}
-        </div>
+        {{ render_schema_list(operation.path_params, is_parameters=true) }}
       </div>
     {% endif %}
     {% if operation.cookie_params %}
       <div class="open-api-operation-tab-content" x-show="activeIndex == 4"{% if initial_tab_index != 4 %} x-cloak{% endif %}>
-        <div class="open-api-schema-list">
-          {% for param in operation.cookie_params %}
-            {% with schema = param.schema, show_anonymous = false, is_root = true %}
-              {% include "components/open_api_schema.html.jinja" %}
-            {% endwith %}
-          {% endfor %}
-        </div>
+        {{ render_schema_list(operation.cookie_params, is_parameters=true) }}
       </div>
     {% endif %}
   </div>
 </div>
 <div class="open-api-responses">
   <h3>Responses</h3>
-  <div class="open-api-response-schemas" x-data='{ openCode: 0 }'>
+  <div class="open-api-response-schemas">
     {% for response in operation.responses %}
       <div
         class="open-api-response-schema"
-        x-data="{ headers: false }"
+        x-data="{ open: false, headers: false }"
         x-cloak
         >
         <button
           class="open-api-response-header"
-          @click="openCode === '{{ response.code }}' ? openCode = null : openCode = '{{ response.code }}'"
-          x-bind:data-open='openCode == {{ response.code }}'
+          @click="open = !open"
+          x-bind:data-open="open"
           >
           <span>{{ response.code }}</span>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
@@ -114,7 +71,7 @@
           </svg>
         </button>
 
-        <div class="open-api-response-content" x-show="openCode === '{{ response.code }}'">
+        <div class="open-api-response-content" x-show="open" x-cloak>
           {{ markdown(response.description_ast, true) }}
 
           <div class="open-api-response-body-toggle-container">
@@ -127,78 +84,21 @@
 
           {% if response.media_types %}
           <div class="open-api-response-body" x-show="!headers">
-            <div class="open-api-media-type" x-data="{ selectedMediaType: '{{ response.media_types[0].name }}', activeResponseTab: 0 }">
-              <div>
-                <select x-model="selectedMediaType">
-                  {% for media_type in response.media_types %}
-                    <option value="{{ media_type.name }}">{{ media_type.name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+            <div class="open-api-media-type" x-data="{ selectedMediaType: '{{ response.media_types[0].name }}' }">
+              {% if response.media_types|length > 1 %}
+                <div>
+                  <select x-model="selectedMediaType">
+                    {% for media_type in response.media_types %}
+                      <option value="{{ media_type.name }}">{{ media_type.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              {% endif %}
 
               {% for media_type in response.media_types %}
                 <div x-show="selectedMediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
-                  {%- set has_examples = media_type.examples and media_type.examples|length > 0 -%}
-                  {%- set has_schema = media_type.schemas and media_type.schemas|length > 0 -%}
-                  
-                  {% if has_examples and has_schema %}
-                    <div class="open-api-response-tabs-header">
-                      <button :class="{ 'active': activeResponseTab == 0 }" @click="activeResponseTab = 0">Schema</button>
-                      <button :class="{ 'active': activeResponseTab == 1 }" @click="activeResponseTab = 1">Examples</button>
-                    </div>
-                  {% endif %}
-                  
-                  {% if has_schema %}
-                    <div class="open-api-response-tab-content" {% if has_examples %}x-show="activeResponseTab == 0"{% endif %}{% if has_examples and 0 != 0 %} x-cloak{% endif %}>
-                      <div class="open-api-schema-list">
-                        {% for schema in media_type.schemas %}
-                          {% with schema = schema, show_anonymous = false, is_root = true %}
-                            {% include "components/open_api_schema.html.jinja" %}
-                          {% endwith %}
-                        {% endfor %}
-                      </div>
-                    </div>
-                  {% endif %}
-                  
-                  {% if has_examples %}
-                    <div class="open-api-response-tab-content" {% if has_schema %}x-show="activeResponseTab == 1"{% endif %}{% if has_schema and 1 != 0 %} x-cloak{% endif %}>
-                      {% if media_type.examples|length > 1 %}
-                        <div x-data="{ activeExample: '{{ media_type.examples[0].identifier }}' }">
-                          <div class="open-api-examples-tabs">
-                            {% for example in media_type.examples %}
-                              <button 
-                                :class="{ 'active': activeExample === '{{ example.identifier }}' }" 
-                                @click="activeExample = '{{ example.identifier }}'"
-                              >
-                                {{ example.name or example.summary or "Example" }}
-                              </button>
-                            {% endfor %}
-                          </div>
-                          
-                          {% for example in media_type.examples %}
-                            <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
-                              <div class="open-api-code-block">
-                                <pre data-highlight="true" class="language-json">{{ example.value }}</pre>
-                              </div>
-                              {% if example.description_ast %}
-                                <div class="open-api-example-description">
-                                  {{ markdown(example.description_ast, true) }}
-                                </div>
-                              {% endif %}
-                            </div>
-                          {% endfor %}
-                        </div>
-                      {% else %}
-                        <div class="open-api-code-block">
-                          <pre data-highlight="true" class="language-json">{{ media_type.examples[0].value }}</pre>
-                        </div>
-                        {% if media_type.examples[0].description_ast %}
-                          <div class="open-api-example-description">
-                            {{ markdown(media_type.examples[0].description_ast, true) }}
-                          </div>
-                        {% endif %}
-                      {% endif %}
-                    </div>
+                  {% if media_type.schemas and media_type.schemas|length > 0 %}
+                    {{ render_schema_list(media_type.schemas) }}
                   {% endif %}
                 </div>
               {% endfor %}
@@ -209,13 +109,11 @@
           {% endif %}
 
           <div class="open-api-response-headers" x-show="headers" x-cloak>
-            <div class="open-api-schema-list">
-              {% for header in response.headers %}
-                {% with schema = header.schema, show_anonymous = false, is_root = true %}
-                  {% include "components/open_api_schema.html.jinja" %}
-                {% endwith %}
-              {% endfor %}
-            </div>
+            {% if response.headers and response.headers|length > 0 %}
+              {{ render_schema_list(response.headers, is_parameters=true) }}
+            {% else %}
+              <p class="open-api-response-empty">This response does not contain any headers</p>
+            {% endif %}
           </div>
         </div>
       </div>

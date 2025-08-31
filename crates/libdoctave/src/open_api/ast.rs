@@ -261,7 +261,10 @@ impl OperationAst {
 
         let mut request_examples = vec![];
         for code_sample in &operation.code_examples {
-            request_examples.push(ExampleAst::from_model(code_sample, "code")?);
+            request_examples.push(ExampleAst::from_model(
+                code_sample,
+                &prettify_language(&code_sample.name)
+            )?);
         }
 
         let server_route_patterns = operation
@@ -309,8 +312,48 @@ pub struct ExampleAst {
     language: Option<String>,
 }
 
+// Helper functions restored from the original view layer
+fn prettify_language(lang: &str) -> String {
+    if !lang.starts_with("application/")
+        && !lang.starts_with("text/")
+        && !lang.starts_with("audio/")
+        && !lang.starts_with("video/")
+        && !lang.starts_with("message/")
+        && !lang.starts_with("multipart/")
+    {
+        crate::pretty_language_name(lang)
+    } else {
+        lang.to_string()
+    }
+}
+
+fn language_aliases(lang: &str) -> String {
+    match lang {
+        "node" => "js".to_string(),
+        "android" => "java".to_string(),
+        _ => lang.to_string(),
+    }
+}
+
 impl ExampleAst {
     pub(crate) fn from_model(example: &super::model::Example, parent_id: &str) -> Result<Self> {
+        // Determine if this is a code example by checking if parent_id is a prettified language name
+        // Code examples will have parent_id like "Rust", "Node", "C#" etc. (from prettify_language)
+        // Other examples will have parent_id like "application/json", "200", etc.
+        let is_code_example = !parent_id.starts_with("application/")
+            && !parent_id.starts_with("text/")
+            && !parent_id.starts_with("audio/")
+            && !parent_id.starts_with("video/")
+            && !parent_id.starts_with("message/")
+            && !parent_id.starts_with("multipart/")
+            && !parent_id.chars().all(|c| c.is_ascii_digit()); // Not a status code like "200"
+        
+        let language = if is_code_example {
+            Some(language_aliases(&example.name))
+        } else {
+            Some("json".to_string())
+        };
+        
         Ok(ExampleAst {
             name: example.name.clone(),
             summary: example.summary.clone(),
@@ -320,7 +363,7 @@ impl ExampleAst {
             identifier: example.identifier(parent_id),
             value: example.value.clone(),
             group_name: parent_id.to_string(),
-            language: Some("json".to_string()),
+            language,
             rendered_value: None,
         })
     }
@@ -346,7 +389,7 @@ impl RequestBodyAst {
     ) -> Result<Self> {
         let mut media_types = vec![];
         for media_type in &request_body.content {
-            media_types.push(MediaTypeAst::from_model(media_type, operation_id)?);
+            media_types.push(MediaTypeAst::from_model(media_type, &media_type.name)?);
         }
 
         Ok(RequestBodyAst {

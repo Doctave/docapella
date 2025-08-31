@@ -1,0 +1,181 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+{# 
+  Macro: render_example_block
+  Renders a block of examples with proper selection UI and Alpine.js state management
+  
+  Parameters:
+  - examples: Array of example objects
+  - language_fallback: Default language for syntax highlighting (default: 'json')
+  - include_media_type_label: Whether to show media type label above selector (default: false)
+  - media_type_name: Name of media type for label (optional)
+#}
+{% macro render_example_block(examples, language_fallback='json', include_media_type_label=false, media_type_name='') %}
+  {% if examples and examples|length > 0 %}
+    {# Always show dropdown selector like V2, even for single examples #}
+    <div class="open-api-examples-content" x-data="{ activeExample: '{{ examples[0].identifier }}' }">
+      {% if include_media_type_label and media_type_name %}
+        <div class="open-api-media-type-label">{{ media_type_name }}</div>
+      {% endif %}
+      <div class="open-api-example-selector">
+        <select x-model="activeExample">
+          {% for example in examples %}
+            {%- set label = example.name or example.language or example.summary or "Example" -%}
+            <option value="{{ example.identifier }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% for example in examples %}
+        <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
+          <div class="open-api-code-block">
+            <pre data-highlight="true" class="language-{{ example.language or language_fallback }}">{{ example.value }}</pre>
+          </div>
+          {% if example.description_ast %}
+            <div class="open-api-example-description">
+              {{ markdown(example.description_ast, true) }}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{# 
+  Macro: render_media_type_selector
+  Renders media type selector with content switching
+  
+  Parameters:
+  - media_types: Array of media type objects
+  - content_type: Type of content to render ('schema', 'examples', or 'both')
+  - alpine_var_prefix: Prefix for Alpine.js variables (default: 'selected')
+  - show_media_type_labels: Whether to show media type labels for examples (default: false)
+#}
+{% macro render_media_type_selector(media_types, content_type='both', alpine_var_prefix='selected', show_media_type_labels=false) %}
+  {% if media_types and media_types|length > 0 %}
+    {% if media_types|length > 1 %}
+      <div x-data="{ {{ alpine_var_prefix }}MediaType: '{{ media_types[0].name }}' }">
+        <div class="open-api-example-selector">
+          <select x-model="{{ alpine_var_prefix }}MediaType">
+            {% for media_type in media_types %}
+              <option value="{{ media_type.name }}">{{ media_type.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {% for media_type in media_types %}
+          <div x-show="{{ alpine_var_prefix }}MediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
+            {% if content_type == 'schema' or content_type == 'both' %}
+              {% if media_type.schemas %}
+                <div class="open-api-schema-list">
+                  {% for schema in media_type.schemas %}
+                    {% with schema = schema, show_anonymous = false, is_root = true %}
+                      {% include "components/open_api_schema.html.jinja" %}
+                    {% endwith %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endif %}
+            
+            {% if content_type == 'examples' or content_type == 'both' %}
+              {% if media_type.examples %}
+                {{ render_example_block(media_type.examples, 'json', show_media_type_labels, media_type.name) }}
+              {% endif %}
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      {# Single media type - no selector needed #}
+      {%- set media_type = media_types[0] -%}
+      {% if content_type == 'schema' or content_type == 'both' %}
+        {% if media_type.schemas %}
+          <div class="open-api-schema-list">
+            {% for schema in media_type.schemas %}
+              {% with schema = schema, show_anonymous = false, is_root = true %}
+                {% include "components/open_api_schema.html.jinja" %}
+              {% endwith %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endif %}
+      
+      {% if content_type == 'examples' or content_type == 'both' %}
+        {% if media_type.examples %}
+          {{ render_example_block(media_type.examples, 'json', show_media_type_labels, media_type.name) }}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endmacro %}
+
+{# 
+  Macro: render_schema_list
+  Renders a list of schemas consistently
+  
+  Parameters:
+  - schemas: Array of schema objects (or parameters with .schema property)
+  - is_parameters: Whether the input is parameters (with .schema) or direct schemas (default: false)
+#}
+{% macro render_schema_list(schemas, is_parameters=false) %}
+  {% if schemas %}
+    <div class="open-api-schema-list">
+      {% for item in schemas %}
+        {% if is_parameters %}
+          {% with schema = item.schema, show_anonymous = false, is_root = true %}
+            {% include "components/open_api_schema.html.jinja" %}
+          {% endwith %}
+        {% else %}
+          {% with schema = item, show_anonymous = false, is_root = true %}
+            {% include "components/open_api_schema.html.jinja" %}
+          {% endwith %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{# 
+  Macro: check_response_has_examples
+  Helper to check if a response has any examples
+  
+  Parameters:
+  - response: Response object to check
+  
+  Returns: Boolean (via setting a template variable)
+#}
+{% macro check_response_has_examples(response) %}
+  {%- set has_examples = false -%}
+  {% if response and response.media_types %}
+    {% for media_type in response.media_types %}
+      {% if media_type.examples and media_type.examples|length > 0 %}
+        {%- set has_examples = true -%}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+  {{ has_examples }}
+{% endmacro %}
+
+{# 
+  Macro: render_example_tabs
+  Renders example tabs for buttons (used in left side response examples)
+  
+  Parameters:
+  - examples: Array of example objects  
+  - alpine_var: Alpine.js variable name for active example
+#}
+{% macro render_example_tabs(examples, alpine_var='activeExample') %}
+  {% if examples and examples|length > 1 %}
+    <div class="open-api-examples-tabs">
+      {% for example in examples %}
+        <button 
+          :class="{ 'active': {{ alpine_var }} === '{{ example.identifier }}' }" 
+          @click="{{ alpine_var }} = '{{ example.identifier }}'"
+        >
+          {{ example.name or example.summary or "Example" }}
+        </button>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endmacro %}
