@@ -263,7 +263,7 @@ impl OperationAst {
         for code_sample in &operation.code_examples {
             request_examples.push(ExampleAst::from_model(
                 code_sample,
-                &prettify_language(&code_sample.name)
+                &prettify_language(&code_sample.name),
             )?);
         }
 
@@ -347,13 +347,13 @@ impl ExampleAst {
             && !parent_id.starts_with("message/")
             && !parent_id.starts_with("multipart/")
             && !parent_id.chars().all(|c| c.is_ascii_digit()); // Not a status code like "200"
-        
+
         let language = if is_code_example {
             Some(language_aliases(&example.name))
         } else {
             Some("json".to_string())
         };
-        
+
         Ok(ExampleAst {
             name: example.name.clone(),
             summary: example.summary.clone(),

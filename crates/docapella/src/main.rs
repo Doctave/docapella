@@ -2,6 +2,7 @@ use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use std::path::PathBuf;
 
 use docapella::commands::build::{run as build, BuildArgs};
+use docapella::commands::dev::{run as dev, DevArgs};
 use docapella::commands::init::{run as init, InitArgs};
 
 #[derive(Parser, Debug, Clone)]
@@ -70,9 +71,11 @@ fn main() {
             working_dir,
             stdout: &mut stdout,
         }),
-        Some(Commands::Dev { .. }) => {
-            todo!()
-        }
+        Some(Commands::Dev { working_dir }) => dev(DevArgs {
+            working_dir,
+            port: None, // Use default port 8080
+            stdout: &mut stdout,
+        }),
         None => {
             Args::command().print_help().unwrap();
             std::process::exit(1);

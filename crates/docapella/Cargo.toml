@@ -9,6 +9,7 @@ owo-colors = { version = "*", features = ["supports-colors"] }
 indoc = "2"
 libdoctave = { path = "../libdoctave" }
 thiserror = "2.0.12"
+tiny_http = "0.12"
 
 [dev-dependencies]
 temp-dir = "0.1.14"
