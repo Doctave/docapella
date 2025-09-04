@@ -52,7 +52,7 @@
         {%- endif %}
       {%- elif schema.type_name == "Any Of" or schema.type_name == "One Of" %}
         {#- Any/One Of case -#}
-        <p class="open-api-schema-constraint">Must match {{ schema.type_name | lower }}</p>
+        <p class="open-api-schema-constraint">{{ schema.combination_explanation }}</p>
         
         <div class="open-api-any-of-accordion">
           {%- for option_schema in schema.schemas %}
@@ -74,25 +74,23 @@
               </button>
               
               <div class="open-api-any-of-content" x-show="open"{% if not (is_root and loop.first) %} x-cloak{% endif %}>
-                <div class="open-api-any-of-content-inner">
-                  {%- if not startswith(option_schema.type_name, "object") %}
-                    {#- Non-object option - show with anonymous flag -#}
-                    <div class="open-api-schema-list">
-                      {% with schema = option_schema, show_anonymous = true, is_root = false %}
+                {%- if not startswith(option_schema.type_name, "object") %}
+                  {#- Non-object option - show with anonymous flag -#}
+                  <div class="open-api-schema-list">
+                    {% with schema = option_schema, show_anonymous = true, is_root = false %}
+                      {% include "components/open_api_schema.html.jinja" %}
+                    {% endwith %}
+                  </div>
+                {%- else %}
+                  {#- Object option - show its children -#}
+                  <div class="open-api-schema-list">
+                    {%- for child_schema in option_schema.schemas %}
+                      {% with schema = child_schema, show_anonymous = false, is_root = false %}
                         {% include "components/open_api_schema.html.jinja" %}
                       {% endwith %}
-                    </div>
-                  {%- else %}
-                    {#- Object option - show its children -#}
-                    <div class="open-api-schema-list">
-                      {%- for child_schema in option_schema.schemas %}
-                        {% with schema = child_schema, show_anonymous = false, is_root = false %}
-                          {% include "components/open_api_schema.html.jinja" %}
-                        {% endwith %}
-                      {%- endfor %}
-                    </div>
-                  {%- endif %}
-                </div>
+                    {%- endfor %}
+                  </div>
+                {%- endif %}
               </div>
             </div>
           {%- endfor %}
