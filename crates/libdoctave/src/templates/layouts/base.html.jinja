@@ -16,6 +16,13 @@
     {% include "css.html.jinja" %}
 
     {% include "javascript-libraries.html.jinja" %}
+
+    {% if view_mode == "dev" %}
+    <script>
+        const eventSource = new EventSource('/dev-reload');
+        eventSource.onmessage = () => location.reload();
+    </script>
+    {% endif %}
 </head>
 <body>
     {% include "components/header.html.jinja" %}

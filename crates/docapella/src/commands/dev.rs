@@ -1,6 +1,11 @@
 use crate::builder::build;
+use bus::Bus;
+use libdoctave::content_api::ViewMode;
 use std::path::PathBuf;
-use std::sync::mpsc::{self, RecvTimeoutError};
+use std::sync::{
+    mpsc::{self, RecvTimeoutError},
+    Arc, Mutex,
+};
 use std::thread;
 use std::time::Duration;
 
@@ -9,6 +14,9 @@ enum WatcherMessage {
     RebuildNeeded,
     WatchError(String),
 }
+
+#[derive(Debug, Clone)]
+struct ReloadSignal;
 
 pub struct DevArgs<'a, W: std::io::Write> {
     pub working_dir: PathBuf,
@@ -22,20 +30,28 @@ pub fn run<W: std::io::Write>(mut args: DevArgs<W>) -> crate::Result<()> {
 
     // Build the project first
     writeln!(args.stdout, "Building project...")?;
-    build(&mut args.stdout, &args.working_dir, &build_dir)?;
+    build(
+        &mut args.stdout,
+        &args.working_dir,
+        &build_dir,
+        ViewMode::Dev,
+    )?;
 
     // Create watcher communication channel
     let (watcher_tx, watcher_rx) = mpsc::channel::<WatcherMessage>();
 
+    // Create broadcast bus for reload signals
+    let reload_bus = Arc::new(Mutex::new(Bus::<ReloadSignal>::new(10)));
+
     // Spawn HTTP server thread
     let http_build_dir = build_dir.clone();
-    let http_handle = thread::spawn(move || spawn_http_server(http_build_dir, port));
+    let http_reload_bus = reload_bus.clone();
+    let http_handle =
+        thread::spawn(move || spawn_http_server(http_build_dir, port, http_reload_bus));
 
     // Spawn file watcher thread
     let watcher_working_dir = args.working_dir.clone();
-    let watcher_handle = thread::spawn(move || {
-        spawn_file_watcher(watcher_working_dir, watcher_tx)
-    });
+    let watcher_handle = thread::spawn(move || spawn_file_watcher(watcher_working_dir, watcher_tx));
 
     writeln!(
         args.stdout,
@@ -49,13 +65,23 @@ pub fn run<W: std::io::Write>(mut args: DevArgs<W>) -> crate::Result<()> {
         match watcher_rx.recv_timeout(Duration::from_secs(5)) {
             Ok(WatcherMessage::RebuildNeeded) => {
                 writeln!(args.stdout, "Rebuilding...")?;
-                
-                match build(&mut args.stdout, &args.working_dir, &build_dir) {
+
+                match build(
+                    &mut args.stdout,
+                    &args.working_dir,
+                    &build_dir,
+                    ViewMode::Dev,
+                ) {
                     Ok(_) => {
                         // Build function already prints "Build complete" message
+                        // Send reload signal to all connected browsers
+                        if let Ok(mut bus) = reload_bus.lock() {
+                            bus.broadcast(ReloadSignal);
+                        }
                     }
                     Err(e) => {
                         writeln!(args.stdout, "Build failed: {:?}", e)?;
+                        // No reload signal on build failure
                     }
                 }
             }
@@ -82,7 +108,11 @@ pub fn run<W: std::io::Write>(mut args: DevArgs<W>) -> crate::Result<()> {
     }
 }
 
-fn spawn_http_server(build_dir: PathBuf, port: u16) -> Result<(), String> {
+fn spawn_http_server(
+    build_dir: PathBuf,
+    port: u16,
+    reload_bus: Arc<Mutex<Bus<ReloadSignal>>>,
+) -> Result<(), String> {
     let server = tiny_http::Server::http(format!("localhost:{}", port))
         .map_err(|e| format!("Failed to start server: {}", e))?;
 
@@ -91,8 +121,22 @@ fn spawn_http_server(build_dir: PathBuf, port: u16) -> Result<(), String> {
             .recv()
             .map_err(|e| format!("Failed to receive request: {}", e))?;
 
-        let response = handle_request(&request, &build_dir);
-        let _ = request.respond(response);
+        match request.url() {
+            "/dev-reload" => {
+                // Create a new receiver for this SSE connection
+                let reload_rx = match reload_bus.lock() {
+                    Ok(mut bus) => bus.add_rx(),
+                    Err(_) => return Err("Failed to lock reload bus".to_string()),
+                };
+                thread::spawn(move || {
+                    handle_sse_connection(request, reload_rx);
+                });
+            }
+            _ => {
+                let response = handle_request(&request, &build_dir);
+                let _ = request.respond(response);
+            }
+        }
     }
 }
 
@@ -103,7 +147,7 @@ fn spawn_file_watcher(
     use notify_debouncer_mini::{new_debouncer, notify::RecursiveMode, DebounceEventResult};
 
     let mut debouncer = new_debouncer(
-        Duration::from_millis(500),
+        Duration::from_millis(150),
         move |res: DebounceEventResult| {
             match res {
                 Ok(events) => {
@@ -118,7 +162,8 @@ fn spawn_file_watcher(
                     }
                 }
                 Err(e) => {
-                    let _ = watcher_tx.send(WatcherMessage::WatchError(format!("Watch error: {:?}", e)));
+                    let _ = watcher_tx
+                        .send(WatcherMessage::WatchError(format!("Watch error: {:?}", e)));
                 }
             }
         },
@@ -164,6 +209,43 @@ fn should_rebuild_for_path(path: &std::path::Path) -> bool {
     }
 
     false
+}
+
+fn handle_sse_connection(request: tiny_http::Request, mut reload_rx: bus::BusReader<ReloadSignal>) {
+    use std::io::Write;
+
+    // Convert request to writer
+    let mut writer = request.into_writer();
+
+    // Send SSE headers
+    let headers = "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nCache-Control: no-cache\r\nConnection: keep-alive\r\nAccess-Control-Allow-Origin: *\r\n\r\n";
+    if writer.write_all(headers.as_bytes()).is_err() {
+        return;
+    }
+
+    // Send initial connection message
+    if writer.write_all(b"data: connected\n\n").is_err() {
+        return;
+    }
+
+    // Listen for reload signals
+    loop {
+        match reload_rx.recv() {
+            Ok(_) => {
+                // Send reload message to browser
+                if writer.write_all(b"data: reload\n\n").is_err() {
+                    break;
+                }
+                if writer.flush().is_err() {
+                    break;
+                }
+            }
+            Err(_) => {
+                // Channel closed, exit
+                break;
+            }
+        }
+    }
 }
 
 fn handle_request(

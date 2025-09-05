@@ -1,4 +1,5 @@
 use crate::builder::build;
+use libdoctave::content_api::ViewMode;
 
 use std::path::PathBuf;
 
@@ -9,7 +10,12 @@ pub struct BuildArgs<'a, W: std::io::Write> {
 }
 
 pub fn run<W: std::io::Write>(mut args: BuildArgs<W>) -> crate::Result<()> {
-    build(&mut args.stdout, &args.working_dir, &args.out_dir)
+    build(
+        &mut args.stdout,
+        &args.working_dir,
+        &args.out_dir,
+        ViewMode::Prod,
+    )
 }
 
 #[cfg(test)]

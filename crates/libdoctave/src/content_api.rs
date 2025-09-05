@@ -56,7 +56,7 @@ impl Default for ResponseContext {
             favicon_url: None,
             active_version: None,
             build: Build::stub(),
-            view_mode: ViewMode::Live,
+            view_mode: ViewMode::Prod,
             sign_assets: false,
             debug_info: DebugInfo::default(),
         }
@@ -69,9 +69,8 @@ impl Default for ResponseContext {
 #[cfg_attr(feature = "rustler", derive(NifUnitEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum ViewMode {
-    Live,
-    Preview,
-    Desktop,
+    Prod,
+    Dev,
 }
 
 #[derive(Serialize, Debug, Clone)]
@@ -1779,7 +1778,7 @@ mod test {
             http_status: 400,
             message: "Some error about the project".to_string(),
             errors: vec![error],
-            view_mode: ViewMode::Live,
+            view_mode: ViewMode::Prod,
         };
 
         let as_json = serde_json::to_value(&response).unwrap();
@@ -2424,7 +2423,7 @@ mod test {
 
         assert!(
             matches!(
-                ContentApiResponse::site_asleep("Site asleep", false, ViewMode::Live),
+                ContentApiResponse::site_asleep("Site asleep", false, ViewMode::Prod),
                 ContentApiResponse::SiteAsleep {
                     http_status: 200,
                     ..
@@ -2440,7 +2439,7 @@ mod test {
                     "Site asleep",
                     "https://auth.me",
                     "Default",
-                    ViewMode::Live,
+                    ViewMode::Prod,
                     false,
                     RenderOptions::default()
                 ),
@@ -2454,7 +2453,7 @@ mod test {
 
         assert!(
             matches!(
-                ContentApiResponse::private_site("Not found", ViewMode::Live),
+                ContentApiResponse::private_site("Not found", ViewMode::Prod),
                 ContentApiResponse::PrivateSite {
                     http_status: 404,
                     ..
@@ -2465,7 +2464,7 @@ mod test {
 
         assert!(
             matches!(
-                ContentApiResponse::build_not_found("Not found", ViewMode::Live),
+                ContentApiResponse::build_not_found("Not found", ViewMode::Prod),
                 ContentApiResponse::BuildNotFound {
                     http_status: 404,
                     ..
@@ -2476,7 +2475,7 @@ mod test {
 
         assert!(
             matches!(
-                ContentApiResponse::invalid_project("Error", vec![], ViewMode::Live),
+                ContentApiResponse::invalid_project("Error", vec![], ViewMode::Prod),
                 ContentApiResponse::InvalidProject {
                     http_status: 400,
                     ..

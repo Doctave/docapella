@@ -385,7 +385,7 @@ pub struct RequestBodyAst {
 impl RequestBodyAst {
     pub(crate) fn from_model(
         request_body: &super::model::RequestBody,
-        operation_id: &str,
+        _operation_id: &str,
     ) -> Result<Self> {
         let mut media_types = vec![];
         for media_type in &request_body.content {

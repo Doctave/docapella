@@ -1,5 +1,4 @@
 use super::ast::PageAst;
-use crate::settings::OpenApi;
 use indexmap::IndexMap;
 use openapi_parser::openapi30::schemas::parameter::ParameterKind;
 use serde::Serialize;
@@ -8,7 +7,6 @@ use serde_json::{json, Value};
 use crate::{markdown, page_kind::OutgoingLink, render_context::RenderContext, Error};
 
 use std::collections::{HashMap, HashSet};
-use std::ffi::OsStr;
 use std::path::PathBuf;
 
 #[derive(Debug, Default, Clone)]

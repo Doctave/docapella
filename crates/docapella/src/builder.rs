@@ -2,6 +2,7 @@ use crate::file_gatherer::gather_files;
 use crate::Result;
 use std::path::Path;
 
+use libdoctave::content_api::ViewMode;
 use libdoctave::{renderer::Renderer, ContentApiResponse, Project, ResponseContext};
 use owo_colors::{OwoColorize as _, Stream};
 
@@ -11,6 +12,7 @@ pub(crate) fn build<W: std::io::Write>(
     stdout: &mut W,
     working_dir: &Path,
     out_dir: &Path,
+    view_mode: ViewMode,
 ) -> Result<()> {
     // Gather the files
     let files = gather_files(working_dir)?;
@@ -70,6 +72,7 @@ pub(crate) fn build<W: std::io::Write>(
 
                 let mut ctx = ResponseContext::default();
                 ctx.options.webbify_internal_urls = true;
+                ctx.view_mode = view_mode.clone();
                 let response = ContentApiResponse::content(page, &project, ctx);
 
                 let rendered = renderer.render_page(response).map_err(|e| {
