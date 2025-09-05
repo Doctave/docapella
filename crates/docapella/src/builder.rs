@@ -68,7 +68,8 @@ pub(crate) fn build<W: std::io::Write>(
                     std::fs::create_dir_all(path.parent().unwrap())?;
                 }
 
-                let ctx = ResponseContext::default();
+                let mut ctx = ResponseContext::default();
+                ctx.options.webbify_internal_urls = true;
                 let response = ContentApiResponse::content(page, &project, ctx);
 
                 let rendered = renderer.render_page(response).map_err(|e| {

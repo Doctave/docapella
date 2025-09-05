@@ -1,5 +1,14 @@
 use crate::builder::build;
 use std::path::PathBuf;
+use std::sync::mpsc::{self, RecvTimeoutError};
+use std::thread;
+use std::time::Duration;
+
+#[derive(Debug)]
+enum WatcherMessage {
+    RebuildNeeded,
+    WatchError(String),
+}
 
 pub struct DevArgs<'a, W: std::io::Write> {
     pub working_dir: PathBuf,
@@ -7,32 +16,154 @@ pub struct DevArgs<'a, W: std::io::Write> {
     pub stdout: &'a mut W,
 }
 
-pub fn run<W: std::io::Write>(args: DevArgs<W>) -> crate::Result<()> {
+pub fn run<W: std::io::Write>(mut args: DevArgs<W>) -> crate::Result<()> {
     let port = args.port.unwrap_or(8080);
     let build_dir = args.working_dir.join("_build");
 
     // Build the project first
     writeln!(args.stdout, "Building project...")?;
-    build(args.stdout, &args.working_dir, &build_dir)?;
+    build(&mut args.stdout, &args.working_dir, &build_dir)?;
 
-    // Start the HTTP server
+    // Create watcher communication channel
+    let (watcher_tx, watcher_rx) = mpsc::channel::<WatcherMessage>();
+
+    // Spawn HTTP server thread
+    let http_build_dir = build_dir.clone();
+    let http_handle = thread::spawn(move || spawn_http_server(http_build_dir, port));
+
+    // Spawn file watcher thread
+    let watcher_working_dir = args.working_dir.clone();
+    let watcher_handle = thread::spawn(move || {
+        spawn_file_watcher(watcher_working_dir, watcher_tx)
+    });
+
     writeln!(
         args.stdout,
-        "Starting dev server on http://localhost:{}",
+        "Dev server running on http://localhost:{}",
         port
     )?;
+    writeln!(args.stdout, "Watching for file changes...")?;
 
+    // Main coordination loop
+    loop {
+        match watcher_rx.recv_timeout(Duration::from_secs(5)) {
+            Ok(WatcherMessage::RebuildNeeded) => {
+                writeln!(args.stdout, "Rebuilding...")?;
+                
+                match build(&mut args.stdout, &args.working_dir, &build_dir) {
+                    Ok(_) => {
+                        // Build function already prints "Build complete" message
+                    }
+                    Err(e) => {
+                        writeln!(args.stdout, "Build failed: {:?}", e)?;
+                    }
+                }
+            }
+            Ok(WatcherMessage::WatchError(e)) => {
+                writeln!(args.stdout, "Watch error: {}", e)?;
+            }
+            Err(RecvTimeoutError::Timeout) => {
+                // Periodic health check every 5 seconds
+                if http_handle.is_finished() {
+                    return Err(crate::Error::General("HTTP server thread died".to_string()));
+                }
+                if watcher_handle.is_finished() {
+                    return Err(crate::Error::General(
+                        "File watcher thread died".to_string(),
+                    ));
+                }
+            }
+            Err(RecvTimeoutError::Disconnected) => {
+                return Err(crate::Error::General(
+                    "File watcher disconnected".to_string(),
+                ));
+            }
+        }
+    }
+}
+
+fn spawn_http_server(build_dir: PathBuf, port: u16) -> Result<(), String> {
     let server = tiny_http::Server::http(format!("localhost:{}", port))
-        .map_err(|e| crate::Error::General(format!("Failed to start server: {}", e)))?;
+        .map_err(|e| format!("Failed to start server: {}", e))?;
 
     loop {
         let request = server
             .recv()
-            .map_err(|e| crate::Error::General(format!("Failed to receive request: {}", e)))?;
+            .map_err(|e| format!("Failed to receive request: {}", e))?;
 
         let response = handle_request(&request, &build_dir);
         let _ = request.respond(response);
     }
+}
+
+fn spawn_file_watcher(
+    working_dir: PathBuf,
+    watcher_tx: mpsc::Sender<WatcherMessage>,
+) -> Result<(), String> {
+    use notify_debouncer_mini::{new_debouncer, notify::RecursiveMode, DebounceEventResult};
+
+    let mut debouncer = new_debouncer(
+        Duration::from_millis(500),
+        move |res: DebounceEventResult| {
+            match res {
+                Ok(events) => {
+                    // Filter events to only rebuild-worthy files
+                    let should_rebuild = events
+                        .iter()
+                        .any(|event| should_rebuild_for_path(&event.path));
+
+                    if should_rebuild {
+                        // Just notify main thread that rebuild is needed
+                        let _ = watcher_tx.send(WatcherMessage::RebuildNeeded);
+                    }
+                }
+                Err(e) => {
+                    let _ = watcher_tx.send(WatcherMessage::WatchError(format!("Watch error: {:?}", e)));
+                }
+            }
+        },
+    )
+    .map_err(|e| format!("Failed to create file watcher: {:?}", e))?;
+
+    // Watch the working directory recursively
+    debouncer
+        .watcher()
+        .watch(&working_dir, RecursiveMode::Recursive)
+        .map_err(|e| format!("Failed to start watching: {:?}", e))?;
+
+    // Keep the watcher alive
+    loop {
+        std::thread::sleep(Duration::from_secs(1));
+    }
+}
+
+fn should_rebuild_for_path(path: &std::path::Path) -> bool {
+    // Skip if path contains ignored directories
+    if path.components().any(|component| {
+        let name = component.as_os_str();
+        name == "_build" || name == ".git" || name == "node_modules"
+    }) {
+        return false;
+    }
+
+    // Check file extension
+    if let Some(extension) = path.extension() {
+        if let Some(ext_str) = extension.to_str() {
+            return matches!(
+                ext_str,
+                "md" | "yaml" | "yml" | "json" | "png" | "jpg" | "jpeg" | "svg" | "css" | "js"
+            );
+        }
+    }
+
+    // Also watch config files without extensions or special names
+    if let Some(file_name) = path.file_name() {
+        if let Some(name_str) = file_name.to_str() {
+            return matches!(name_str, "docapella.yaml" | "doctave.yaml");
+        }
+    }
+
+    false
 }
 
 fn handle_request(
