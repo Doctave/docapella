@@ -17,6 +17,8 @@
       {% if include_media_type_label and media_type_name %}
         <div class="open-api-media-type-label">{{ media_type_name }}</div>
       {% endif %}
+
+      {% if examples|length > 1 %}
       <div class="open-api-example-selector">
         <select x-model="activeExample">
           {% for example in examples %}
@@ -25,6 +27,7 @@
           {% endfor %}
         </select>
       </div>
+      {% endif %}
 
       {% for example in examples %}
         <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>

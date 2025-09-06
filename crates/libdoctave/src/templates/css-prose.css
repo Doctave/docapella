@@ -1,15 +1,364 @@
-/* Base prose with scaling support */
-.prose {
-  /* Core scaling variables */
+{#
+  Macro: prose_rules
+  Generates prose CSS rules for any selector prefix with optional reset mode
+  
+  Parameters:
+  - selector_prefix: CSS selector prefix (e.g., '.prose', '.not-prose', '.not-prose .prose')
+  - reset: If true, outputs 'initial' values instead of actual styling (default: false)
+#}
+{% macro prose_rules(selector_prefix, reset=false) %}
+
+{# Base prose container styles #}
+{{ selector_prefix }} {
+  {% if reset %}
+  font-size: initial;
+  line-height: initial;
+  min-width: initial;
+  width: initial;
+  {% else %}
+  {% if selector_prefix == '.prose' %}
+  /* Core scaling variables - only set in base .prose rule */
   --prose-scale: 1;
   --prose-font-size: calc(var(--text-base) * var(--prose-scale));
+  {% endif %}
 
   /* Base styles */
   font-size: var(--prose-font-size);
   line-height: 1.75;
   min-width: 0;
   width: 100%;
+  {% endif %}
 }
+
+{# Typography elements #}
+{{ selector_prefix }} a {
+  {% if reset %}
+  color: initial;
+  font-weight: initial;
+  {% else %}
+  color: var(--accent-11);
+  font-weight: 500;
+  {% endif %}
+}
+
+{{ selector_prefix }} a:hover {
+  {% if reset %}
+  color: initial;
+  {% else %}
+  color: var(--accent-9);
+  {% endif %}
+}
+
+{{ selector_prefix }} p {
+  {% if reset %}
+  color: initial;
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  color: var(--gray-11);
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} h1 {
+  {% if reset %}
+  font-weight: initial;
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: calc(0.8888889em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} h2,
+{{ selector_prefix }} h3,
+{{ selector_prefix }} h4,
+{{ selector_prefix }} h5,
+{{ selector_prefix }} h6 {
+  {% if reset %}
+  font-weight: initial;
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  font-weight: 700;
+  {% endif %}
+}
+
+{{ selector_prefix }} h2 {
+  {% if not reset %}
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(1em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} h3 {
+  {% if not reset %}
+  margin-top: calc(1.6em * var(--prose-scale));
+  margin-bottom: calc(0.6em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} h4 {
+  {% if not reset %}
+  margin-top: calc(1.5em * var(--prose-scale));
+  margin-bottom: calc(0.5em * var(--prose-scale));
+  {% endif %}
+}
+
+{# Layout elements #}
+{{ selector_prefix }} img {
+  {% if reset %}
+  max-width: initial;
+  border-radius: initial;
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  max-width: 100%;
+  border-radius: var(--space-2);
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} pre {
+  {% if reset %}
+  overflow-x: initial;
+  max-width: initial;
+  box-sizing: initial;
+  word-wrap: initial;
+  font-size: initial;
+  padding: initial;
+  border-radius: initial;
+  border: initial;
+  background-color: initial;
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  overflow-x: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-wrap: pre-wrap;
+  font-size: var(--text-sm);
+  padding: var(--space-5);
+  border-radius: var(--radius-5);
+  border: 1px solid var(--gray-3);
+  background-color: var(--gray-1);
+  margin-top: calc(1.7142857em * var(--prose-scale));
+  margin-bottom: calc(1.7142857em * var(--prose-scale));
+  {% endif %}
+}
+
+{% if not reset %}
+.dark {{ selector_prefix }} pre {
+  background-color: var(--gray-2);
+}
+{% endif %}
+
+{{ selector_prefix }} blockquote {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(1.6em * var(--prose-scale));
+  margin-bottom: calc(1.6em * var(--prose-scale));
+  {% endif %}
+}
+
+{# List elements #}
+{{ selector_prefix }} ol,
+{{ selector_prefix }} ul {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} ul {
+  {% if reset %}
+  padding-left: initial;
+  {% else %}
+  padding-left: var(--space-4);
+  {% endif %}
+}
+
+{{ selector_prefix }} li {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(0.5em * var(--prose-scale));
+  margin-bottom: calc(0.5em * var(--prose-scale));
+  {% endif %}
+}
+
+{# List paragraph handling #}
+{{ selector_prefix }} > ul > li p {
+  {% if not reset %}
+  margin-top: calc(0.75em * var(--prose-scale));
+  margin-bottom: calc(0.75em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} > ul > li > p:first-child,
+{{ selector_prefix }} > ol > li > p:first-child {
+  {% if not reset %}
+  margin-top: calc(1.25em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} > ul > li > p:last-child,
+{{ selector_prefix }} > ol > li > p:last-child {
+  {% if not reset %}
+  margin-bottom: calc(1.25em * var(--prose-scale));
+  {% endif %}
+}
+
+{# Nested lists #}
+{{ selector_prefix }} ul ul,
+{{ selector_prefix }} ul ol,
+{{ selector_prefix }} ol ul,
+{{ selector_prefix }} ol ol {
+  {% if not reset %}
+  margin-top: calc(0.75em * var(--prose-scale));
+  margin-bottom: calc(0.75em * var(--prose-scale));
+  {% endif %}
+}
+
+{# Definition lists #}
+{{ selector_prefix }} dl {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(1.25em * var(--prose-scale));
+  margin-bottom: calc(1.25em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} dt {
+  {% if reset %}
+  margin-top: initial;
+  {% else %}
+  margin-top: calc(1.25em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} dd {
+  {% if reset %}
+  margin-top: initial;
+  {% else %}
+  margin-top: calc(0.5em * var(--prose-scale));
+  {% endif %}
+}
+
+{# Other elements #}
+{{ selector_prefix }} [class~="lead"] {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(1.2em * var(--prose-scale));
+  margin-bottom: calc(1.2em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} hr {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(3em * var(--prose-scale));
+  margin-bottom: calc(3em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} figure {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} figure > * {
+  {% if not reset %}
+  margin-top: 0;
+  margin-bottom: 0;
+  {% endif %}
+}
+
+{{ selector_prefix }} figcaption {
+  {% if reset %}
+  margin-top: initial;
+  {% else %}
+  margin-top: calc(0.8571429em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} picture {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} picture > img {
+  {% if not reset %}
+  margin-top: 0;
+  margin-bottom: 0;
+  {% endif %}
+}
+
+{{ selector_prefix }} video {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  {% else %}
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
+  {% endif %}
+}
+
+{# Reset following element margins #}
+{% if not reset %}
+{{ selector_prefix }} hr + *,
+{{ selector_prefix }} h2 + *,
+{{ selector_prefix }} h3 + *,
+{{ selector_prefix }} h4 + * {
+  margin-top: 0;
+}
+{% endif %}
+
+{# First/last child margin resets #}
+{{ selector_prefix }} > :first-child {
+  {% if not reset %}
+  margin-top: 0;
+  {% endif %}
+}
+
+{{ selector_prefix }} > :last-child {
+  {% if not reset %}
+  margin-bottom: 0;
+  {% endif %}
+}
+
+{% endmacro %}
+
+{# Generate all prose styles using the macro #}
+
+/* Base prose with scaling support */
+{{ prose_rules('.prose') }}
 
 /* Small prose modifier - just change the scale */
 .prose-sm {
@@ -17,214 +366,8 @@
   line-height: calc(24 / 14); /* Slightly tighter for small text */
 }
 
-/* Base prose styles */
-.prose a {
-  color: var(--accent-11);
-  font-weight: 500;
-}
+/* Not-prose functionality - surgical reset of prose rules */
+{{ prose_rules('.not-prose', reset=true) }}
 
-.prose a:hover {
-  color: var(--accent-9);
-}
-
-.prose img {
-  max-width: 100%;
-  border-radius: var(--space-2);
-}
-
-.prose p {
-  color: var(--gray-11);
-}
-
-.prose h1 {
-  font-weight: 800;
-}
-
-.prose h2,
-.prose h3,
-.prose h4,
-.prose h5,
-.prose h6 {
-  font-weight: 700;
-}
-
-.prose pre {
-  overflow-x: auto;
-  max-width: 100%;
-  box-sizing: border-box;
-  word-wrap: pre-wrap;
-
-  font-size: var(--text-sm);
-
-  padding: var(--space-5);
-  border-radius: var(--radius-5);
-  border: 1px solid var(--gray-3);
-
-  background-color: var(--gray-1);
-}
-
-.dark .prose pre {
-  background-color: var(--gray-2);
-}
-
-/* Spacing rules with calc() for scaling */
-.prose p {
-  margin-top: calc(1.25em * var(--prose-scale));
-  margin-bottom: calc(1.25em * var(--prose-scale));
-}
-
-.prose [class~="lead"] {
-  margin-top: calc(1.2em * var(--prose-scale));
-  margin-bottom: calc(1.2em * var(--prose-scale));
-}
-
-.prose blockquote {
-  margin-top: calc(1.6em * var(--prose-scale));
-  margin-bottom: calc(1.6em * var(--prose-scale));
-}
-
-.prose h1 {
-  margin-top: 0;
-  margin-bottom: calc(0.8888889em * var(--prose-scale));
-}
-
-.prose h2 {
-  margin-top: calc(2em * var(--prose-scale));
-  margin-bottom: calc(1em * var(--prose-scale));
-}
-
-.prose h3 {
-  margin-top: calc(1.6em * var(--prose-scale));
-  margin-bottom: calc(0.6em * var(--prose-scale));
-}
-
-.prose h4 {
-  margin-top: calc(1.5em * var(--prose-scale));
-  margin-bottom: calc(0.5em * var(--prose-scale));
-}
-
-.prose img {
-  margin-top: calc(2em * var(--prose-scale));
-  margin-bottom: calc(2em * var(--prose-scale));
-}
-
-.prose picture {
-  margin-top: calc(2em * var(--prose-scale));
-  margin-bottom: calc(2em * var(--prose-scale));
-}
-
-.prose picture > img {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.prose video {
-  margin-top: calc(2em * var(--prose-scale));
-  margin-bottom: calc(2em * var(--prose-scale));
-}
-
-.prose pre {
-  margin-top: calc(1.7142857em * var(--prose-scale));
-  margin-bottom: calc(1.7142857em * var(--prose-scale));
-}
-
-.prose ol {
-  margin-top: calc(1.25em * var(--prose-scale));
-  margin-bottom: calc(1.25em * var(--prose-scale));
-}
-
-.prose ul {
-  padding-left: var(--space-4);
-  margin-top: calc(1.25em * var(--prose-scale));
-  margin-bottom: calc(1.25em * var(--prose-scale));
-}
-
-.prose li {
-  margin-top: calc(0.5em * var(--prose-scale));
-  margin-bottom: calc(0.5em * var(--prose-scale));
-}
-
-.prose > ul > li p {
-  margin-top: calc(0.75em * var(--prose-scale));
-  margin-bottom: calc(0.75em * var(--prose-scale));
-}
-
-.prose > ul > li > p:first-child {
-  margin-top: calc(1.25em * var(--prose-scale));
-}
-
-.prose > ul > li > p:last-child {
-  margin-bottom: calc(1.25em * var(--prose-scale));
-}
-
-.prose > ol > li > p:first-child {
-  margin-top: calc(1.25em * var(--prose-scale));
-}
-
-.prose > ol > li > p:last-child {
-  margin-bottom: calc(1.25em * var(--prose-scale));
-}
-
-.prose ul ul,
-.prose ul ol,
-.prose ol ul,
-.prose ol ol {
-  margin-top: calc(0.75em * var(--prose-scale));
-  margin-bottom: calc(0.75em * var(--prose-scale));
-}
-
-.prose dl {
-  margin-top: calc(1.25em * var(--prose-scale));
-  margin-bottom: calc(1.25em * var(--prose-scale));
-}
-
-.prose dt {
-  margin-top: calc(1.25em * var(--prose-scale));
-}
-
-.prose dd {
-  margin-top: calc(0.5em * var(--prose-scale));
-}
-
-.prose hr {
-  margin-top: calc(3em * var(--prose-scale));
-  margin-bottom: calc(3em * var(--prose-scale));
-}
-
-.prose hr + * {
-  margin-top: 0;
-}
-
-.prose h2 + * {
-  margin-top: 0;
-}
-
-.prose h3 + * {
-  margin-top: 0;
-}
-
-.prose h4 + * {
-  margin-top: 0;
-}
-
-.prose figure {
-  margin-top: calc(2em * var(--prose-scale));
-  margin-bottom: calc(2em * var(--prose-scale));
-}
-
-.prose figure > * {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-
-.prose figcaption {
-  margin-top: calc(0.8571429em * var(--prose-scale));
-}
-
-.prose > :first-child {
-  margin-top: 0;
-}
-
-.prose > :last-child {
-  margin-bottom: 0;
-}
+/* Re-enablement rules - allow prose to work inside not-prose containers */
+{{ prose_rules('.not-prose .prose') }}

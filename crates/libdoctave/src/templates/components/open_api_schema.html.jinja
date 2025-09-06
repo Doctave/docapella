@@ -5,8 +5,8 @@
     {% include "components/open_api_schema_attributes.html.jinja" %}
   {%- endif %}
 
-  <div>
-    {%- if schema.schemas and schema.schemas | length > 0 %}
+  {%- if schema.schemas and schema.schemas | length > 0 %}
+    <div>
       {%- if startswith(schema.type_name, "array") %}
         {#- Array case -#}
         {%- set array_item_schema = schema.schemas[0] -%}
@@ -113,6 +113,6 @@
           </div>
         </div>
       {%- endif %}
-    {%- endif %}
-  </div>
+    </div>
+  {%- endif %}
 </div>

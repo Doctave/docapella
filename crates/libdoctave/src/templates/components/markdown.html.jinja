@@ -27,7 +27,7 @@
     {% include "components/markdown/image.html.jinja" %}
   {% elif node.kind.name == "open_api_schema" %}
     {% with schema = node.kind.data, show_anonymous = false, is_root = true %}
-      <div class="open-api-schema-list">
+      <div class="open-api-schema-list not-prose">
         {% include "components/open_api_schema.html.jinja" %}
       </div>
     {% endwith %}
