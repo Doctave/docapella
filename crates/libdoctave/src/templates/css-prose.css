@@ -54,6 +54,8 @@
   box-sizing: border-box;
   word-wrap: pre-wrap;
 
+  font-size: var(--text-sm);
+
   padding: var(--space-5);
   border-radius: var(--radius-5);
   border: 1px solid var(--gray-3);

@@ -20,7 +20,15 @@
     {% if view_mode == "dev" %}
     <script>
         const eventSource = new EventSource('/dev-reload');
-        eventSource.onmessage = () => location.reload();
+        eventSource.onmessage = () => {
+            eventSource.close();
+            location.reload();
+        };
+        
+        // Also close connection when navigating away
+        window.addEventListener('beforeunload', () => {
+            eventSource.close();
+        });
     </script>
     {% endif %}
 </head>
