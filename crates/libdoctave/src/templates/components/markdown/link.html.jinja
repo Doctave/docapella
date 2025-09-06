@@ -1,7 +1,7 @@
 {% from "components/markdown.html.jinja" import markdown %}
 
 <a href="{{ node.kind.data.url|safe }}">
-{% for child in node.children %}
-{{ markdown(child) }}
-{% endfor %}
+  {% for child in node.children %}
+    {{ markdown(child) }}
+  {% endfor %}
 </a>

@@ -5,78 +5,84 @@
 
 {# Only render if there are actually examples #}
 {% if all_examples|length > 0 %}
-<div class="open-api-request-examples">
-  <h3 class="open-api-examples-title">Request examples</h3>
-  <div class="open-api-examples-card">
-    {%- set example_groups = all_examples | groupby("group_name") -%}
+  <div class="open-api-request-examples">
+    <h3 class="open-api-examples-title">Request examples</h3>
+    <div class="open-api-examples-card">
+      {%- set example_groups = all_examples | groupby("group_name") -%}
 
-    {% if example_groups|length > 0 %}
-    <div x-data="{ activeGroup: '{{ example_groups[0][0] }}' }">
-      <div class="open-api-examples-tabs-header">
-        {%- for group_name, examples in example_groups %}
-          <button 
-            :class="{ 'active': activeGroup === '{{ group_name }}' }" 
-            @click="activeGroup = '{{ group_name }}'"
-          >
-            {{ group_name }}
-          </button>
-        {%- endfor %}
-      </div>
+      {% if example_groups|length > 0 %}
+        <div x-data="{ activeGroup: '{{ example_groups[0][0] }}' }">
+          <div class="open-api-examples-tabs-header">
+            {%- for group_name, examples in example_groups %}
+              <button
+                :class="{ 'active': activeGroup === '{{ group_name }}' }"
+                @click="activeGroup = '{{ group_name }}'"
+              >
+                {{ group_name }}
+              </button>
+            {%- endfor %}
+          </div>
 
-      {% for group_name, examples in example_groups %}
-        <div x-show="activeGroup === '{{ group_name }}'"{% if not loop.first %} x-cloak{% endif %}>
-          {{ render_example_block(examples, language_fallback='json') }}
+          {% for group_name, examples in example_groups %}
+            <div
+              x-show="activeGroup === '{{ group_name }}'"
+              {% if not loop.first %}x-cloak{% endif %}
+            >
+              {{ render_example_block(examples, language_fallback='json') }}
+            </div>
+          {% endfor %}
         </div>
-      {% endfor %}
+      {% endif %}
     </div>
-    {% endif %}
   </div>
-</div>
 {% endif %}
 
 {%- set has_response_examples = operation.responses and operation.responses|length > 0 -%}
 
 {% if has_response_examples %}
-<div class="open-api-response-examples">
-  <h3 class="open-api-examples-title">Response examples</h3>
+  <div class="open-api-response-examples">
+    <h3 class="open-api-examples-title">Response examples</h3>
 
-  <div class="open-api-examples-card">
-    <div x-data="{ activeStatus: '{{ operation.responses[0].code }}' }">
-      <div class="open-api-examples-tabs-header">
+    <div class="open-api-examples-card">
+      <div x-data="{ activeStatus: '{{ operation.responses[0].code }}' }">
+        <div class="open-api-examples-tabs-header">
+          {% for response in operation.responses %}
+            {% if response.media_types %}
+              <button
+                :class="{ 'active': activeStatus === '{{ response.code }}' }"
+                @click="activeStatus = '{{ response.code }}'"
+              >
+                {{ response.code }}
+              </button>
+            {% endif %}
+          {% endfor %}
+        </div>
+
         {% for response in operation.responses %}
           {% if response.media_types %}
-            <button 
-              :class="{ 'active': activeStatus === '{{ response.code }}' }" 
-              @click="activeStatus = '{{ response.code }}'"
+            <div
+              x-show="activeStatus === '{{ response.code }}'"
+              {% if not loop.first %}x-cloak{% endif %}
             >
-              {{ response.code }}
-            </button>
+              {# Status description #}
+              {% if response.description_ast %}
+                <div class="open-api-response-description">
+                  {{ markdown(response.description_ast, true) }}
+                </div>
+              {% endif %}
+
+              <div class="open-api-examples-content">
+                {%- set response_examples = flatten_response_examples(response) -%}
+                {% if response_examples|length > 0 %}
+                  {{ render_example_block(response_examples, 'json') }}
+                {% else %}
+                  <p class="open-api-empty-response">Empty response</p>
+                {% endif %}
+              </div>
+            </div>
           {% endif %}
         {% endfor %}
       </div>
-
-      {% for response in operation.responses %}
-        {% if response.media_types %}
-          <div x-show="activeStatus === '{{ response.code }}'"{% if not loop.first %} x-cloak{% endif %}>
-            {# Status description #}
-            {% if response.description_ast %}
-              <div class="open-api-response-description">
-                {{ markdown(response.description_ast, true) }}
-              </div>
-            {% endif %}
-
-            <div class="open-api-examples-content">
-              {%- set response_examples = flatten_response_examples(response) -%}
-              {% if response_examples|length > 0 %}
-                {{ render_example_block(response_examples, 'json') }}
-              {% else %}
-                <p class="open-api-empty-response">Empty response</p>
-              {% endif %}
-            </div>
-          </div>
-        {% endif %}
-      {% endfor %}
     </div>
   </div>
-</div>
 {% endif %}

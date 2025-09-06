@@ -1,7 +1,6 @@
 {#- OpenAPI Schema Attributes Component
     Shows field name, type, required/deprecated flags, description, and detailed attributes
 -#}
-
 {% from "components/markdown.html.jinja" import markdown %}
 
 {%- set is_anonymous = not schema.metadata or not schema.metadata.field_name -%}
@@ -14,26 +13,24 @@
       {%- if schema.metadata and schema.metadata.field_name %}
         <code class="schema-name">{{ schema.metadata.field_name }}</code>
       {%- endif %}
-      
+
       {#- In this case, we've shown the type elsewhere -#}
       {%- if not is_anonymous %}
         <code class="schema-type">{{ actual_type_name(schema) }}</code>
       {%- endif %}
-      
+
       {%- if schema.required %}
         <span class="open-api-schema-required">required</span>
       {%- endif %}
-      
+
       {%- if schema.deprecated %}
         <span class="open-api-schema-deprecated">deprecated</span>
       {%- endif %}
     </div>
   {%- endif %}
-  
+
   {%- if schema.description_ast %}
-    <div>
-      {{ markdown(schema.description_ast, true) }}
-    </div>
+    <div>{{ markdown(schema.description_ast, true) }}</div>
   {%- endif %}
 </div>
 

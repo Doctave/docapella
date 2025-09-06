@@ -2,17 +2,37 @@
   <div class="header-top-content">
     <a href="/" class="logo">
       {% if project.settings.theme.logo %}
-        <img class="light-only" src="{{ project.settings.theme.logo.src }}" alt="{{ project.settings.title }}" />
-        <img class="dark-only" src="{{ project.settings.theme.logo.src_dark }}" alt="{{ project.settings.title }}" />
+        <img
+          class="light-only"
+          src="{{ project.settings.theme.logo.src }}"
+          alt="{{ project.settings.title }}"
+        />
+        <img
+          class="dark-only"
+          src="{{ project.settings.theme.logo.src_dark }}"
+          alt="{{ project.settings.title }}"
+        />
       {% else %}
-      <span>{{ project.settings.title }}</span>
+        <span>{{ project.settings.title }}</span>
       {% endif %}
     </a>
 
-    <button x-data id="header-search-button" @click="$dispatch('open-search-modal')">
+    <button
+      x-data
+      id="header-search-button"
+      @click="$dispatch('open-search-modal')"
+    >
       <span>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-          <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+            clip-rule="evenodd"
+          />
         </svg>
 
         Search...
@@ -24,40 +44,64 @@
     <div class="header-links">
       <ul class="header-links">
         {% for link in project.settings.header.links %}
-        <li class="header-link">
-          <a href="{{ link.external }}">{{ link.label }}</a>
-        </li>
+          <li class="header-link">
+            <a href="{{ link.external }}">{{ link.label }}</a>
+          </li>
         {% endfor %}
       </ul>
 
       {% if project.settings.header.cta %}
-      <a class="header-cta d-button" data-variant="primary" data-size="md" href="{{ project.settings.header.cta.external }}"
-        >{{ project.settings.header.cta.label }}</a
-      >
+        <a
+          class="header-cta d-button"
+          data-variant="primary"
+          data-size="md"
+          href="{{ project.settings.header.cta.external }}"
+          >{{ project.settings.header.cta.label }}</a
+        >
       {% endif %}
 
       <div data-orientation="vertical" class="divider"></div>
 
-      <button class='dark-mode-toggle'>
-        <svg class="light-only" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
-          <path d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1ZM10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM12.95 4.11a.75.75 0 1 0-1.06-1.06l-1.062 1.06a.75.75 0 0 0 1.061 1.062l1.06-1.061ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8ZM11.89 12.95a.75.75 0 0 0 1.06-1.06l-1.06-1.062a.75.75 0 0 0-1.062 1.061l1.061 1.06ZM8 12a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 12ZM5.172 11.89a.75.75 0 0 0-1.061-1.062L3.05 11.89a.75.75 0 1 0 1.06 1.06l1.06-1.06ZM4 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 4 8ZM4.11 5.172A.75.75 0 0 0 5.173 4.11L4.11 3.05a.75.75 0 1 0-1.06 1.06l1.06 1.06Z" />
+      <button class="dark-mode-toggle">
+        <svg
+          class="light-only"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          class="size-4"
+        >
+          <path
+            d="M8 1a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 1ZM10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM12.95 4.11a.75.75 0 1 0-1.06-1.06l-1.062 1.06a.75.75 0 0 0 1.061 1.062l1.06-1.061ZM15 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 15 8ZM11.89 12.95a.75.75 0 0 0 1.06-1.06l-1.06-1.062a.75.75 0 0 0-1.062 1.061l1.061 1.06ZM8 12a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 12ZM5.172 11.89a.75.75 0 0 0-1.061-1.062L3.05 11.89a.75.75 0 1 0 1.06 1.06l1.06-1.06ZM4 8a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 4 8ZM4.11 5.172A.75.75 0 0 0 5.173 4.11L4.11 3.05a.75.75 0 1 0-1.06 1.06l1.06 1.06Z"
+          />
         </svg>
 
-        <svg class="dark-only" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
-          <path d="M14.438 10.148c.19-.425-.321-.787-.748-.601A5.5 5.5 0 0 1 6.453 2.31c.186-.427-.176-.938-.6-.748a6.501 6.501 0 1 0 8.585 8.586Z" />
+        <svg
+          class="dark-only"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          class="size-4"
+        >
+          <path
+            d="M14.438 10.148c.19-.425-.321-.787-.748-.601A5.5 5.5 0 0 1 6.453 2.31c.186-.427-.176-.938-.6-.748a6.501 6.501 0 1 0 8.585 8.586Z"
+          />
         </svg>
       </button>
     </div>
   </div>
   <div class="header-bottom-content">
     {% if project.tabs %}
-    <ul class="header-tabs">
-      {% for tab in project.tabs %}
-        <li>
-        <a data-current="{{ project.active_tab_index[0] == loop.index0 }}" href="{{ tab.href }}">{{ tab.label }}</a>
-        </li>
-      {% endfor %}
-    </ul>
+      <ul class="header-tabs">
+        {% for tab in project.tabs %}
+          <li>
+            <a
+              data-current="{{ project.active_tab_index[0] == loop.index0 }}"
+              href="{{ tab.href }}"
+              >{{ tab.label }}</a
+            >
+          </li>
+        {% endfor %}
+      </ul>
     {% endif %}
   </div>
 </header>

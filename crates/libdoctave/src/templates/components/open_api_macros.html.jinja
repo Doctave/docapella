@@ -13,26 +13,37 @@
 {% macro render_example_block(examples, language_fallback='json', include_media_type_label=false, media_type_name='') %}
   {% if examples and examples|length > 0 %}
     {# Always show dropdown selector like V2, even for single examples #}
-    <div class="open-api-examples-content" x-data="{ activeExample: '{{ examples[0].identifier }}' }">
+    <div
+      class="open-api-examples-content"
+      x-data="{ activeExample: '{{ examples[0].identifier }}' }"
+    >
       {% if include_media_type_label and media_type_name %}
         <div class="open-api-media-type-label">{{ media_type_name }}</div>
       {% endif %}
 
       {% if examples|length > 1 %}
-      <div class="open-api-example-selector">
-        <select x-model="activeExample">
-          {% for example in examples %}
-            {%- set label = example.name or example.language or example.summary or "Example" -%}
-            <option value="{{ example.identifier }}">{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
+        <div class="open-api-example-selector">
+          <select x-model="activeExample">
+            {% for example in examples %}
+              {%- set label = example.name or example.language or example.summary or "Example" -%}
+              <option value="{{ example.identifier }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
       {% endif %}
 
       {% for example in examples %}
-        <div x-show="activeExample === '{{ example.identifier }}'"{% if not loop.first %} x-cloak{% endif %}>
+        <div
+          x-show="activeExample === '{{ example.identifier }}'"
+          {% if not loop.first %}x-cloak{% endif %}
+        >
           <div class="open-api-code-block">
-            <pre data-highlight="true" class="language-{{ example.language or language_fallback }}">{{ example.value }}</pre>
+            <pre
+              data-highlight="true"
+              class="language-{{ example.language or language_fallback }}"
+            >
+{{ example.value }}</pre
+            >
           </div>
           {% if example.description_ast %}
             <div class="open-api-example-description">
@@ -58,17 +69,24 @@
 {% macro render_media_type_selector(media_types, content_type='both', alpine_var_prefix='selected', show_media_type_labels=false) %}
   {% if media_types and media_types|length > 0 %}
     {% if media_types|length > 1 %}
-      <div x-data="{ {{ alpine_var_prefix }}MediaType: '{{ media_types[0].name }}' }">
+      <div
+        x-data="{ {{ alpine_var_prefix }}MediaType: '{{ media_types[0].name }}' }"
+      >
         <div class="open-api-example-selector">
           <select x-model="{{ alpine_var_prefix }}MediaType">
             {% for media_type in media_types %}
-              <option value="{{ media_type.name }}">{{ media_type.name }}</option>
+              <option value="{{ media_type.name }}">
+                {{ media_type.name }}
+              </option>
             {% endfor %}
           </select>
         </div>
 
         {% for media_type in media_types %}
-          <div x-show="{{ alpine_var_prefix }}MediaType === '{{ media_type.name }}'"{% if not loop.first %} x-cloak{% endif %}>
+          <div
+            x-show="{{ alpine_var_prefix }}MediaType === '{{ media_type.name }}'"
+            {% if not loop.first %}x-cloak{% endif %}
+          >
             {% if content_type == 'schema' or content_type == 'both' %}
               {% if media_type.schemas %}
                 <div class="open-api-schema-list">
@@ -80,7 +98,7 @@
                 </div>
               {% endif %}
             {% endif %}
-            
+
             {% if content_type == 'examples' or content_type == 'both' %}
               {% if media_type.examples %}
                 {{ render_example_block(media_type.examples, 'json', show_media_type_labels, media_type.name) }}
@@ -103,7 +121,7 @@
           </div>
         {% endif %}
       {% endif %}
-      
+
       {% if content_type == 'examples' or content_type == 'both' %}
         {% if media_type.examples %}
           {{ render_example_block(media_type.examples, 'json', show_media_type_labels, media_type.name) }}
@@ -172,8 +190,8 @@
   {% if examples and examples|length > 1 %}
     <div class="open-api-examples-tabs">
       {% for example in examples %}
-        <button 
-          :class="{ 'active': {{ alpine_var }} === '{{ example.identifier }}' }" 
+        <button
+          :class="{ 'active': {{ alpine_var }} === '{{ example.identifier }}' }"
           @click="{{ alpine_var }} = '{{ example.identifier }}'"
         >
           {{ example.name or example.summary or "Example" }}

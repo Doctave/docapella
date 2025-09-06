@@ -1,15 +1,15 @@
 {% from "components/markdown.html.jinja" import markdown %}
 
 {% if node.kind.data.ordered %}
-<ol>
-{% for child in node.children %}
-{{ markdown(child) }}
-{% endfor %}
-</ol>
+  <ol>
+    {% for child in node.children %}
+      {{ markdown(child) }}
+    {% endfor %}
+  </ol>
 {% else %}
-<ul>
-{% for child in node.children %}
-{{ markdown(child) }}
-{% endfor %}
-</ul>
+  <ul>
+    {% for child in node.children %}
+      {{ markdown(child) }}
+    {% endfor %}
+  </ul>
 {% endif %}

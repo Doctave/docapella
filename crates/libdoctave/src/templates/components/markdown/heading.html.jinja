@@ -1,7 +1,10 @@
 {% from "components/markdown.html.jinja" import markdown %}
-
+{# prettier-ignore-start #}
 <h{{ node.kind.data.level }} id="{{ node.kind.data.slug }}">
+{# prettier-ignore-end #}
 {% for child in node.children %}
-{{ markdown(child) }}
+  {{ markdown(child) }}
 {% endfor %}
+{# prettier-ignore-start #}
 </h{{ node.kind.data.level }}>
+{# prettier-ignore-end #}

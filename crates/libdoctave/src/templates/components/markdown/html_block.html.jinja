@@ -1,5 +1,5 @@
 {% from "components/markdown.html.jinja" import markdown %}
-
+{# prettier-ignore-start #}
 <{{ node.kind.data.name }}
   {% for attr in node.kind.data.attributes %}
     {{ attr.key }}="{{ attr.value }}"
@@ -9,3 +9,4 @@
     {{ markdown(child) }}
   {% endfor %}
 </{{ node.kind.data.name }}>
+{# prettier-ignore-end #}

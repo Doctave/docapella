@@ -2,88 +2,105 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if page.title %}{{ page.title }} · {% endif %}{{ project.settings.title }}</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% if page.title %}{{ page.title }} ·{% endif %}{{ project.settings.title }}
+    </title>
 
     {% include "js/dark-mode-preload.html.jinja" %}
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css"
+    />
 
     {% include "colors.html.jinja" %}
     {% include "font.html.jinja" %}
     {% include "css.html.jinja" %}
-
     {% include "javascript-libraries.html.jinja" %}
 
     {% if view_mode == "dev" %}
-    <script>
-        const eventSource = new EventSource('/dev-reload');
+      <script>
+        const eventSource = new EventSource("/dev-reload");
         eventSource.onmessage = () => {
-            eventSource.close();
-            location.reload();
+          eventSource.close();
+          location.reload();
         };
-        
-        // Also close connection when navigating away
-        window.addEventListener('beforeunload', () => {
-            eventSource.close();
-        });
-    </script>
-    {% endif %}
-</head>
-<body>
-    {% include "components/header.html.jinja" %}
 
+        // Also close connection when navigating away
+        window.addEventListener("beforeunload", () => {
+          eventSource.close();
+        });
+      </script>
+    {% endif %}
+  </head>
+  <body>
+    {% include "components/header.html.jinja" %}
     {% include "components/search-modal.html.jinja" %}
 
     <div class="page-outer-container">
-        <div class="page-inner-container">
-            {% if page.status == "ok" %}
-                <nav>
-                    {% with navigation = project.active_navigation %}
-                        {% include "components/navigation.html.jinja" %}
-                    {% endwith %}
-                </nav>
-                {% if page.ast.kind == "markdown" %}
-                    <div class="markdown-outer-container">
-                        <div class="markdown-inner-container">
-                            <div>
-                                {% with breadcrumbs = page.breadcrumbs %}
-                                    {% include "components/breadcrumbs.html.jinja" %}
-                                {% endwith %}
+      <div class="page-inner-container">
+        {% if page.status == "ok" %}
+          <nav>
+            {% with navigation = project.active_navigation %}
+              {% include "components/navigation.html.jinja" %}
+            {% endwith %}
+          </nav>
+          {% if page.ast.kind == "markdown" %}
+            <div class="markdown-outer-container">
+              <div class="markdown-inner-container">
+                <div>
+                  {% with breadcrumbs = page.breadcrumbs %}
+                    {% include "components/breadcrumbs.html.jinja" %}
+                  {% endwith %}
 
-                                {{ markdown(page.ast.root) }}
-                            </div>
+                  {{ markdown(page.ast.root) }}
+                </div>
 
-                            {% with footer = project.settings.footer %}
-                                {% include "footer.html.jinja" %}
-                            {% endwith %}
-                        </div>
-                    </div>
-                    <div class="on-this-page-outer-container">
-                        <div class="on-this-page-inner-container">
-                            <div>
-                                <svg width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 2 10Z" clip-rule="evenodd" />
-        </svg>
+                {% with footer = project.settings.footer %}
+                  {% include "footer.html.jinja" %}
+                {% endwith %}
+              </div>
+            </div>
+            <div class="on-this-page-outer-container">
+              <div class="on-this-page-inner-container">
+                <div>
+                  <svg
+                    width="16"
+                    height="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 2 10Z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
 
-                                <span>On this page</span>
-                            </div>
-                            <ul>
-                                {% for item in page.on_this_page_headings %}
-                                    <li><a data-level="{{ item.level }}" href="#{{ item.anchor }}">{{ item.title }}</a></li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                {% elif page.ast.kind == "open_api" %}
-                    {% include "components/open_api.html.jinja" %}
-                {% endif %}
-            {% else %}
-                <div>Page error: {{ page.status }}</div>
-            {% endif %}
-        </div>
+                  <span>On this page</span>
+                </div>
+                <ul>
+                  {% for item in page.on_this_page_headings %}
+                    <li>
+                      <a data-level="{{ item.level }}" href="#{{ item.anchor }}"
+                        >{{ item.title }}</a
+                      >
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          {% elif page.ast.kind == "open_api" %}
+            {% include "components/open_api.html.jinja" %}
+          {% endif %}
+        {% else %}
+          <div>Page error: {{ page.status }}</div>
+        {% endif %}
+      </div>
     </div>
-</body>
+  </body>
 </html>

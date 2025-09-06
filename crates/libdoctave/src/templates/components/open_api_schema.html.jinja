@@ -16,11 +16,13 @@
           <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
             <div>
               <button @click="open = !open">
-                <span x-text="open ? 'Hide array items' : 'Show array items'">Show array items</span>
+                <span x-text="open ? 'Hide array items' : 'Show array items'"
+                  >Show array items</span
+                >
                 <span x-text="open ? '-' : '+'">+</span>
               </button>
             </div>
-            <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
+            <div x-show="open" {% if not is_root %}x-cloak{% endif %}>
               <div class="open-api-schema-list">
                 {%- for child_schema in array_item_schema.schemas %}
                   {% with schema = child_schema, show_anonymous = false, is_root = false %}
@@ -35,11 +37,13 @@
           <div x-data="{ open: {{ 'true' if is_root else 'false' }} }">
             <div>
               <button @click="open = !open">
-                <span x-text="open ? 'Hide array items' : 'Show array items'">Show array items</span>
+                <span x-text="open ? 'Hide array items' : 'Show array items'"
+                  >Show array items</span
+                >
                 <span x-text="open ? '-' : '+'">+</span>
               </button>
             </div>
-            <div x-show="open"{% if not is_root %} x-cloak{% endif %}>
+            <div x-show="open" {% if not is_root %}x-cloak{% endif %}>
               <div class="open-api-schema-list">
                 {%- for child_schema in schema.schemas %}
                   {% with schema = child_schema, show_anonymous = false, is_root = false %}
@@ -52,12 +56,21 @@
         {%- endif %}
       {%- elif schema.type_name == "Any Of" or schema.type_name == "One Of" %}
         {#- Any/One Of case -#}
-        <p class="open-api-schema-constraint">{{ schema.combination_explanation }}</p>
-        
+        <p class="open-api-schema-constraint">
+          {{ schema.combination_explanation }}
+        </p>
+
         <div class="open-api-any-of-accordion">
           {%- for option_schema in schema.schemas %}
-            <div class="open-api-any-of-option" x-data="{ open: {{ 'true' if is_root and loop.first else 'false' }} }">
-              <button class="open-api-any-of-trigger" @click="open = !open" x-bind:data-open="open">
+            <div
+              class="open-api-any-of-option"
+              x-data="{ open: {{ 'true' if is_root and loop.first else 'false' }} }"
+            >
+              <button
+                class="open-api-any-of-trigger"
+                @click="open = !open"
+                x-bind:data-open="open"
+              >
                 <div class="open-api-any-of-trigger-content">
                   {%- set display_type_name = option_schema.type_name %}
                   {%- if startswith(option_schema.type_name, "array") %}
@@ -65,15 +78,32 @@
                   {%- elif startswith(option_schema.type_name, "object") %}
                     {%- set display_type_name = "object" %}
                   {%- endif %}
-                  <code class="open-api-type-badge">{{ display_type_name }}</code>
-                  <span>{{ option_schema.title or option_schema.metadata.component_name or option_schema.type_name }}</span>
+                  <code class="open-api-type-badge"
+                    >{{ display_type_name }}</code
+                  >
+                  <span
+                    >{{ option_schema.title or option_schema.metadata.component_name or option_schema.type_name }}</span
+                  >
                 </div>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="open-api-any-of-chevron">
-                  <path fill-rule="evenodd" d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                  class="open-api-any-of-chevron"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+                    clip-rule="evenodd"
+                  />
                 </svg>
               </button>
-              
-              <div class="open-api-any-of-content" x-show="open"{% if not (is_root and loop.first) %} x-cloak{% endif %}>
+
+              <div
+                class="open-api-any-of-content"
+                x-show="open"
+                {% if not (is_root and loop.first) %}x-cloak{% endif %}
+              >
                 {%- if not startswith(option_schema.type_name, "object") %}
                   {#- Non-object option - show with anonymous flag -#}
                   <div class="open-api-schema-list">
@@ -97,12 +127,22 @@
         </div>
       {%- else %}
         {#- Regular nested schemas case -#}
-        <div class="open-api-nested-schema" x-data="{ open: {{ 'true' if is_root else 'false' }} }">
+        <div
+          class="open-api-nested-schema"
+          x-data="{ open: {{ 'true' if is_root else 'false' }} }"
+        >
           <button @click="open = !open">
-            <span x-text="open ? 'Hide nested attributes' : 'Show nested attributes'">Show nested attributes</span>
+            <span
+              x-text="open ? 'Hide nested attributes' : 'Show nested attributes'"
+              >Show nested attributes</span
+            >
             <span x-text="open ? '-' : '+'">+</span>
           </button>
-          <div class="open-api-nested-schema-content" x-show="open"{% if not is_root %} x-cloak{% endif %}>
+          <div
+            class="open-api-nested-schema-content"
+            x-show="open"
+            {% if not is_root %}x-cloak{% endif %}
+          >
             <div class="open-api-schema-list">
               {%- for child_schema in schema.schemas %}
                 {% with schema = child_schema, show_anonymous = false, is_root = false %}
