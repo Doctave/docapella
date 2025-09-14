@@ -3,6 +3,7 @@ use crate::open_api::ast::PageAst;
 use crate::utils::capitalize;
 use crate::{render_context::RenderContext, MarkdownPage, OpenApiPage, Result};
 
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 #[cfg(test)]
@@ -60,12 +61,9 @@ impl PageKind {
     pub fn out_path(&self) -> PathBuf {
         match self {
             Self::Markdown(md) => {
-                // If we have a README.md, the file name should be `index.md` but the path should
-                // be otherwise the same.
-                let mut out = PathBuf::from(md.uri_path.strip_prefix('/').unwrap_or(&md.uri_path));
+                let mut out = md.path.clone();
 
-                // TODO(Nik): This is a bit hacky...
-                if md.path.ends_with("README.md") || out == Path::new("") {
+                if out.file_name() == Some(OsStr::new("README.md")) {
                     out.set_file_name("index");
                 }
 
