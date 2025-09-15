@@ -6,7 +6,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>
-      {% if page.title %}{{ page.title }} · {% endif %}{{ project.settings.title }}
+      {# prettier-ignore-start #}
+      {% if page.title %}{{ page.title }} &#183; {% endif %}{{ project.settings.title }}
+      {# prettier-ignore-end #}
     </title>
 
     {% include "js/dark-mode-preload.html.jinja" %}
