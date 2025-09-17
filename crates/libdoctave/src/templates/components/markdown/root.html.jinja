@@ -1,7 +1,5 @@
 {% from "components/markdown.html.jinja" import markdown %}
 
-<article class="prose {{ 'prose-sm' if small else '' }}">
-  {% for child in node.children %}
-    {{ markdown(child) }}
-  {% endfor %}
-</article>
+{% for child in node.children %}
+  {{ markdown(child) }}
+{% endfor %}

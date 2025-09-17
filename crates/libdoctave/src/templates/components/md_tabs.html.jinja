@@ -1,0 +1,30 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+<div class="tabs" x-data="{ tab: 0 }">
+  <div class="tabs-header">
+    {% for child in node.children %}
+      <button
+        class="tabs-header-item"
+        x-bind:data-active="tab === {{ loop.index0 }}"
+        @click="tab = {{ loop.index0 }}"
+      >
+        {{ child.kind.data.title }}
+      </button>
+    {% endfor %}
+  </div>
+
+  {% for child in node.children %}
+    <div
+      class="tabs-content"
+      x-bind:data-active="tab === {{ loop.index0 }}"
+      x-show="tab === {{ loop.index0 }}"
+      {% if loop.index0 != 0 %}
+        x-cloak
+      {% endif %}
+    >
+      {% for child in child.children %}
+        {{ markdown(child) }}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>

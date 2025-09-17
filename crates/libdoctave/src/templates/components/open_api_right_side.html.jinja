@@ -1,4 +1,4 @@
-{% from "components/markdown.html.jinja" import markdown %}
+{% from "components/markdown.html.jinja" import prose %}
 {% from "components/open_api_macros.html.jinja" import render_example_block, render_media_type_selector %}
 
 {%- set all_examples = flatten_examples(operation) -%}
@@ -67,7 +67,7 @@
               {# Status description #}
               {% if response.description_ast %}
                 <div class="open-api-response-description">
-                  {{ markdown(response.description_ast, true) }}
+                  {{ prose(response.description_ast, true) }}
                 </div>
               {% endif %}
 

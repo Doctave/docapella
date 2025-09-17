@@ -2,5 +2,5 @@
   data-highlight="true"
   {% if node.kind.data.language %}class="language-{{ node.kind.data.language }}"{% endif %}
 >
-{{ node.kind.data.value }}</pre
+{{ node.kind.data.value|escape }}</pre
 >

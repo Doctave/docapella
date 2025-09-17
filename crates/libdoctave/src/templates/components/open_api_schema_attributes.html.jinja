@@ -1,7 +1,7 @@
 {#- OpenAPI Schema Attributes Component
     Shows field name, type, required/deprecated flags, description, and detailed attributes
 -#}
-{% from "components/markdown.html.jinja" import markdown %}
+{% from "components/markdown.html.jinja" import prose %}
 
 {%- set is_anonymous = not schema.metadata or not schema.metadata.field_name -%}
 {%- set hide_top_row = is_anonymous and not schema.required and not schema.deprecated -%}
@@ -30,7 +30,7 @@
   {%- endif %}
 
   {%- if schema.description_ast %}
-    <div>{{ markdown(schema.description_ast, true) }}</div>
+    <div>{{ prose(schema.description_ast, true) }}</div>
   {%- endif %}
 </div>
 

@@ -21,6 +21,6 @@ attributes:
     default: true
 ---
 
-<img if={@src_dark && @src} src={@src} alt={@alt} class={"light-mode-only " | append(@class)} data-zoomable={@zoomable} />
+<img if={@src_dark && @src} src={@src} alt={@alt} class={"light-only " | append(@class)} data-zoomable={@zoomable} />
 <img elseif={@src} src={@src} alt={@alt} class={@class} data-zoomable={@zoomable} />
-<img if={@src_dark} src={@src_dark} alt={@alt} class={"dark-mode-only " | append(@class)} data-zoomable={@zoomable} />
+<img if={@src_dark} src={@src_dark} alt={@alt} class={"dark-only " | append(@class)} data-zoomable={@zoomable} />

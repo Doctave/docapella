@@ -1,0 +1,11 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+<div
+  class="d-box {{ node.kind.data.class }}"
+  data-padding="{{ node.kind.data.padding }}"
+  data-d-component="Box"
+>
+  {% for child in node.children %}
+    {{ markdown(child) }}
+  {% endfor %}
+</div>

@@ -1,4 +1,4 @@
-{% from "components/markdown.html.jinja" import markdown %}
+{% from "components/markdown.html.jinja" import prose %}
 
 <div class="open-api-outer-container">
   <div class="open-api-inner-container">
@@ -12,7 +12,7 @@
       </div>
 
       {% if page.ast.root.tag.description_ast %}
-        {{ markdown(page.ast.root.tag.description_ast) }}
+        {{ prose(page.ast.root.tag.description_ast) }}
       {% endif %}
     </div>
 
@@ -33,7 +33,7 @@
           </div>
 
           {% if operation.description_ast %}
-            {{ markdown(operation.description_ast) }}
+            {{ prose(operation.description_ast) }}
           {% endif %}
 
           <div class="open-api-operation-details">

@@ -1,4 +1,4 @@
-{% from "components/markdown.html.jinja" import markdown %}
+{% from "components/markdown.html.jinja" import prose %}
 {% from "components/open_api_macros.html.jinja" import render_example_block, render_media_type_selector, render_schema_list, render_example_tabs %}
 
 {%- set initial_tab_index = initial_openapi_tab_index(operation) -%}
@@ -113,7 +113,7 @@
         </button>
 
         <div class="open-api-response-content" x-show="open" x-cloak>
-          {{ markdown(response.description_ast, true) }}
+          {{ prose(response.description_ast, true) }}
 
           <div class="open-api-response-body-toggle-container">
             <span>Response body</span>

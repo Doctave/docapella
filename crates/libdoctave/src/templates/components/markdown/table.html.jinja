@@ -1,0 +1,28 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+<table>
+  <thead>
+    <tr>
+      {% for child in node.children[0].children %}
+        <th class="table-align-{{ node.kind.data.alignment[loop.index0] }}">
+          {% for item in child.children %}
+            {{ markdown(item) }}
+          {% endfor %}
+        </th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in node.children[1:] %}
+      <tr>
+        {% for child in row.children %}
+          <td class="table-align-{{ node.kind.data.alignment[loop.index0] }}">
+            {% for item in child.children %}
+              {{ markdown(item) }}
+            {% endfor %}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

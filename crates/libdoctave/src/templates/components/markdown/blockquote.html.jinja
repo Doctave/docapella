@@ -1,0 +1,6 @@
+{# Blockquote component #}
+<blockquote>
+  {% for child in node.children %}
+    {{ markdown(child) }}
+  {% endfor %}
+</blockquote>

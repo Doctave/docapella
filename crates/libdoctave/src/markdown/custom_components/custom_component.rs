@@ -2012,9 +2012,9 @@ mod test {
             assert_str_eq!(
                 root.debug_string().unwrap(),
                 indoc! {r#"
-                <img if={/_assets/light.png} src={/_assets/light.png} alt={Example} class={light-mode-only } data-zoomable={true}>
+                <img if={/_assets/light.png} src={/_assets/light.png} alt={Example} class={light-only } data-zoomable={true}>
                 </img>
-                <img if={/_assets/dark.png} src={/_assets/dark.png} alt={Example} class={dark-mode-only } data-zoomable={true}>
+                <img if={/_assets/dark.png} src={/_assets/dark.png} alt={Example} class={dark-only } data-zoomable={true}>
                 </img>
                 "#}
             );
@@ -2086,9 +2086,9 @@ mod test {
             assert_str_eq!(
                 root.debug_string().unwrap(),
                 indoc! {r#"
-                <img if={/_assets/light.png} src={/_assets/light.png} alt={Example} class={light-mode-only foo} data-zoomable={true}>
+                <img if={/_assets/light.png} src={/_assets/light.png} alt={Example} class={light-only foo} data-zoomable={true}>
                 </img>
-                <img if={/_assets/dark.png} src={/_assets/dark.png} alt={Example} class={dark-mode-only foo} data-zoomable={true}>
+                <img if={/_assets/dark.png} src={/_assets/dark.png} alt={Example} class={dark-only foo} data-zoomable={true}>
                 </img>
                 "#}
             );
@@ -2143,9 +2143,9 @@ mod test {
             assert_str_eq!(
                 root.debug_string().unwrap(),
                 indoc! {r#"
-                <img if={/_assets/light.png} src={/_assets/light-prod.png} alt={} class={light-mode-only } data-zoomable={true}>
+                <img if={/_assets/light.png} src={/_assets/light-prod.png} alt={} class={light-only } data-zoomable={true}>
                 </img>
-                <img if={/_assets/dark.png} src={/_assets/dark-prod.png} alt={} class={dark-mode-only } data-zoomable={true}>
+                <img if={/_assets/dark.png} src={/_assets/dark-prod.png} alt={} class={dark-only } data-zoomable={true}>
                 </img>
                 "#}
             );

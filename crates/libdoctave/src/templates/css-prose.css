@@ -142,7 +142,7 @@
   box-sizing: border-box;
   word-wrap: pre-wrap;
   font-size: var(--text-sm);
-  padding: var(--space-5);
+  padding: var(--space-3);
   border-radius: var(--radius-5);
   border: 1px solid var(--gray-3);
   background-color: var(--gray-1);
@@ -156,6 +156,24 @@
   background-color: var(--gray-2);
 }
 {% endif %}
+
+{{ selector_prefix }} *:not(pre) > code {
+  {% if reset %}
+  font-size: initial;
+  padding: initial;
+  margin: initial;
+  background-color: initial;
+  color: initial;
+  border-radius: initial;
+  {% else %}
+  font-size: calc(0.9em * var(--prose-scale));
+  padding: calc(0.1em * var(--prose-scale)) calc(0.2em * var(--prose-scale));
+  margin: calc(0.1em * var(--prose-scale) * -1) calc(0.2em * var(--prose-scale));
+  background-color: var(--accent-4);
+  color: var(--accent-12);
+  border-radius: var(--radius-2);
+  {% endif %}
+}
 
 {{ selector_prefix }} blockquote {
   {% if reset %}
@@ -327,6 +345,84 @@
   {% else %}
   margin-top: calc(2em * var(--prose-scale));
   margin-bottom: calc(2em * var(--prose-scale));
+  {% endif %}
+}
+
+{{ selector_prefix }} hr {
+  {% if reset %}
+  margin-top: initial;
+  margin-bottom: initial;
+  border-color: initial;
+  border-top-width: initial;
+  height: initial;
+  box-sizing: initial;
+  {% else %}
+  margin-top: calc(2em * var(--prose-scale));
+  margin-bottom: calc(2em * var(--prose-scale));
+  border-color: var(--gray-4);
+  border-top-width: 0px;
+  height: 0;
+  box-sizing: border-box;
+  {% endif %}
+}
+
+{{ selector_prefix }} table {
+  {% if reset %}
+  font-size: initial;
+  width: initial;
+  table-layout: initial;
+  margin-bottom: initial;
+  margin-top: initial;
+  border-collapse: initial;
+  {% else %}
+  font-size: var(--text-sm);
+  width: 100%;
+  table-layout: auto;
+  margin-bottom: calc(1.5em * var(--prose-scale));
+  margin-top: calc(1.5em * var(--prose-scale));
+  border-collapse: collapse;
+  {% endif %}
+}
+
+{{ selector_prefix }} table > thead > tr,
+{{ selector_prefix }} table > tbody > tr:not(:last-child) {
+  {% if reset %}
+  border-bottom: initial;
+  {% else %}
+  border-bottom: 1px solid var(--gray-4);
+  {% endif %}
+}
+
+{{ selector_prefix }} table th,
+{{ selector_prefix }} table td {
+  {% if reset %}
+  text-align: initial;
+  padding: initial;
+  {% else %}
+  text-align: left;
+  padding-bottom: var(--space-1);
+  padding-top: var(--space-1);
+
+  padding-inline-start: var(--space-2);
+  padding-inline-end: var(--space-2);
+  {% endif %}
+}
+
+{{ selector_prefix }} table th.table-align-center,
+{{ selector_prefix }} table td.table-align-center {
+  {% if reset %}
+  text-align: initial;
+  {% else %}
+  text-align: center;
+  {% endif %}
+}
+
+{{ selector_prefix }} table th.table-align-right,
+{{ selector_prefix }} table td.table-align-right {
+  {% if reset %}
+  text-align: initial;
+  {% else %}
+  text-align: right;
   {% endif %}
 }
 

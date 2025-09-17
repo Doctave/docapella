@@ -1,3 +1,7 @@
+{% macro prose(node, small=false) %}
+  {% include "components/markdown/prose.html.jinja" %}
+{% endmacro %}
+
 {% macro markdown(node, small=false) %}
   {% if node.kind.name == "root" %}
     {% include "components/markdown/root.html.jinja" %}
@@ -25,6 +29,18 @@
     {% include "components/markdown/inline_code.html.jinja" %}
   {% elif node.kind.name == "image" %}
     {% include "components/markdown/image.html.jinja" %}
+  {% elif node.kind.name == "thematic_break" %}
+    {% include "components/markdown/thematic_break.html.jinja" %}
+  {% elif node.kind.name == "blockquote" %}
+    {% include "components/markdown/blockquote.html.jinja" %}
+  {% elif node.kind.name == "table" %}
+    {% include "components/markdown/table.html.jinja" %}
+  {% elif node.kind.name == "md_tabs" %}
+    {% include "components/md_tabs.html.jinja" %}
+  {% elif node.kind.name == "box" %}
+    {% include "components/box.html.jinja" %}
+  {% elif node.kind.name == "flex" %}
+    {% include "components/flex.html.jinja" %}
   {% elif node.kind.name == "open_api_schema" %}
     {% with schema = node.kind.data, show_anonymous = false, is_root = true %}
       <div class="open-api-schema-list not-prose">

@@ -1,0 +1,17 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+<div
+  class="docapella-flex {{ node.kind.data.class }}"
+  data-align="{{ node.kind.data.align }}"
+  data-direction="{{ node.kind.data.direction }}"
+  data-gap="{{ node.kind.data.gap }}"
+  data-height="{{ node.kind.data.height }}"
+  data-justify="{{ node.kind.data.justify }}"
+  data-padding="{{ node.kind.data.padding }}"
+  data-wrap="{{ node.kind.data.wrap }}"
+  data-d-component="Flex"
+>
+  {% for child in node.children %}
+    {{ markdown(child) }}
+  {% endfor %}
+</div>

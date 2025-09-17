@@ -1,4 +1,4 @@
-{% from "components/markdown.html.jinja" import markdown %}
+{% from "components/markdown.html.jinja" import prose %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -58,7 +58,7 @@
                     {% include "components/breadcrumbs.html.jinja" %}
                   {% endwith %}
 
-                  {{ markdown(page.ast.root) }}
+                  {{ prose(page.ast.root) }}
                 </div>
 
                 {% with footer = project.settings.footer %}
