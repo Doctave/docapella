@@ -622,6 +622,32 @@
     text-decoration: var(--shiki-dark-text-decoration) !important;
   }
 
+  .shiki .highlighted-word {
+    background-color: var(--gray-5);
+    border: 1px solid var(--gray-8);
+    padding: 1px 3px;
+    margin: -1px -3px;
+    border-radius: 4px;
+  }
+
+  /* WHITESPACE NOTATION */
+  .shiki .tab,
+  .shiki .space {
+    position: relative;
+  }
+
+  .shiki .tab::before {
+    content: "⇥";
+    position: absolute;
+    opacity: 0.3;
+  }
+
+  .shiki .space::before {
+    content: "·";
+    position: absolute;
+    opacity: 0.3;
+  }
+
   {% include "css-prose.css" %}
   {% include "css-builtin-components.css" %}
   {% include "css-openapi.css" %}

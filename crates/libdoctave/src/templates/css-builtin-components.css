@@ -15,6 +15,10 @@
   overflow: hidden;
 }
 
+a.d-card-link {
+  text-decoration: none;
+}
+
 .d-box[data-max-width="full"] {
   max-width: 100%;
 }
