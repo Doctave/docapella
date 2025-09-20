@@ -91,10 +91,10 @@ pub struct Project {
     active_tab_index: Vec<usize>,
     /// The currently active navigation structure
     active_navigation: CurrentNavigation,
-    /// Vec of CSS strings that need to be rendered
-    custom_css: Vec<String>,
     /// The URL we can load a favicon from
     favicon_url: Option<String>,
+    /// Custom CSS contents
+    custom_css: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -555,7 +555,7 @@ impl ContentApiResponse {
                 tabs,
                 active_tab_index: active_tab,
                 active_version: ctx.active_version,
-                custom_css: ctx.custom_css,
+                custom_css: project.custom_css.clone(),
                 favicon_url: ctx.favicon_url,
                 active_navigation: navigation.into(),
             },
@@ -620,7 +620,7 @@ impl ContentApiResponse {
                 settings,
                 active_tab_index: active_tab,
                 active_version: ctx.active_version,
-                custom_css: ctx.custom_css,
+                custom_css: project.custom_css.clone(),
                 favicon_url: ctx.favicon_url,
                 active_navigation: navigation.into(),
             },

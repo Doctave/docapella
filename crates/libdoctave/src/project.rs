@@ -121,6 +121,7 @@ pub struct Project {
     pub(crate) input_paths: Vec<PathBuf>,
     pub(crate) custom_components: Vec<CustomComponentHandle>,
     pub(crate) open_api_components: HashMap<String, Components>,
+    pub custom_css: Vec<String>,
 }
 
 impl Project {
@@ -345,6 +346,12 @@ impl Project {
             }
         }
 
+        let custom_css = settings
+            .styles()
+            .iter()
+            .flat_map(|path| list.iter().find(|(p, _)| p == path).map(|(_, c)| c.clone()))
+            .collect::<Vec<_>>();
+
         // Safe to unwrap here as errors have been found already
         Ok(Project {
             parser: parser.unwrap(),
@@ -352,6 +359,7 @@ impl Project {
             structure,
             content_size_bytes,
             settings,
+            custom_css,
             pages,
             assets,
             input_paths,
@@ -977,7 +985,7 @@ impl Project {
     }
 
     pub fn search_index(&self) -> crate::Result<SearchIndex> {
-        SearchIndex::new(&self)
+        SearchIndex::new(self)
     }
 
     pub fn boilerplate_file_list() -> Vec<(PathBuf, Vec<u8>)> {

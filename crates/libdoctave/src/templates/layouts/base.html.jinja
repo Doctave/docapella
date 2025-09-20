@@ -37,6 +37,12 @@
         });
       </script>
     {% endif %}
+
+    {% for custom_css in project.custom_css %}
+      <style>
+        {{ custom_css }}
+      </style>
+    {% endfor %}
   </head>
   <body>
     {% include "components/header.html.jinja" %}

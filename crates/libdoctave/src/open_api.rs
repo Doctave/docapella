@@ -206,7 +206,8 @@ impl OpenApi {
             uri_path.strip_prefix('/').unwrap_or(&uri_path)
         ));
 
-        let mut overview = crate::MarkdownPage::new(&synthetic_path, overview_page_markdown.into_bytes());
+        let mut overview =
+            crate::MarkdownPage::new(&synthetic_path, overview_page_markdown.into_bytes());
         // Override the URI path
         overview.uri_path = uri_path;
         pages.push(PageKind::Markdown(overview));

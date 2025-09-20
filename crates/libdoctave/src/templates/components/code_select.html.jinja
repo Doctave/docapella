@@ -1,0 +1,31 @@
+{% import "components/markdown.html.jinja" as markdown %}
+
+<div class="d-card code-select" data-d-component="CodeSelect" x-data='{ selected: "0", options: {{ node.children|map(attribute='kind')|map(attribute='data')|tojson }} }' data-padding='0'>
+  <div class="code-select-header">
+    <div class="code-select-header-title">
+      <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 9.5 8 12l2 2.5"></path>
+        <path d="m14 9.5 2 2.5-2 2.5"></path>
+        <rect width="18" height="18" x="3" y="3" rx="2">
+        </rect>
+      </svg>
+
+      <span x-text="options[selected].label"></span>
+    </div>
+    <select x-model="selected" class="code-select-header-select">
+      {% for option in node.children %}
+        <option value="{{ loop.index0 }}">{{ option.kind.data.label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {% for option in node.children %}
+    <div
+      class="code-select-option"
+      x-show="selected === '{{ loop.index0 }}'"
+      {% if not loop.first %}x-cloak{% endif %}
+    >
+      <pre data-highlight="true" {% if option.kind.data.language %}class="language-{{ option.kind.data.language }}"{% endif %}>{{ option.kind.data.value|escape }}</pre>
+    </div>
+  {% endfor %}
+</div>

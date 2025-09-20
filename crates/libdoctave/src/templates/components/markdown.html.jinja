@@ -27,6 +27,8 @@
     {% include "components/markdown/code.html.jinja" %}
   {% elif node.kind.name == "inline_code" %}
     {% include "components/markdown/inline_code.html.jinja" %}
+  {% elif node.kind.name == "code_select" %}
+    {% include "components/code_select.html.jinja" %}
   {% elif node.kind.name == "image" %}
     {% include "components/markdown/image.html.jinja" %}
   {% elif node.kind.name == "thematic_break" %}
@@ -41,6 +43,8 @@
     {% include "components/box.html.jinja" %}
   {% elif node.kind.name == "flex" %}
     {% include "components/flex.html.jinja" %}
+  {% elif node.kind.name == "grid" %}
+    {% include "components/grid.html.jinja" %}
   {% elif node.kind.name == "open_api_schema" %}
     {% with schema = node.kind.data, show_anonymous = false, is_root = true %}
       <div class="open-api-schema-list not-prose">

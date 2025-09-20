@@ -123,7 +123,12 @@
   {% endif %}
 }
 
-{{ selector_prefix }} pre {
+{{ selector_prefix }} .prose-code {
+  margin-top: calc(1.7142857em * var(--prose-scale));
+  margin-bottom: calc(1.7142857em * var(--prose-scale));
+}
+
+{{ selector_prefix }} .prose-code > pre {
   {% if reset %}
   overflow-x: initial;
   max-width: initial;
@@ -142,12 +147,11 @@
   box-sizing: border-box;
   word-wrap: pre-wrap;
   font-size: var(--text-sm);
-  padding: var(--space-3);
+  padding: var(--space-4);
   border-radius: var(--radius-5);
   border: 1px solid var(--gray-3);
   background-color: var(--gray-1);
-  margin-top: calc(1.7142857em * var(--prose-scale));
-  margin-bottom: calc(1.7142857em * var(--prose-scale));
+  margin: 0;
   {% endif %}
 }
 
