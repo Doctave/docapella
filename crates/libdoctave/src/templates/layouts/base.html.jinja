@@ -39,9 +39,11 @@
     {% endif %}
 
     {% for custom_css in project.custom_css %}
+      <!-- prettier-ignore-start -->
       <style>
         {{ custom_css }}
       </style>
+      <!-- prettier-ignore-end -->
     {% endfor %}
   </head>
   <body>

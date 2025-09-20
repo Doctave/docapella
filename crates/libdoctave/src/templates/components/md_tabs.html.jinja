@@ -2,15 +2,15 @@
 
 <div class="tabs" x-data="{ tab: 0 }">
   <div class="tabs-header">
-      {% for child in node.children %}
-        <button
-          class="tabs-header-item"
-          x-bind:data-active="tab === {{ loop.index0 }}"
-          @click="tab = {{ loop.index0 }}"
-        >
-          {{ child.kind.data.title }}
-        </button>
-      {% endfor %}
+    {% for child in node.children %}
+      <button
+        class="tabs-header-item"
+        x-bind:data-active="tab === {{ loop.index0 }}"
+        @click="tab = {{ loop.index0 }}"
+      >
+        {{ child.kind.data.title }}
+      </button>
+    {% endfor %}
   </div>
 
   {% for child in node.children %}
@@ -29,4 +29,3 @@
     </div>
   {% endfor %}
 </div>
-  

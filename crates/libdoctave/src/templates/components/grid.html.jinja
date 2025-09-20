@@ -1,6 +1,10 @@
 {% from "components/markdown.html.jinja" import markdown %}
 
-<div class="d-grid {{ node.kind.data.class }}" data-columns="{{ node.kind.data.columns }}" data-gap="{{ node.kind.data.gap }}">
+<div
+  class="d-grid {{ node.kind.data.class }}"
+  data-columns="{{ node.kind.data.columns }}"
+  data-gap="{{ node.kind.data.gap }}"
+>
   {% for child in node.children %}
     {{ markdown(child) }}
   {% endfor %}
