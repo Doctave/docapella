@@ -100,7 +100,7 @@
       </template>
     </div>
 
-    <div x-show="results.length > 0" class="search-results">
+    <div x-show="results.length > 0" class="search-results" tabindex="-1">
       <template x-for="result in results" :key="result.ref">
         <a
           x-bind:href="item.page_url"
