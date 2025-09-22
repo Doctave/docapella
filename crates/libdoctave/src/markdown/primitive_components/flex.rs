@@ -6,11 +6,6 @@ use crate::{
     renderable_ast::Position,
 };
 use thiserror::Error;
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifTaggedEnum};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -25,10 +20,6 @@ pub static HEIGHT_KEY: &str = "height";
 pub static CLASS_KEY: &str = "class";
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Primitives.Flex")]
 #[serde(rename_all = "snake_case")]
 pub struct Flex {
     pub align: FlexAlign,
@@ -256,9 +247,6 @@ impl Default for Flex {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum FlexAlign {
     Start,
@@ -285,9 +273,6 @@ impl TryFrom<&str> for FlexAlign {
 // format!("Unexpected value `{}` for attribute `align`.\nExpected one of `start`, `center`, `end`, `baseline`, or `stretch`.", value)
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum FlexJustify {
     #[default]
@@ -313,9 +298,6 @@ impl TryFrom<&str> for FlexJustify {
 // "Unexpected value `{}` for attribute `justify`.\nExpected one of `start`, `center`, `end`, or `between`."
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum FlexDirection {
     Row,
@@ -339,9 +321,6 @@ impl TryFrom<&str> for FlexDirection {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum FlexWrap {
     Wrap,
@@ -363,9 +342,6 @@ impl TryFrom<&str> for FlexWrap {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum FlexHeight {
     Auto,

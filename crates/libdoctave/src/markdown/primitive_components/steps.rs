@@ -9,12 +9,6 @@ use crate::{
 
 use thiserror::Error;
 
-#[cfg(feature = "rustler")]
-use rustler::NifStruct;
-
-#[cfg(test)]
-use ts_rs::TS;
-
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Steps {
     pub steps: Vec<Step>,
@@ -51,10 +45,6 @@ impl PrimitiveComponentAutocomplete for Steps {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Markdown.Step")]
 pub struct Step {
     pub title: String,
 }

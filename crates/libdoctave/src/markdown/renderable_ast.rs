@@ -1,13 +1,7 @@
-#[cfg(feature = "rustler")]
-use rustler::{Decoder, Encoder, Env, NifResult, NifStruct, NifTaggedEnum, Term};
-
 /// Nodes for the final renderable AST. All nodes here will be convertible to HTML
 /// and there are no "virtual" nodes or expressions to evaluate.
 use serde::Serialize;
 use std::io::Write;
-
-#[cfg(test)]
-use ts_rs::TS;
 
 use crate::{
     open_api::ast::SchemaAst,
@@ -17,32 +11,11 @@ use crate::{
 pub use super::shared_ast::*;
 
 #[derive(Debug, Default, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Node")]
 pub struct Node {
     pub kind: NodeKind,
     #[serde(skip_serializing)]
     pub pos: Position,
     pub children: Vec<Node>,
-}
-
-#[cfg(feature = "rustler")]
-impl Encoder for Box<Node> {
-    fn encode<'a>(&self, env: Env<'a>) -> Term<'a> {
-        let data = &**self;
-        data.encode(env)
-    }
-}
-
-#[cfg(feature = "rustler")]
-impl<'a> Decoder<'a> for Box<Node> {
-    fn decode(term: Term<'a>) -> NifResult<Self> {
-        let data: Node = term.decode()?;
-
-        Ok(Box::new(data))
-    }
 }
 
 impl Node {
@@ -434,9 +407,6 @@ impl Node {
 }
 
 #[derive(Debug, Default, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(tag = "name", content = "data", rename_all = "snake_case")]
 pub enum NodeKind {
     #[default]
@@ -618,8 +588,6 @@ impl Node {
 }
 
 #[derive(Debug, Default, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct ProseStatistics {
     pub headings: u32,
     pub paragraphs: u32,

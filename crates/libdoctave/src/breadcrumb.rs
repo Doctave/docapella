@@ -1,8 +1,5 @@
 use serde::Serialize;
 
-#[cfg(test)]
-use ts_rs::TS;
-
 use crate::{
     markdown,
     navigation::{Item, Section},
@@ -11,8 +8,6 @@ use crate::{
 };
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Breadcrumb {
     Label { text: String },

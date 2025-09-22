@@ -15,16 +15,8 @@ use crate::{
     Ast, Error, PageHandle, Project as LibdoctaveProject, RenderOptions, Tab,
 };
 
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifUnitEnum};
-
-#[cfg(test)]
-use ts_rs::TS;
-
 #[derive(Debug, Clone)]
 /// All the information required to send over the final response.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct ResponseContext {
     /// Render options for rendering Markdown
     pub options: RenderOptions,
@@ -64,9 +56,6 @@ impl Default for ResponseContext {
 }
 
 #[derive(Serialize, Debug, Clone)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifUnitEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum ViewMode {
     Prod,
@@ -76,8 +65,6 @@ pub enum ViewMode {
 #[derive(Serialize, Debug, Clone)]
 /// Information about the project beyond just the content itself. Required to render surrounding
 /// information etc. This will change based on what page the reader is currently on.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct Project {
     /// Information about the Jaleo Site. This is injected from the outside.
     site: Site,
@@ -100,10 +87,6 @@ pub struct Project {
 #[derive(Debug, Clone, Serialize)]
 /// Information that comes from Jaleo. In the desktop, this will be stubbed out with default
 /// values.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.ContentApi.Site")]
 pub struct Site {
     /// The Jaleo site ID for this project
     pub id: usize,
@@ -143,10 +126,6 @@ impl Default for Site {
 
 #[derive(Serialize, Debug, Clone, PartialEq)]
 /// Information about the current build. On desktop this will be stubbed out data.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.ContentApi.Build")]
 pub struct Build {
     id: usize,
     inserted_at: String,
@@ -168,13 +147,6 @@ impl Build {
 }
 
 #[derive(Serialize, Debug, Default, Clone)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.ContentApi.DebugInfo"
-)]
 pub struct DebugInfo {
     performance: Option<Vec<DebugInfoStep>>,
 }
@@ -206,13 +178,6 @@ impl DebugInfo {
 }
 
 #[derive(Serialize, Debug, Default, Clone)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.ContentApi.DebugInfoStep"
-)]
 pub struct DebugInfoStep {
     label: String,
     duration_ms: usize,
@@ -222,8 +187,6 @@ pub struct DebugInfoStep {
 /// from the built-in content server.
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "kind")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 #[allow(clippy::large_enum_variant)]
 pub enum ContentApiResponse {
     #[serde(rename = "content")]
@@ -376,10 +339,6 @@ impl ContentApiResponse {
 }
 
 #[derive(Serialize, Debug, Clone, PartialEq)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.ContentApi.Version")]
 pub struct Version {
     id: usize,
     label: String,
@@ -403,9 +362,6 @@ impl Default for Version {
 
 #[derive(Serialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifUnitEnum))]
 pub enum VersionVisibility {
     Private,
     Public,
@@ -415,8 +371,6 @@ pub enum VersionVisibility {
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "status")]
 /// Current page, which may be a page that was rendered, of an error.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub enum CurrentPage {
     #[serde(rename = "ok")]
     Page {
@@ -451,8 +405,6 @@ pub enum CurrentPage {
 #[derive(Serialize, Debug, Clone)]
 #[serde(tag = "status")]
 /// Current page, which may be a page that was rendered, of an error.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub enum CurrentNavigation {
     #[serde(rename = "ok")]
     Navigation { sections: Vec<Section> },
@@ -718,13 +670,6 @@ impl ContentApiResponse {
 }
 
 #[derive(Serialize, Debug, Clone, Default, PartialEq)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.ContentApi.Integrations"
-)]
 pub struct Integrations {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hubspot_tracking_code: Option<String>,
@@ -741,8 +686,6 @@ pub struct Integrations {
 }
 
 #[derive(Serialize, Debug, Clone)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct PageOptions {
     pub hide_navigation: bool,
     pub hide_side_table_of_contents: bool,

@@ -8,12 +8,6 @@ use crate::{
 
 use thiserror::Error;
 
-#[cfg(feature = "rustler")]
-use rustler::NifStruct;
-
-#[cfg(test)]
-use ts_rs::TS;
-
 pub static TITLE_KEY: &str = "title";
 
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -52,10 +46,6 @@ impl PrimitiveComponentAutocomplete for Tabs {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Markdown.Tab")]
 #[serde(rename = "MdTab")]
 pub struct Tab {
     pub title: String,

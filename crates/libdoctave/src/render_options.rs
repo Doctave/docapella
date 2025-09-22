@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[cfg(test)]
-use ts_rs::TS;
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// Rules for rendering a Doctave page, for rewriting links,
 /// prefixing asset URLs, settings user preferences, etc.
@@ -11,8 +8,6 @@ use ts_rs::TS;
 /// Note that bool fields are `false` by default according to
 /// Rust's default rules
 #[derive(Default)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct RenderOptions {
     pub bust_image_caches: bool,
     /// Convert any .md links to their web equivalent

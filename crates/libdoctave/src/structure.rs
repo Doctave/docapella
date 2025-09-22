@@ -1,11 +1,5 @@
-#[cfg(feature = "rustler")]
-use rustler::NifStruct;
-
 use std::collections::HashSet;
 use std::path::PathBuf;
-
-#[cfg(test)]
-use ts_rs::TS;
 
 use crate::icon::{Icon, IconDescription};
 use crate::structure_v2::{StructureV2, TabV2};
@@ -22,8 +16,6 @@ pub enum Structure {
 
 #[derive(PartialEq, Clone, Debug, Serialize)]
 #[serde(tag = "version")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub enum Tab {
     #[serde(rename = "1")]
     TabV1(TabV1),
@@ -165,10 +157,6 @@ pub fn parse_structure(input: &str) -> Result<StructureDescription> {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure.Tab")]
 pub struct TabV1 {
     pub label: String,
     pub subtabs: Vec<SubTab>,
@@ -178,10 +166,6 @@ pub struct TabV1 {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure.SubTab")]
 pub struct SubTab {
     pub label: String,
     pub path: String,
@@ -462,8 +446,6 @@ impl SubTabDescription {
 }
 
 #[derive(Serialize, Debug, Clone)]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure")]
 pub struct StructureLocal {
     pub tabs: Vec<TabV1>,
     pub active_tab: Option<TabV1>,

@@ -6,16 +6,7 @@ use crate::{render_context::RenderContext, MarkdownPage, OpenApiPage, Result};
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(feature = "rustler")]
-use rustler::NifTaggedEnum;
-
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(tag = "kind", content = "root", rename_all = "snake_case")]
 pub enum Ast {
     Markdown(Node),

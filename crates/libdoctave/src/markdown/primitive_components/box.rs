@@ -1,12 +1,6 @@
 use serde::Serialize;
 use thiserror::Error;
 
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifTaggedEnum};
-
 use crate::{
     autocomplete::PrimitiveComponentAutocomplete,
     expressions::Value,
@@ -23,10 +17,6 @@ pub static CLASS_KEY: &str = "class";
 pub static HEIGHT_KEY: &str = "height";
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Primitives.Box")]
 #[serde(rename_all = "snake_case")]
 #[serde(rename = "Box")]
 pub struct CBox {
@@ -163,9 +153,6 @@ impl Error {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum MaxWidth {
     Sm,
@@ -205,9 +192,6 @@ impl TryFrom<&str> for MaxWidth {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum Height {
     Auto,

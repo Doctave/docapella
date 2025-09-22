@@ -4,20 +4,10 @@ use markdown_rs::mdast;
 /// Shared parts of the AST
 use serde::Serialize;
 
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifTaggedEnum};
-
 use crate::expressions::{self, Interpreter, Result, Value};
 
 /// End and start points in the source file
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Ord, PartialOrd, Eq)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Position")]
 pub struct Position {
     pub start: Point,
     /// None, if the position is a single point and not a span
@@ -88,10 +78,6 @@ impl From<&markdown_rs::message::Place> for Position {
 
 /// A point in a source file
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize, Ord, PartialOrd, Eq)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Point")]
 pub struct Point {
     /// Column number, 1-indexed
     pub col: usize,
@@ -171,10 +157,6 @@ impl Point {
 
 /// An attribute in an MDX-style component
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Attribute")]
 pub struct Attribute {
     pub key: String,
     pub value: Option<AttributeValue>,
@@ -214,9 +196,6 @@ impl From<mdast::AttributeContent> for Attribute {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(untagged, rename_all = "snake_case")]
 pub enum AttributeValue {
     Expression(String),
@@ -242,9 +221,6 @@ impl Display for AttributeValue {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(rename_all = "snake_case")]
 pub enum TableAlignment {
     None,

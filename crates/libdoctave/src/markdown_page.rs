@@ -8,9 +8,6 @@ use crate::render_context::{FileContext, RenderContext};
 use crate::utils::capitalize;
 use crate::{frontmatter, markdown, Error, Result};
 
-#[cfg(test)]
-use ts_rs::TS;
-
 #[derive(Clone)]
 pub(crate) struct MarkdownPage {
     pub path: PathBuf,
@@ -209,8 +206,6 @@ impl MarkdownPage {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct OnThisPageHeading {
     pub level: u8,
     pub title: String,

@@ -1,12 +1,6 @@
 use serde::Serialize;
 use thiserror::Error;
 
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(feature = "rustler")]
-use rustler::NifStruct;
-
 use crate::{
     autocomplete::PrimitiveComponentAutocomplete,
     expressions::Value,
@@ -22,10 +16,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub static COLUMNS_KEY: &str = "cols";
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Primitives.Box")]
 #[serde(rename_all = "snake_case")]
 pub struct Grid {
     pub gap: usize,

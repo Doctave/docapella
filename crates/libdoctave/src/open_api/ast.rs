@@ -3,12 +3,6 @@ use serde::Serialize;
 
 use thiserror::Error;
 
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifTaggedEnum};
-
 use crate::{
     ast_mdx,
     error_renderer::{self, Highlight, Location},
@@ -112,20 +106,12 @@ fn ast_for_openapi(md: &str, ctx: &RenderContext) -> Result<Node> {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Tag")]
 pub struct Tag {
     pub name: String,
     pub description_ast: Option<Node>,
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Page")]
 pub struct PageAst {
     pub tag: Tag,
     pub operations: Vec<OperationAst>,
@@ -161,13 +147,6 @@ impl PageAst {
     }
 }
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.OpenApiAst.Operation"
-)]
 pub struct OperationAst {
     pub summary: Option<String>,
     pub description_ast: Option<Node>,
@@ -297,10 +276,6 @@ impl OperationAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Example")]
 pub struct ExampleAst {
     name: String,
     summary: Option<String>,
@@ -370,13 +345,6 @@ impl ExampleAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.OpenApiAst.RequestBody"
-)]
 pub struct RequestBodyAst {
     pub description_ast: Option<Node>,
     pub media_types: Vec<MediaTypeAst>,
@@ -401,10 +369,6 @@ impl RequestBodyAst {
     }
 }
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Status")]
 pub struct StatusAst {
     pub code: String,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -441,10 +405,6 @@ impl StatusAst {
     }
 }
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Header")]
 pub struct HeaderAst {
     pub name: String,
     pub schema: SchemaAst,
@@ -464,13 +424,6 @@ impl HeaderAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.OpenApiAst.MediaType"
-)]
 pub struct MediaTypeAst {
     pub name: String,
     pub schemas: Vec<SchemaAst>,
@@ -505,13 +458,6 @@ impl MediaTypeAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.OpenApiAst.Parameter"
-)]
 pub struct ParameterAst {
     pub schema: Option<SchemaAst>,
     pub description_ast: Option<Node>,
@@ -554,10 +500,6 @@ fn no_enums(input: &Option<Vec<Option<String>>>) -> bool {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Schema")]
 pub struct SchemaAst {
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub schemas: Vec<SchemaAst>,
@@ -600,10 +542,6 @@ pub struct SchemaAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.OpenApiAst.Metadata")]
 pub struct Metadata {
     pub field_name: Option<String>,
     pub component_name: Option<String>,
@@ -696,9 +634,6 @@ impl SchemaAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(tag = "kind", content = "data", rename_all = "snake_case")]
 pub enum SecurityRequirementAst {
     Http {
@@ -713,7 +648,6 @@ pub enum SecurityRequirementAst {
         key_name: String,
         key_location: String,
     },
-    #[cfg_attr(test, ts(rename = "o_auth2"))]
     OAuth2 {
         name: String,
         description_ast: Option<Node>,
@@ -790,9 +724,6 @@ impl SecurityRequirementAst {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifTaggedEnum))]
 #[serde(tag = "kind", content = "data", rename_all = "snake_case")]
 pub enum OAuth2FlowAst {
     Implicit {

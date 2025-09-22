@@ -1,13 +1,4 @@
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifUntaggedEnum};
-
-#[cfg(test)]
-use schemars::JsonSchema;
-
 use include_dir::{include_dir, Dir};
-
-#[cfg(test)]
-use ts_rs::TS;
 
 static LUCIDE: Dir = include_dir!("./crates/libdoctave/icon_sets/lucide");
 
@@ -16,9 +7,6 @@ static LUCIDE: Dir = include_dir!("./crates/libdoctave/icon_sets/lucide");
 ///
 /// NOTE: We cannot actually use the ts-rs derived types, because we manually implement Serialize,
 /// so we override the type manually here.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifUntaggedEnum))]
 #[serde(tag = "set")]
 pub enum Icon {
     #[serde(rename = "lucide")]
@@ -33,30 +21,18 @@ pub enum Icon {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure.Icon")]
 pub struct LucideIcon {
     pub name: String,
     pub html: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure.Icon")]
 pub struct DeviconIcon {
     pub name: String,
     pub html: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure.Icon")]
 pub struct UnknownIcon {
     pub unknown_set_name: String,
     pub name: String,
@@ -103,9 +79,6 @@ impl Icon {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct IconDescription {
     set: String,
     name: String,

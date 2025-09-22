@@ -6,12 +6,6 @@ use crate::render_context::RenderContext;
 use crate::{markdown, page_kind::PageKind, project::Project, Error, Result};
 use serde::{Deserialize, Serialize};
 
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(test)]
-use schemars::JsonSchema;
-
 /// Build the navigation structure.
 ///
 /// Takes as input the Yaml file that describes the navigation, render options
@@ -95,9 +89,6 @@ impl std::ops::Deref for Navigation {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(test, ts(rename = "NavSection"))]
 pub struct Section {
     pub heading: Option<String>,
     pub collapsed: bool,
@@ -153,8 +144,6 @@ fn gather_links_from_item(item: &Item) -> Vec<String> {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub enum HttpMethod {
     Get,
     Post,
@@ -208,9 +197,6 @@ impl std::fmt::Display for HttpMethod {
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "kind")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(test, ts(rename = "NavItem"))]
 pub enum Item {
     #[serde(rename = "subheading")]
     Subheading {
@@ -329,7 +315,6 @@ impl Item {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-#[cfg_attr(test, derive(JsonSchema))]
 #[serde(untagged)]
 pub enum Filter {
     Equals { equals: String },
@@ -337,14 +322,12 @@ pub enum Filter {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-#[cfg_attr(test, derive(JsonSchema))]
 pub struct UserPreferencesFilter {
     pub user_preferences: HashMap<String, Filter>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(JsonSchema))]
 pub struct SectionDescription {
     pub heading: Option<String>,
     pub collapsed: Option<bool>,
@@ -557,7 +540,6 @@ fn verify_user_preference_filter_values(
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-#[cfg_attr(test, derive(JsonSchema))]
 #[serde(untagged, deny_unknown_fields)]
 pub enum ItemDescription {
     Link {

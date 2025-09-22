@@ -1,6 +1,3 @@
-#[cfg(test)]
-use ts_rs::TS;
-
 use crate::{
     markdown::error_renderer::{self, Highlight, Location},
     render_context::RenderContext,
@@ -51,8 +48,6 @@ impl Default for Frontmatter {
 }
 
 #[derive(Deserialize, Serialize, Debug, Default, PartialEq, Clone)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 #[serde(rename_all = "snake_case")]
 pub enum PageWidth {
     Full,

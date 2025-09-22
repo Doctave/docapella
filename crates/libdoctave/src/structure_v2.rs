@@ -1,12 +1,3 @@
-#[cfg(test)]
-use ts_rs::TS;
-
-#[cfg(test)]
-use schemars::JsonSchema;
-
-#[cfg(feature = "rustler")]
-use rustler::NifStruct;
-
 use crate::icon::{Icon, IconDescription};
 use crate::parser::is_external_link;
 use crate::SETTINGS_FILE_NAME;
@@ -135,10 +126,6 @@ impl StructureV2 {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(feature = "rustler", module = "Doctave.Libdoctave.Structure.Tab")]
 pub struct TabV2 {
     pub label: String,
     pub subtabs: Vec<TabV2>,
@@ -366,9 +353,6 @@ impl From<StructureV2Description> for StructureV2 {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct TabDescription {
     pub path: Option<String>,
     pub external: Option<String>,
@@ -380,9 +364,6 @@ pub struct TabDescription {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct SubTabDescription {
     path: Option<String>,
     external: Option<String>,

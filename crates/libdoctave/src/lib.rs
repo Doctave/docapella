@@ -7,9 +7,6 @@ extern crate serde;
 
 pub use serde_json;
 
-#[cfg(test)]
-use ts_rs::TS;
-
 pub mod breadcrumb;
 pub mod content_api;
 mod description_extractor;
@@ -73,9 +70,6 @@ pub const SETTINGS_FILE_NAME: &str = "docapella.yaml";
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Eq, PartialOrd, Ord)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(test, ts(rename = "DoctaveError"))]
 pub struct Error {
     pub code: usize,
     pub message: String,

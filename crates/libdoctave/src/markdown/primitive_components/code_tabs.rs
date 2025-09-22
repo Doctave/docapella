@@ -9,9 +9,6 @@ use crate::{
 };
 use thiserror::Error;
 
-#[cfg(test)]
-use ts_rs::TS;
-
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
@@ -94,13 +91,9 @@ impl Error {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct CodeSelect;
 
 #[derive(Default, Debug, Clone, PartialEq, Deserialize, Serialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct CodeTab {
     pub label: String,
     pub title: String,

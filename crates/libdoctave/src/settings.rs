@@ -1,6 +1,4 @@
 use regex::Regex;
-#[cfg(feature = "rustler")]
-use rustler::{NifStruct, NifUntaggedEnum};
 
 use crate::parser::{is_external_link, rewrite_image_src, to_final_link};
 use crate::project::Asset;
@@ -35,17 +33,9 @@ lazy_static! {
     static ref PATH_REGEX: Regex = Regex::new(r"(:[\wöäå]+)(?:\/|$)").unwrap();
 }
 
-#[cfg(test)]
-use schemars::JsonSchema;
-
-#[cfg(test)]
-use ts_rs::TS;
-
 #[derive(Debug, Clone, PartialEq, Serialize)]
 #[serde(tag = "version")]
 /// Content of the `docapella.yaml` file.
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub enum Settings {
     #[serde(rename = "2")]
     V2(Box<SettingsV2>),
@@ -726,9 +716,6 @@ impl Settings {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub enum Radius {
     None,
     Small,
@@ -753,11 +740,7 @@ impl Display for Radius {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct SettingsV2 {
-    #[cfg_attr(test, ts(skip))]
     #[serde(skip_serializing, alias = "doctave_version")]
     /// Unused. Just for serde.
     version: u8,
@@ -802,9 +785,6 @@ impl Default for SettingsV2 {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct ValeSettings {
     pub version: Option<String>,
     pub config_file_path: Option<String>,
@@ -814,9 +794,6 @@ pub type FooterLink = HeaderLink;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct Footer {
     #[serde(default)]
     pub links: Vec<FooterLink>,
@@ -835,9 +812,6 @@ pub struct Footer {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
 #[serde(tag = "name")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct Theme {
     // NOTE: Coming soon
     // style: ThemeStyle
@@ -854,8 +828,6 @@ pub struct Theme {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct ColorsV2Description {
     #[serde(default)]
     accent: String,
@@ -865,13 +837,9 @@ pub struct ColorsV2Description {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(from = "ColorsV2Description")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct ColorsV2 {
     #[serde(default)]
     accent: String,
-    #[cfg_attr(test, ts(skip))]
     #[serde(skip)]
     original_accent: String,
     #[serde(default)]
@@ -905,9 +873,6 @@ impl Default for ColorsV2 {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Default)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub enum Grayscale {
     #[default]
     #[serde(rename = "gray")]
@@ -926,10 +891,7 @@ pub enum Grayscale {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct SettingsV1 {
-    #[cfg_attr(test, ts(skip))]
     #[serde(skip_serializing, alias = "doctave_version")]
     version: Option<u8>,
     #[serde(default)]
@@ -975,9 +937,6 @@ impl Default for SettingsV1 {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub enum ColorMode {
     #[serde(rename = "auto")]
     #[default]
@@ -989,14 +948,6 @@ pub enum ColorMode {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.Project.HeaderSettings"
-)]
 pub struct HeaderSettings {
     #[serde(default)]
     pub links: Vec<HeaderLink>,
@@ -1012,9 +963,6 @@ enum EnumVal {
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Serialize, Ord, Eq, PartialOrd)]
 #[serde(from = "EnumVal")]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct UserPreferenceOption {
     pub value: String,
     pub label: String,
@@ -1046,9 +994,6 @@ impl Display for UserPreferenceOption {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct UserPreference {
     pub label: String,
     pub default: String,
@@ -1290,8 +1235,6 @@ impl TryFrom<ColorsDescription> for Colors {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(try_from = "ColorsDescription")]
 #[serde(deny_unknown_fields)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, ts(export))]
 pub struct Colors {
     pub main: String,
     pub main_dark: String,
@@ -1497,9 +1440,6 @@ impl Colors {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct Logo {
     pub src: PathBuf,
     pub src_dark: Option<PathBuf>,
@@ -1560,9 +1500,6 @@ impl Logo {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct Redirect {
     pub from: String,
     pub to: String,
@@ -1575,9 +1512,6 @@ impl Redirect {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct Favicon {
     pub src: PathBuf,
 }
@@ -1585,10 +1519,6 @@ pub struct Favicon {
 type HeaderCta = HeaderLink;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifUntaggedEnum))]
 #[serde(untagged)]
 pub enum HeaderLink {
     Internal(InternalLink),
@@ -1682,14 +1612,6 @@ impl HeaderLink {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.Project.HeaderSettings.InternalLink"
-)]
 pub struct InternalLink {
     #[serde(alias = "text")]
     pub label: String,
@@ -1701,14 +1623,6 @@ pub struct InternalLink {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
-#[cfg_attr(feature = "rustler", derive(NifStruct))]
-#[cfg_attr(
-    feature = "rustler",
-    module = "Doctave.Libdoctave.Project.HeaderSettings.ExternalLink"
-)]
 pub struct ExternalLink {
     #[serde(alias = "text")]
     pub label: String,
@@ -1724,9 +1638,6 @@ where
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(test, derive(TS))]
-#[cfg_attr(test, derive(JsonSchema))]
-#[cfg_attr(test, ts(export))]
 pub struct OpenApi {
     pub spec_file: PathBuf,
     #[serde(deserialize_with = "normalize_uri_path")]
