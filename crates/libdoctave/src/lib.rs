@@ -843,7 +843,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! {r#"
                 ---
                 title: An Project
-                doctave_version: 2
                 "# })),
             },
             InputFile {
@@ -882,7 +881,6 @@ mod test {
                     indoc! { r#"
                     ---
                     title: An Project
-                    version: 2
                     "# }
                     .to_string(),
                 ),

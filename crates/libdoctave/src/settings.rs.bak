@@ -1525,6 +1525,7 @@ mod test {
         let input = indoc! {r##"
         ---
         title: Acme Inc
+        doctave_version: 2
 
         theme:
           logo:
@@ -1573,6 +1574,7 @@ mod test {
         let input = indoc! {r##"
         ---
         title: Acme Inc
+        doctave_version: 2
         "##};
 
         let settings = Settings::parse(input).unwrap();
@@ -1584,6 +1586,7 @@ mod test {
         let input = indoc! {r##"
         ---
         title: Acme Inc
+        doctave_version: 2
         "##};
 
         let settings = Settings::parse(input).unwrap();
@@ -1595,6 +1598,7 @@ mod test {
         let input = indoc! {r##"
         ---
         title: Acme Inc
+        doctave_version: 2
 
         theme:
           colors:
@@ -2077,7 +2081,183 @@ mod test {
     }
 
 
+    #[test]
+    fn section_specific_colors_can_be_set_with_defaults() {
+        let input = indoc! {r##"
+        ---
+        title: Acme Inc
 
+        colors:
+            main: "#999"
+            text_base: "#CECE"
+            text_soft: "#000"
+            text_strong: "#333"
+            bg: "#222"
+            bg_secondary: "#111"
+            border: "#AAA"
+
+            main_dark: "#999D"
+            text_base_dark: "#CECED"
+            text_soft_dark: "#000D"
+            text_strong_dark: "#333D"
+            bg_dark: "#222D"
+            bg_secondary_dark: "#111D"
+            border_dark: "#AAAD"
+        "##};
+
+        let settings: Settings = serde_yaml::from_str(input).unwrap();
+
+        assert_eq!(settings.theme.colors.content_main, "#999");
+        assert_eq!(settings.theme.colors.nav_main, "#999");
+        assert_eq!(settings.theme.colors.header_main, "#999");
+
+        assert_eq!(settings.theme.colors.content_text_base, "#CECE");
+        assert_eq!(settings.theme.colors.nav_text_base, "#CECE");
+        assert_eq!(settings.theme.colors.header_text_base, "#CECE");
+
+        assert_eq!(settings.theme.colors.content_text_soft, "#000");
+        assert_eq!(settings.theme.colors.nav_text_soft, "#000");
+        assert_eq!(settings.theme.colors.header_text_soft, "#000");
+
+        assert_eq!(settings.theme.colors.content_text_strong, "#333");
+        assert_eq!(settings.theme.colors.nav_text_strong, "#333");
+        assert_eq!(settings.theme.colors.header_text_strong, "#333");
+
+        assert_eq!(settings.theme.colors.content_bg, "#222");
+        assert_eq!(settings.theme.colors.nav_bg, "#222");
+        assert_eq!(settings.theme.colors.header_bg, "#222");
+
+        assert_eq!(settings.theme.colors.content_bg_secondary, "#111");
+        assert_eq!(settings.theme.colors.nav_bg_secondary, "#111");
+        assert_eq!(settings.theme.colors.header_bg_secondary, "#111");
+
+        assert_eq!(settings.theme.colors.content_border, "#AAA");
+        assert_eq!(settings.theme.colors.nav_border, "#AAA");
+        assert_eq!(settings.theme.colors.header_border, "#AAA");
+
+        assert_eq!(settings.theme.colors.content_main_dark, "#999D");
+        assert_eq!(settings.theme.colors.nav_main_dark, "#999D");
+        assert_eq!(settings.theme.colors.header_main_dark, "#999D");
+
+        assert_eq!(settings.theme.colors.content_text_base_dark, "#CECED");
+        assert_eq!(settings.theme.colors.nav_text_base_dark, "#CECED");
+        assert_eq!(settings.theme.colors.header_text_base_dark, "#CECED");
+
+        assert_eq!(settings.theme.colors.content_text_soft_dark, "#000D");
+        assert_eq!(settings.theme.colors.nav_text_soft_dark, "#000D");
+        assert_eq!(settings.theme.colors.header_text_soft_dark, "#000D");
+
+        assert_eq!(settings.theme.colors.content_text_strong_dark, "#333D");
+        assert_eq!(settings.theme.colors.nav_text_strong_dark, "#333D");
+        assert_eq!(settings.theme.colors.header_text_strong_dark, "#333D");
+
+        assert_eq!(settings.theme.colors.content_bg_dark, "#222D");
+        assert_eq!(settings.theme.colors.nav_bg_dark, "#222D");
+        assert_eq!(settings.theme.colors.header_bg_dark, "#222D");
+
+        assert_eq!(settings.theme.colors.content_bg_secondary_dark, "#111D");
+        assert_eq!(settings.theme.colors.nav_bg_secondary_dark, "#111D");
+        assert_eq!(settings.theme.colors.header_bg_secondary_dark, "#111D");
+
+        assert_eq!(settings.theme.colors.content_border_dark, "#AAAD");
+        assert_eq!(settings.theme.colors.nav_border_dark, "#AAAD");
+        assert_eq!(settings.theme.colors.header_border_dark, "#AAAD");
+    }
+
+    #[test]
+    fn section_specific_colors_can_be_overriden_with_specific_section_value() {
+        let input = indoc! {r##"
+        ---
+        title: Acme Inc
+
+        colors:
+            main: "#CECECE"
+            nav_main: "#FFF"
+
+            main_dark: "#CECECE"
+            nav_main_dark: "#FFF"
+
+            text_base: "#CECECE"
+            nav_text_base: "#FFF"
+
+            text_soft: "#CECECE"
+            nav_text_soft: "#FFF"
+
+            text_strong: "#CECECE"
+            nav_text_strong: "#FFF"
+
+            bg: "#CECECE"
+            nav_bg: "#FFF"
+
+            border: "#CECECE"
+            nav_border: "#FFF"
+
+            text_base_dark: "#CECECD"
+            nav_text_base_dark: "#FFF"
+
+            text_soft_dark: "#CECECD"
+            nav_text_soft_dark: "#FFF"
+
+            text_strong_dark: "#CECECD"
+            nav_text_strong_dark: "#FFF"
+
+            bg_dark: "#CECECD"
+            nav_bg_dark: "#FFF"
+
+            border_dark: "#CECECD"
+            nav_border_dark: "#FFF"
+        "##};
+
+        let settings: Settings = serde_yaml::from_str(input).unwrap();
+
+        assert_eq!(settings.theme.colors.content_main, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_main, "#FFF");
+        assert_eq!(settings.theme.colors.header_main, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_text_soft, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_text_soft, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_soft, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_text_base, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_text_base, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_base, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_text_soft, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_text_soft, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_soft, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_text_strong, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_text_strong, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_strong, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_bg, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_bg, "#FFF");
+        assert_eq!(settings.theme.colors.header_bg, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_border, "#CECECE");
+        assert_eq!(settings.theme.colors.nav_border, "#FFF");
+        assert_eq!(settings.theme.colors.header_border, "#CECECE");
+
+        assert_eq!(settings.theme.colors.content_text_base_dark, "#CECECD");
+        assert_eq!(settings.theme.colors.nav_text_base_dark, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_base_dark, "#CECECD");
+
+        assert_eq!(settings.theme.colors.content_text_soft_dark, "#CECECD");
+        assert_eq!(settings.theme.colors.nav_text_soft_dark, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_soft_dark, "#CECECD");
+
+        assert_eq!(settings.theme.colors.content_text_strong_dark, "#CECECD");
+        assert_eq!(settings.theme.colors.nav_text_strong_dark, "#FFF");
+        assert_eq!(settings.theme.colors.header_text_strong_dark, "#CECECD");
+
+        assert_eq!(settings.theme.colors.content_bg_dark, "#CECECD");
+        assert_eq!(settings.theme.colors.nav_bg_dark, "#FFF");
+        assert_eq!(settings.theme.colors.header_bg_dark, "#CECECD");
+
+        assert_eq!(settings.theme.colors.content_border_dark, "#CECECD");
+        assert_eq!(settings.theme.colors.nav_border_dark, "#FFF");
+        assert_eq!(settings.theme.colors.header_border_dark, "#CECECD");
+    }
 
     #[test]
     fn color_mode_settings_get_set() {
@@ -2112,6 +2292,7 @@ mod test {
         fn basic() {
             let input = indoc! {r##"
         ---
+        doctave_version: 2
         title: Acme Inc
 
         theme:
@@ -2256,7 +2437,8 @@ mod test {
         fn v2_defaults() {
             let input = indoc! {r##"
             ---
-                title: Acme Inc
+            doctave_version: 2
+            title: Acme Inc
         "##};
 
             let settings = Settings::parse(input).unwrap();
@@ -2287,6 +2469,41 @@ mod test {
             );
         }
 
+        #[test]
+        fn v2_defaults_with_version_fallback() {
+            let input = indoc! {r##"
+            ---
+            version: 2
+            title: Acme Inc
+        "##};
+
+            let settings = Settings::parse(input).unwrap();
+
+            assert!(true);
+            assert_eq!(
+                settings.footer(),
+                Some(&Footer {
+                    links: vec![],
+                    twitter: None,
+                    linkedin: None,
+                    github: None,
+                    discord: None,
+                    facebook: None,
+                })
+            );
+            assert_eq!(settings.user_preferences(), &HashMap::new(),);
+            assert_eq!(settings.redirects(), &[]);
+            assert_eq!(
+                settings.theme().unwrap(),
+                &Theme {
+                    logo: None,
+                    radius: Radius::Medium,
+                    favicon: None,
+                    colors: ColorsV2::default(),
+                    color_mode: ColorMode::default(),
+                }
+            );
+        }
 
         #[test]
         fn v2_deserializes_tab_descriptions_from_tabs_key() {
@@ -2294,7 +2511,8 @@ mod test {
             // from "tabs" key
             let input = indoc! {r##"
             ---
-                title: Acme Inc
+            doctave_version: 2
+            title: Acme Inc
             tabs:
               - label: "Tab 1"
                 path: "/tab1"
@@ -2314,6 +2532,7 @@ mod test {
             let input = indoc! {r##"
             ---
             title: Acme Inc
+            version: 2
 
             theme:
               color_mode: "dark"
@@ -2329,6 +2548,7 @@ mod test {
             let input = indoc! {r##"
             ---
             title: Acme Inc
+            version: 2
             "##};
 
             let settings: Settings = serde_yaml::from_str(input).unwrap();
@@ -2341,6 +2561,7 @@ mod test {
             let input = indoc! {r##"
             ---
             title: Acme Inc
+            version: 2
 
             theme:
               color_mode:"kettle
@@ -2351,7 +2572,117 @@ mod test {
             assert_eq!(err.description, "There was an error parsing your docapella.yaml:\n\ntheme: invalid type: string \"color_mode:\\\"kettle\", expected struct Theme at line 6 column 3");
         }
 
+        #[test]
+        fn v1_without_a_version() {
+            let input = indoc! {"
+            ---
+            title: Acme Inc
+
+            colors:
+                main: \"#CECECE\"
+
+            header:
+                links:
+                    - text: Google
+                      external: https://www.google.com
+                    - text: Example
+                      external: https://www.example.com
+                cta:
+                    text: Sign Up
+                    external: https://www.example.com
 
 
+            open_api:
+                - spec_file: /path/to/spec.json
+                  uri_prefix: /bobby
+
+            user_preferences:
+              plan:
+                label: Your Plan
+                default: Plan A
+                values:
+                  - Plan A
+                  - Plan B
+            "};
+
+            let settings: Settings = Settings::parse(input).unwrap();
+            assert!(true);
+        }
+
+        #[test]
+        fn v1_with_explicit_version() {
+            let input = indoc! {"
+            ---
+            doctave_version: 1
+            title: Acme Inc
+
+            colors:
+                main: \"#CECECE\"
+
+            header:
+                links:
+                    - text: Google
+                      external: https://www.google.com
+                    - text: Example
+                      external: https://www.example.com
+                cta:
+                    text: Sign Up
+                    external: https://www.example.com
+
+
+            open_api:
+                - spec_file: /path/to/spec.json
+                  uri_prefix: /bobby
+
+            user_preferences:
+              plan:
+                label: Your Plan
+                default: Plan A
+                values:
+                  - Plan A
+                  - Plan B
+            "};
+
+            let settings: Settings = Settings::parse(input).unwrap();
+            assert!(true);
+        }
+
+        #[test]
+        fn v1_with_explicit_version_version_fallback() {
+            let input = indoc! {"
+            ---
+            version: 1
+            title: Acme Inc
+
+            colors:
+                main: \"#CECECE\"
+
+            header:
+                links:
+                    - text: Google
+                      external: https://www.google.com
+                    - text: Example
+                      external: https://www.example.com
+                cta:
+                    text: Sign Up
+                    external: https://www.example.com
+
+
+            open_api:
+                - spec_file: /path/to/spec.json
+                  uri_prefix: /bobby
+
+            user_preferences:
+              plan:
+                label: Your Plan
+                default: Plan A
+                values:
+                  - Plan A
+                  - Plan B
+            "};
+
+            let settings: Settings = Settings::parse(input).unwrap();
+            assert!(true);
+        }
     }
 }

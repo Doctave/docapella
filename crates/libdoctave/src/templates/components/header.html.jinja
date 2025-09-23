@@ -43,14 +43,16 @@
 
     <div class="header-links">
       <ul class="header-links">
-        {% for link in project.settings.header.links %}
-          <li class="header-link">
-            <a href="{{ link.external }}">{{ link.label }}</a>
-          </li>
-        {% endfor %}
+        {% if project.settings.header %}
+          {% for link in project.settings.header.links %}
+            <li class="header-link">
+              <a href="{{ link.external }}">{{ link.label }}</a>
+            </li>
+          {% endfor %}
+        {% endif %}
       </ul>
 
-      {% if project.settings.header.cta %}
+      {% if project.settings.header and project.settings.header.cta %}
         <a
           class="header-cta d-button"
           data-variant="primary"

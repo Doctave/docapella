@@ -257,18 +257,7 @@ impl Project {
             }
         }
 
-        let structure = if settings.is_v2() {
-            settings.structure()
-        } else if let Some((_path, content)) = list
-            .iter()
-            .find(|(path, _)| path == Path::new(STRUCTURE_FILE_NAME))
-        {
-            structure::build(content)
-                .map(|s| Some(Arc::new(s)))
-                .map_err(|e| vec![e])?
-        } else {
-            None
-        };
+        let structure = settings.structure();
 
         let navigations: Option<HashMap<_, _>> = if let Some(ref structure) = structure {
             let mut navs = vec![];
@@ -613,7 +602,7 @@ impl Project {
 
         if self.pages().par_iter().any(|handle| match handle.page {
             PageKind::Markdown(m) => {
-                m.experimental_template_rendered_enabled(self.settings.is_v2())
+                m.experimental_template_rendered_enabled(true)
             }
             _ => false,
         }) {
@@ -1401,7 +1390,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     "# }
                     .to_string(),
                 ),
@@ -1509,7 +1497,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     "# }
                     .to_string(),
                 ),
@@ -1626,7 +1613,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# }
                     .to_owned(),
                 ),
@@ -1676,7 +1662,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# }
                     .to_owned(),
                 ),
@@ -2064,53 +2049,6 @@ mod test {
         );
     }
 
-    #[test]
-    fn verifies_the_existence_of_logo_mentioned_in_settings() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("_assets/cat.jpg"),
-                content: InputContent::Text("".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                - heading: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                logo:
-                  src: _assets/logo.png
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-        let error = &project.verify(None, None).unwrap_err()[0];
-
-        assert_eq!(
-            error.message,
-            "Could not find logo at \"_assets/logo.png\"."
-        );
-        assert_eq!(
-            error.description,
-            "Found following images: [\"_assets/cat.jpg\"].\nMake sure the file name is correct and located under the \"_assets\" directory."
-        );
-    }
 
     #[test]
     fn verifies_the_existence_of_logo_mentioned_in_settings_v2() {
@@ -2139,7 +2077,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 theme:
                   logo:
                     src: _assets/logo.png
@@ -2162,58 +2099,6 @@ mod test {
         );
     }
 
-    #[test]
-    fn verifies_the_existence_of_dark_mode_logo_mentioned_in_settings() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("_assets/cat.jpg"),
-                content: InputContent::Text("".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from("_assets/logo.png"),
-                content: InputContent::Text("".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                - heading: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                logo:
-                  src: _assets/logo.png
-                  src_dark: _assets/dark-logo.png
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files.clone()).unwrap();
-        let error = &project.verify(None, None).unwrap_err()[0];
-
-        assert_eq!(
-            error.message,
-            "Could not find dark mode logo at \"_assets/dark-logo.png\"."
-        );
-        assert_eq!(
-            error.description,
-            "Found following images: [\"_assets/cat.jpg\", \"_assets/logo.png\"].\nMake sure the file name is correct and located under the \"_assets\" directory."
-        );
-    }
 
     #[test]
     fn verifies_the_existence_of_dark_mode_logo_mentioned_in_settings_v2() {
@@ -2246,7 +2131,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 theme:
                   logo:
                     src: _assets/logo.png
@@ -2270,53 +2154,6 @@ mod test {
         );
     }
 
-    #[test]
-    fn verifies_the_existence_of_favicon_mentioned_in_settings() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("_assets/favicon.ico"),
-                content: InputContent::Text("".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                - heading: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                favicon:
-                  src: _assets/favicon.png
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-        let error = &project.verify(None, None).unwrap_err()[0];
-
-        assert_eq!(
-            error.message,
-            "Could not find favicon at \"_assets/favicon.png\"."
-        );
-        assert_eq!(
-            error.description,
-            "Found following possible favicons: [\"_assets/favicon.ico\"].\nMake sure the file name is correct and located under the \"_assets\" directory."
-        );
-    }
 
     #[test]
     fn verifies_the_existence_of_favicon_mentioned_in_settings_v2() {
@@ -2345,7 +2182,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 theme:
                   favicon:
                     src: _assets/favicon.png
@@ -3342,7 +3178,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 footer:
                   links:
                     - label: "Doctave"
@@ -3445,7 +3280,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 footer:
                   links:
                     - label: "Doctave"
@@ -3550,7 +3384,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 footer:
                   links:
                     - label: "Doctave"
@@ -4036,67 +3869,6 @@ mod test {
         assert_eq!(result[0].message, "Invalid YAML syntax in frontmatter");
     }
 
-    #[test]
-    fn verifies_all_tabs_have_root() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(
-                    indoc! {r#"
-                # Hi
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                - heading: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! { r#"
-                tabs:
-                  - label: Default
-                    subtabs:
-                      - label: First
-                        path: /
-                  - label: Again
-                    subtabs:
-                      - label: Second
-                        path: /foo/
-                "# }
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-
-        let errors = project.verify(None, None).unwrap_err();
-
-        assert!(
-            errors.iter().any(|e| e.message
-                == "Missing root README.md for tab \"Second\". Add a file at \"/foo/README.md\"."),
-            "No error for missing root readme"
-        );
-    }
 
     #[test]
     fn verifies_all_tabs_have_root_v2() {
@@ -4125,7 +3897,6 @@ mod test {
                 content: InputContent::Text(
                     indoc! {r#"
                 ---
-                version: 2
                 title: Something
                 tabs:
                   - label: Default
@@ -4179,7 +3950,6 @@ mod test {
                 content: InputContent::Text(
                     indoc! {r#"
                 ---
-                version: 2
                 title: Something
                 tabs:
                   - label: Default
@@ -4429,7 +4199,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
 
                 theme:
                   colors:
@@ -4491,7 +4260,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
 
                 user_preferences:
                   game:
@@ -4547,7 +4315,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
 
                 user_preferences:
                   game:
@@ -4621,7 +4388,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                     .to_string(),
                 ),
@@ -4685,7 +4451,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                     .to_string(),
                 ),
@@ -4749,7 +4514,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                     .to_string(),
                 ),
@@ -4794,7 +4558,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                     .to_string(),
                 ),
@@ -4929,7 +4692,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 open_api:
                   - spec_file: openapi.yaml
                     uri_prefix: /api
@@ -5093,7 +4855,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     open_api:
                       - spec_file: openapi.json
                         uri_prefix: /api
@@ -5159,7 +4920,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     open_api:
                       - spec_file: openapi.json
                         uri_prefix: /api
@@ -5262,7 +5022,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     open_api:
                       - spec_file: openapi.json
                         uri_prefix: /api
@@ -5365,7 +5124,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     open_api:
                       - spec_file: openapi.json
                         uri_prefix: /api
@@ -5461,7 +5219,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     "# }
                     .to_string(),
                 ),
@@ -5511,7 +5268,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     open_api:
                       - spec_file: openapi.json
                         uri_prefix: /api
@@ -5615,7 +5371,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: An Project
-                    doctave_version: 2
                     open_api:
                       - spec_file: openapi.json
                         uri_prefix: /api
@@ -5718,7 +5473,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# }
                     .to_owned(),
                 ),
@@ -5767,7 +5521,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# }
                     .to_owned(),
                 ),
@@ -5810,7 +5563,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# }
                     .to_owned(),
                 ),
@@ -5875,7 +5627,6 @@ mod test {
                     indoc! { r#"
               ---
               title: An Project
-              version: 2
 
               vale:
                 version: 2.30.0
@@ -5920,7 +5671,6 @@ mod test {
                     indoc! { r#"
               ---
               title: An Project
-              version: 2
 
               vale:
                 version: 2.30.0

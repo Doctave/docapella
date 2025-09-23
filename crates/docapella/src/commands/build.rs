@@ -31,7 +31,7 @@ mod tests {
         let mut fake_stdout = std::io::sink();
 
         fs::write(
-            working_dir.path().join("doctave.yaml"),
+            working_dir.path().join("docapella.yaml"),
             "---\ntitle: Hello World",
         )
         .unwrap();
@@ -59,6 +59,11 @@ mod tests {
         let out_dir = TempDir::new().unwrap();
         let mut fake_stdout = std::io::Cursor::new(Vec::new());
 
+        fs::write(
+            working_dir.path().join("docapella.yaml"),
+            "---\ntitle: Hello World",
+        )
+        .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
 
         let result = run(BuildArgs {

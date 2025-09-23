@@ -1300,7 +1300,7 @@ mod test {
 
         let page = &tag_pages[0];
 
-        let settings = Settings::default();
+        let settings = Settings::V2(Box::default());
         let mut ctx = RenderContext::new();
         ctx.with_settings(&settings);
 

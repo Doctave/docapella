@@ -200,7 +200,6 @@ mod test {
                     indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# }
                     .to_owned(),
                 ),

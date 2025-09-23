@@ -84,7 +84,7 @@ impl MarkdownPage {
         // We will expand the links below, once we've gathered the links, and
         // this lets us give the user the actual URI that they've written in
         // the markdown file as the error message, instead of the expanded version.
-        if self.experimental_template_rendered_enabled(ctx.settings.is_v2()) {
+        if self.experimental_template_rendered_enabled(true) {
             markdown::parser::extract_links(&self.content, ctx)
         } else {
             let full_content = self.apply_partials(ctx)?;
@@ -95,7 +95,7 @@ impl MarkdownPage {
     pub(crate) fn asset_links(&self, ctx: &mut RenderContext) -> Result<Vec<OutgoingLink>> {
         ctx.with_url_base_by_fs_path(&self.path);
 
-        if self.experimental_template_rendered_enabled(ctx.settings.is_v2()) {
+        if self.experimental_template_rendered_enabled(true) {
             markdown::parser::extract_asset_links(&self.content, ctx)
         } else {
             let full_content = self.apply_partials(ctx)?;
@@ -106,7 +106,7 @@ impl MarkdownPage {
     pub(crate) fn external_links(&self, ctx: &mut RenderContext) -> Result<Vec<String>> {
         ctx.with_url_base_by_page_uri(&self.uri_path);
 
-        if self.experimental_template_rendered_enabled(ctx.settings.is_v2()) {
+        if self.experimental_template_rendered_enabled(true) {
             markdown::parser::extract_external_links(&self.content)
         } else {
             let full_content = self.apply_partials(ctx)?;
@@ -169,7 +169,7 @@ impl MarkdownPage {
             self.path.clone(),
         ));
 
-        if self.experimental_template_rendered_enabled(ctx.settings.is_v2()) {
+        if self.experimental_template_rendered_enabled(true) {
             markdown::ast_mdx(frontmatter::without(&self.content), ctx)
         } else {
             let full = self.apply_partials(ctx)?;

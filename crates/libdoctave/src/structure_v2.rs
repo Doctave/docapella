@@ -458,7 +458,6 @@ mod test {
                         content: InputContent::Text(
                             formatdoc! {"
                             ---
-                            version: 2
                             title: An Project
 
                             {structure}

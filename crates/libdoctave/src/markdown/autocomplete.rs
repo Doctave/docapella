@@ -766,7 +766,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -821,7 +820,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -875,7 +873,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -930,7 +927,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -988,7 +984,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1046,7 +1041,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1119,7 +1113,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1177,7 +1170,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1239,7 +1231,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1289,7 +1280,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1347,7 +1337,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1435,7 +1424,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1508,7 +1496,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1558,7 +1545,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1616,7 +1602,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1698,7 +1683,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),
@@ -1748,7 +1732,6 @@ mod test {
                         indoc! {r#"
                 ---
                 title: Something
-                version: 2
                 "#}
                         .to_string(),
                     ),

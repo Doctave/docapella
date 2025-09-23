@@ -721,7 +721,7 @@ mod test {
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
                 content: InputContent::Text(String::from(
-                    "---\ntitle: An Project\ndoctave_version: 2",
+                    "---\ntitle: An Project",
                 )),
             },
             InputFile {
@@ -758,7 +758,6 @@ mod test {
         assert_eq!(as_json["page"]["status"], "ok");
         assert_eq!(as_json["page"]["breadcrumbs"][0]["text"], "Guides");
         assert_eq!(as_json["project"]["active_navigation"]["status"], "ok");
-        assert_eq!(as_json["project"]["settings"]["version"], "2");
     }
 
     #[test]
@@ -869,7 +868,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 tabs:
                   - label: "Getting started"
                     path: "/foo/"
@@ -964,7 +962,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 tabs:
                   - label: "Getting started"
                     path: "/foo"
@@ -1028,7 +1025,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 tabs:
                   - label: "Getting started"
                     path: "/foo"
@@ -1158,7 +1154,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 tabs:
                   - label: Guides
                     path: /
@@ -1362,7 +1357,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# })),
             },
             InputFile {
@@ -1454,7 +1448,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# })),
             },
             InputFile {
@@ -1545,7 +1538,6 @@ mod test {
                 content: InputContent::Text(String::from(indoc! { r#"
                 ---
                 title: An Project
-                version: 2
                 "# })),
             },
             InputFile {
@@ -1876,206 +1868,8 @@ mod test {
         }
     }
 
-    #[test]
-    fn rewrites_settings_links() {
-        let file_list = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(String::from("")),
-            },
-            InputFile {
-                path: PathBuf::from("foo/bar.md"),
-                content: InputContent::Text(String::from("[good link](/)")),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-                title: Foo
-                logo:
-                  src: _assets/logo.png
-                "#})),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-            - heading: "Guides"
-              items:
-                - href: foo/bar.md
-                  label: Example
-            "#})),
-            },
-        ];
 
-        let proj = LibdoctaveProject::from_file_list(file_list).unwrap();
 
-        let response = proj.get_content_response_by_uri_path(
-            "/foo/bar",
-            ResponseContext {
-                options: RenderOptions {
-                    // NOTE: Jaleo always prefixes asset links with slash
-                    link_rewrites: [("/_assets/logo.png".to_string(), "new-logo".to_string())]
-                        .into(),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        );
-
-        match response {
-            ContentApiResponse::Content { ref project, .. } => {
-                assert_eq!(
-                    &project.settings.logo().unwrap().src,
-                    Path::new("new-logo"),
-                    "Logo src not rewritten",
-                );
-            }
-            _ => panic!("Unexpected response {:#?}", response),
-        }
-    }
-
-    #[test]
-    fn cache_busts_logos() {
-        let file_list = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(String::from("")),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-                title: Foo
-                logo:
-                  src: _assets/logo.png
-                  src_dark: _assets/logo_dark.png
-                "#})),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-            - heading: "Guides"
-            "#})),
-            },
-        ];
-
-        let proj = LibdoctaveProject::from_file_list(file_list).unwrap();
-
-        let response = proj.get_content_response_by_uri_path(
-            "/",
-            ResponseContext {
-                options: RenderOptions {
-                    bust_image_caches: true,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        );
-
-        match response {
-            ContentApiResponse::Content { ref project, .. } => {
-                assert!(
-                    &project
-                        .settings
-                        .logo()
-                        .unwrap()
-                        .src
-                        .display()
-                        .to_string()
-                        .contains("?c="),
-                    "Logo src not cache busted",
-                );
-                assert!(
-                    &project
-                        .settings
-                        .logo()
-                        .unwrap()
-                        .src_dark
-                        .as_ref()
-                        .unwrap()
-                        .display()
-                        .to_string()
-                        .contains("?c="),
-                    "Logo src_dark not cache busted",
-                );
-            }
-            _ => panic!("Unexpected response {:#?}", response),
-        }
-    }
-
-    #[test]
-    fn image_cache_buster_from_key() {
-        let file_list = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(String::from("")),
-            },
-            InputFile {
-                path: PathBuf::from("_assets/logo.png"),
-                content: InputContent::Binary(String::from("light")),
-            },
-            InputFile {
-                path: PathBuf::from("_assets/logo_dark.png"),
-                content: InputContent::Binary(String::from("dark")),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-                title: Foo
-                logo:
-                  src: _assets/logo.png
-                  src_dark: _assets/logo_dark.png
-                "#})),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-            - heading: "Guides"
-            "#})),
-            },
-        ];
-
-        let proj = LibdoctaveProject::from_file_list(file_list).unwrap();
-
-        let response = proj.get_content_response_by_uri_path(
-            "/",
-            ResponseContext {
-                options: RenderOptions {
-                    bust_image_caches: true,
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        );
-
-        match response {
-            ContentApiResponse::Content { ref project, .. } => {
-                assert!(
-                    &project
-                        .settings
-                        .logo()
-                        .unwrap()
-                        .src
-                        .display()
-                        .to_string()
-                        .contains("?c=11834040495846994434"),
-                    "Logo src not cache busted",
-                );
-                assert!(
-                    &project
-                        .settings
-                        .logo()
-                        .unwrap()
-                        .src_dark
-                        .as_ref()
-                        .unwrap()
-                        .display()
-                        .to_string()
-                        .contains("?c=6183001633438668099"),
-                    "Logo src_dark not cache busted",
-                );
-            }
-            _ => panic!("Unexpected response {:#?}", response),
-        }
-    }
 
     #[test]
     fn content_image_cache_bust_with_key() {
@@ -2091,7 +1885,7 @@ mod test {
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
                 content: InputContent::Text(String::from(
-                    "---\ntitle: An Project\ndoctave_version: 2",
+                    "---\ntitle: An Project",
                 )),
             },
             InputFile {
@@ -2579,7 +2373,6 @@ mod test {
                     indoc! {r#"
                     ---
                     title: mmob
-                    version: 2
 
                     tabs:
                       - label: Developer reference
@@ -2719,7 +2512,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 footer:
                   links:
                     - label: "Doctave"
@@ -2794,7 +2586,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 header:
                   links:
                     - label: "Doctave"
@@ -2871,7 +2662,6 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                doctave_version: 2
                 footer:
                   links:
                     - label: "Doctave"
