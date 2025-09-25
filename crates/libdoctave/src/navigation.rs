@@ -2590,6 +2590,9 @@ mod test {
               href: /tab1/foo.md
             - label: Bar
               href: /bar.md
+          tabs:
+            - label: Tab1
+              path: /tab1/
         "#};
 
         let settings = indoc! {r#"
@@ -2597,19 +2600,9 @@ mod test {
         title: Sections Example
         "#};
 
-        let structure = indoc! {r#"
-        ---
-        tabs:
-          - label: Tab1
-            subtabs:
-              - label: Subtab1
-                path: /tab1/
-        "#};
-
         let mut builder = ProjectBuilder::default();
         builder.with_file(format!("tab1/{}", crate::NAVIGATION_FILE_NAME), tab_nav);
         builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-        builder.with_file(crate::STRUCTURE_FILE_NAME, structure);
         let project = builder.build().unwrap();
         let opts = RenderOptions {
             prefix_link_urls: Some("/v1".to_string()),
@@ -2637,21 +2630,14 @@ mod test {
         let settings = indoc! {r#"
         ---
         title: Sections Example
-        "#};
-
-        let structure = indoc! {r#"
-        ---
         tabs:
           - label: Tab1
-            subtabs:
-              - label: Subtab1
-                path: /tab1/
+            path: /tab1/
         "#};
 
         let mut builder = ProjectBuilder::default();
         builder.with_file(format!("tab1/{}", crate::NAVIGATION_FILE_NAME), tab_nav);
         builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-        builder.with_file(crate::STRUCTURE_FILE_NAME, structure);
         let project = builder.build().unwrap();
         let opts = RenderOptions {
             prefix_link_urls: Some("/v1".to_string()),
@@ -2679,22 +2665,12 @@ mod test {
         title: Sections Example
         "#};
 
-        let structure = indoc! {r#"
-        ---
-        tabs:
-          - label: Tab1
-            subtabs:
-              - label: Section1
-                path: /tab1/section1/
-        "#};
-
         let mut builder = ProjectBuilder::default();
         builder.with_file(
             format!("tab1/section1/{}", crate::NAVIGATION_FILE_NAME),
             tab_nav,
         );
         builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-        builder.with_file(crate::STRUCTURE_FILE_NAME, structure);
         let project = builder.build().unwrap();
         let opts = RenderOptions {
             prefix_link_urls: Some("/v1".to_string()),

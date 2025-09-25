@@ -3,16 +3,15 @@ use regex::Regex;
 use crate::parser::{is_external_link, rewrite_image_src, to_final_link};
 use crate::project::Asset;
 use crate::render_context::RenderContext;
-use crate::structure_v2::{StructureV2, TabDescription};
+use crate::tabs::{TabDescription, TabsList};
 use crate::utils::cartesian_product;
 /// Settings for a given site backed by a `docapella.yaml` file.
-use crate::{Error, Project, RenderOptions, Result, Structure, SETTINGS_FILE_NAME};
+use crate::{Error, Project, RenderOptions, Result, SETTINGS_FILE_NAME};
 /// Settings for a given site backed by a `docapella.yaml` file.
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::fmt::{self, Display};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 use url::Url;
 
 lazy_static! {
@@ -159,13 +158,13 @@ impl Settings {
         }
     }
 
-    pub fn structure(&self) -> Option<Arc<Structure>> {
+    pub fn tabs(&self) -> Option<TabsList> {
         if self.tab_descriptions.is_empty() {
             None
         } else {
-            Some(Arc::new(Structure::StructureV2(
-                StructureV2::from_tab_descriptions(self.tab_descriptions.clone()),
-            )))
+            Some(TabsList::from_tab_descriptions(
+                self.tab_descriptions.clone(),
+            ))
         }
     }
 
@@ -192,7 +191,6 @@ impl Settings {
     pub fn open_api(&self) -> &[OpenApi] {
         self.open_api.as_slice()
     }
-
 
     pub fn footer(&self) -> Option<&Footer> {
         Some(&self.footer)
@@ -232,7 +230,6 @@ impl Settings {
         .map(|combination| combination.into_iter().collect::<HashMap<_, _>>())
         .collect::<Vec<_>>()
     }
-
 
     pub fn verify(&self, project: &Project, errors: &mut Vec<Error>) {
         // Shared verifications
@@ -748,7 +745,6 @@ pub enum Grayscale {
     #[serde(rename = "sand")]
     Sand,
 }
-
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum ColorMode {
@@ -1653,8 +1649,6 @@ mod test {
         );
     }
 
-
-
     #[test]
     fn fails_on_unknown_colors() {
         let input = indoc! {"
@@ -2076,9 +2070,6 @@ mod test {
         );
     }
 
-
-
-
     #[test]
     fn color_mode_settings_get_set() {
         let input = indoc! {r##"
@@ -2287,7 +2278,6 @@ mod test {
             );
         }
 
-
         #[test]
         fn v2_deserializes_tab_descriptions_from_tabs_key() {
             // This test is to ensure that the `tab_descriptions` is deserialized correctly
@@ -2350,8 +2340,5 @@ mod test {
             println!("{:#?}", err);
             assert_eq!(err.description, "There was an error parsing your docapella.yaml:\n\ntheme: invalid type: string \"color_mode:\\\"kettle\", expected struct Theme at line 6 column 3");
         }
-
-
-
     }
 }

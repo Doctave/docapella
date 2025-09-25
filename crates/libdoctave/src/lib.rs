@@ -28,8 +28,7 @@ pub mod renderer;
 mod search_index;
 pub mod settings;
 mod slug;
-pub mod structure;
-pub mod structure_v2;
+pub mod tabs;
 mod utils;
 pub mod vale;
 
@@ -54,16 +53,11 @@ pub use search_index::SearchIndex;
 
 use markdown::*;
 
-pub use structure::Structure;
-pub use structure::SubTab;
-pub use structure::Tab;
-
 pub use markdown::autocomplete::{CompletionItem, CompletionItemKind};
 
 use std::path::{Path, PathBuf};
 
 pub const NAVIGATION_FILE_NAME: &str = "navigation.yaml";
-pub const STRUCTURE_FILE_NAME: &str = "structure.yaml";
 pub const DEPRECATED_NAVIGATION_FILE_NAME: &str = "_Navigation.md";
 pub const SETTINGS_FILE_NAME: &str = "docapella.yaml";
 
@@ -1534,24 +1528,11 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
                 tabs:
                   - label: Default
-                    subtabs:
-                      - label: Default
-                        path: /
+                    path: /
                   - label: Tab1
-                    subtabs:
-                      - label: Subtab1
-                        path: /tab1/
+                    path: /tab1/
                 "#}
                     .to_string(),
                 ),

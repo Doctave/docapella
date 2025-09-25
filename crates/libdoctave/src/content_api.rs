@@ -12,7 +12,8 @@ use crate::{
     markdown_page::OnThisPageHeading,
     navigation::{Navigation, Section},
     settings::Settings,
-    Ast, Error, PageHandle, Project as LibdoctaveProject, RenderOptions, Tab,
+    tabs::Tab,
+    Ast, Error, PageHandle, Project as LibdoctaveProject, RenderOptions,
 };
 
 #[derive(Debug, Clone)]
@@ -530,10 +531,7 @@ impl ContentApiResponse {
         } = Self::surrounding(uri_path, project, &ctx);
 
         let parent_href = if !tabs.is_empty() && !active_tab.is_empty() {
-            match tabs[active_tab[0]] {
-                Tab::TabV1(ref tab) => tab.subtabs[active_tab[1]].href.as_str(),
-                Tab::TabV2(ref tab) => tab.href.as_str(),
-            }
+            tabs[active_tab[0]].href.as_str()
         } else {
             "/"
         };
@@ -590,10 +588,7 @@ impl ContentApiResponse {
         project: &LibdoctaveProject,
         ctx: &ResponseContext,
     ) -> Surrounding {
-        let mut tabs = project
-            .structure()
-            .map(|s| s.tabs().clone())
-            .unwrap_or_default();
+        let mut tabs = project.tabs().map(|s| s.tabs.clone()).unwrap_or_default();
         let mut active_tab = vec![];
         let matching_subtab_path = project.get_subtab_path_by_uri_path(uri_path);
         let navigation = project.navigation(
@@ -606,61 +601,24 @@ impl ContentApiResponse {
 
         if let Some(subtab_path) = matching_subtab_path {
             'outer: for (tab_index, tab) in tabs.iter().enumerate() {
-                match tab {
-                    Tab::TabV1(tab) => {
-                        for (subtab_index, subtab) in tab.subtabs.iter().enumerate() {
-                            if subtab.path == subtab_path {
-                                active_tab.push(tab_index);
-                                active_tab.push(subtab_index);
-                                break 'outer;
-                            }
-                        }
-                    }
-                    Tab::TabV2(tab) => {
-                        for (subtab_index, subtab) in tab.subtabs.iter().enumerate() {
-                            if subtab.href == subtab_path {
-                                active_tab.push(tab_index);
-                                active_tab.push(subtab_index);
-                                break 'outer;
-                            }
-                        }
-
-                        if tab.href == subtab_path {
-                            active_tab.push(tab_index);
-                            break 'outer;
-                        }
+                for (subtab_index, subtab) in tab.subtabs.iter().enumerate() {
+                    if subtab.href == subtab_path {
+                        active_tab.push(tab_index);
+                        active_tab.push(subtab_index);
+                        break 'outer;
                     }
                 }
-            }
-        }
 
-        fn prefix_link(url: &str, prefix: Option<&String>) -> String {
-            match prefix {
-                Some(prefix) => {
-                    let mut rewrite = String::from(prefix.strip_suffix('/').unwrap_or(prefix));
-                    rewrite.push('/');
-                    rewrite.push_str(url.strip_prefix('/').unwrap_or(url));
-                    rewrite
+                if tab.href == subtab_path {
+                    active_tab.push(tab_index);
+                    break 'outer;
                 }
-                None => url.to_string(),
             }
         }
 
         for tab in &mut tabs {
-            match tab {
-                Tab::TabV1(tab) => {
-                    tab.href = prefix_link(&tab.href, ctx.options.prefix_link_urls.as_ref());
-
-                    for subtab in &mut tab.subtabs {
-                        subtab.href =
-                            prefix_link(&subtab.href, ctx.options.prefix_link_urls.as_ref());
-                    }
-                }
-                Tab::TabV2(tab) => {
-                    let prefix = ctx.options.prefix_link_urls.as_deref().unwrap_or("");
-                    tab.prefix(prefix);
-                }
-            }
+            let prefix = ctx.options.prefix_link_urls.as_deref().unwrap_or("");
+            tab.prefix(prefix);
         }
 
         Surrounding {
@@ -702,7 +660,7 @@ mod test {
 
     use crate::{
         settings::{FooterLink, HeaderLink, InternalLink},
-        InputContent, InputFile, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME, STRUCTURE_FILE_NAME,
+        InputContent, InputFile, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME
     };
 
     use std::path::{Path, PathBuf};
@@ -761,95 +719,7 @@ mod test {
     }
 
     #[test]
-    fn prefix_structure_yaml_links() {
-        let file_list = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(String::from("")),
-            },
-            InputFile {
-                path: PathBuf::from("foo/README.md"),
-                content: InputContent::Text(String::new()),
-            },
-            InputFile {
-                path: PathBuf::from("fizz/README.md"),
-                content: InputContent::Text(String::new()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! { r#"
-                tabs:
-                  - label: "Guides"
-                    subtabs:
-                      - label: "Getting started"
-                        path: "/"
-                  - label: "Fizz"
-                    subtabs:
-                      - label: "Getting started"
-                        path: "/fizz/"
-                "#})),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::new()),
-            },
-            InputFile {
-                path: PathBuf::from("foo").join(Path::new(NAVIGATION_FILE_NAME)),
-                content: InputContent::Text(String::new()),
-            },
-            InputFile {
-                path: PathBuf::from("fizz").join(Path::new(NAVIGATION_FILE_NAME)),
-                content: InputContent::Text(String::new()),
-            },
-        ];
-
-        let project = LibdoctaveProject::from_file_list(file_list).unwrap();
-
-        let response = project.get_content_response_by_uri_path(
-            "/foo/bar",
-            ResponseContext {
-                options: RenderOptions {
-                    prefix_link_urls: Some("/dev".to_string()),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        );
-
-        match response {
-            ContentApiResponse::Content {
-                project: Project { tabs, .. },
-                ..
-            } => {
-                for tab in tabs {
-                    match tab {
-                        Tab::TabV1(tab) => {
-                            assert!(tab.href.starts_with("/dev"), "Tab no prefixed: {:?}", tab);
-
-                            for subtab in tab.subtabs {
-                                assert!(
-                                    subtab.href.starts_with("/dev"),
-                                    "Subtab no prefixed: {:?}",
-                                    subtab
-                                );
-                            }
-                        }
-                        Tab::TabV2(tab) => {
-                            panic!("Unexpected tab: {:?}", tab)
-                        }
-                    }
-                }
-            }
-            _ => panic!("Unexpected response: {:#?}", response),
-        }
-    }
-
-    #[test]
-    fn prefix_structure_yaml_links_tabs_v2() {
+    fn prefix_structure_yaml_links_tabs() {
         let file_list = vec![
             InputFile {
                 path: PathBuf::from("README.md"),
@@ -912,24 +782,13 @@ mod test {
             } => {
                 let tab1 = tabs
                     .iter()
-                    .find(|tab| {
-                        let v2 = tab.get_v2().unwrap();
-                        v2.label == "Getting started"
-                    })
-                    .unwrap();
-                let tab2 = tabs
-                    .iter()
-                    .find(|tab| {
-                        let v2 = tab.get_v2().unwrap();
-                        v2.label == "Fizz"
-                    })
-                    .unwrap();
+                    .find(|tab| tab.label == "Getting started");
+                let tab2 = tabs.iter().find(|tab| tab.label == "Fizz");
 
-                assert_eq!(tab1.get_v2().unwrap().href, "/dev/foo");
-                assert_eq!(tab2.get_v2().unwrap().href, "/dev/fizz");
+                assert_eq!(tab1.unwrap().href, "/dev/foo");
+                assert_eq!(tab2.unwrap().href, "/dev/fizz");
 
                 let subtab1 = tab2
-                    .get_v2()
                     .unwrap()
                     .subtabs
                     .iter()

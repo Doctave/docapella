@@ -18,7 +18,7 @@ use crate::page_handle::PageHandle;
 use crate::page_kind::PageKind;
 use crate::render_context::{FileContext, RenderContext};
 use crate::settings::Settings;
-use crate::structure::{self, Structure};
+use crate::tabs::TabsList;
 use crate::SearchIndex;
 
 use crate::vale::{vale_results_to_errors, vale_runtime_error_to_error};
@@ -26,7 +26,6 @@ use crate::{
     ast_mdx_fault_tolerant, frontmatter, markdown_navigation, navigation, renderable_ast,
     uri_to_fs_path, Ast, CustomComponentHandle, Error, MarkdownPage, RenderOptions,
     BAKED_COMPONENTS, DEPRECATED_NAVIGATION_FILE_NAME, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME,
-    STRUCTURE_FILE_NAME,
 };
 use std::collections::HashMap;
 
@@ -107,7 +106,7 @@ impl InputContent {
 pub struct Project {
     navigations: Option<HashMap<String, Option<NavigationHandle>>>,
     pub(crate) pages: Vec<PageKind>,
-    structure: Option<Arc<Structure>>,
+    tabs: Option<TabsList>,
     /// Number of bytes taken by all the content in this project.
     /// Does **not** include size of assets.
     pub content_size_bytes: usize,
@@ -181,7 +180,6 @@ impl Project {
         for (path, content) in list
             .iter()
             .filter(|(path, _)| path != Path::new(DEPRECATED_NAVIGATION_FILE_NAME))
-            .filter(|(path, _)| path != Path::new(STRUCTURE_FILE_NAME))
             .filter(|(path, _)| path != Path::new(SETTINGS_FILE_NAME))
         {
             if path.starts_with("_partials") {
@@ -257,45 +255,24 @@ impl Project {
             }
         }
 
-        let structure = settings.structure();
+        let tabs = settings.tabs();
 
-        let navigations: Option<HashMap<_, _>> = if let Some(ref structure) = structure {
+        let navigations: Option<HashMap<_, _>> = if let Some(ref tabs) = tabs {
             let mut navs = vec![];
-            match structure.as_ref() {
-                Structure::StructureV1(v1) => {
-                    let paths = v1.nav_paths();
-                    &paths.iter().for_each(|path| {
-                        let nav_file_path = PathBuf::from(format!(
-                            "{}{}",
-                            path.trim_start_matches('/'),
-                            NAVIGATION_FILE_NAME
-                        ));
+            let paths = tabs.nav_paths();
 
-                        let handle = list
-                            .iter()
-                            .find(|(file_path, _)| file_path == &nav_file_path)
-                            .map(|(_, c)| NavigationHandle::Yaml(c.clone()));
+            paths.iter().for_each(|path| {
+                let nav_file_path = PathBuf::from(
+                    format!("{}/{}", path, NAVIGATION_FILE_NAME).trim_start_matches('/'),
+                );
 
-                        navs.push((path.to_string(), handle));
-                    })
-                }
-                Structure::StructureV2(v2) => {
-                    let paths = v2.nav_paths();
+                let handle = list
+                    .iter()
+                    .find(|(file_path, _)| file_path == &nav_file_path)
+                    .map(|(_, c)| NavigationHandle::Yaml(c.clone()));
 
-                    &paths.iter().for_each(|path| {
-                        let nav_file_path = PathBuf::from(
-                            format!("{}/{}", path, NAVIGATION_FILE_NAME).trim_start_matches('/'),
-                        );
-
-                        let handle = list
-                            .iter()
-                            .find(|(file_path, _)| file_path == &nav_file_path)
-                            .map(|(_, c)| NavigationHandle::Yaml(c.clone()));
-
-                        navs.push((path.to_string(), handle));
-                    })
-                }
-            };
+                navs.push((path.to_string(), handle));
+            });
 
             if navs.is_empty() {
                 None
@@ -345,7 +322,7 @@ impl Project {
         Ok(Project {
             parser: parser.unwrap(),
             navigations,
-            structure,
+            tabs,
             content_size_bytes,
             settings,
             custom_css,
@@ -577,7 +554,7 @@ impl Project {
             errors.push(error);
         }
 
-        for error in self.verify_structure() {
+        for error in self.verify_tabs() {
             errors.push(error);
         }
 
@@ -601,9 +578,7 @@ impl Project {
         });
 
         if self.pages().par_iter().any(|handle| match handle.page {
-            PageKind::Markdown(m) => {
-                m.experimental_template_rendered_enabled(true)
-            }
+            PageKind::Markdown(m) => m.experimental_template_rendered_enabled(true),
             _ => false,
         }) {
             let mut ctx = RenderContext::new();
@@ -811,46 +786,27 @@ impl Project {
     fn verify_root_readme(&self) -> Vec<Error> {
         let mut errors = vec![];
 
-        if let Some(structure) = self.structure() {
-            match structure {
-                Structure::StructureV1(v1) => {
-                    for subtab in v1.subtabs() {
-                        if self.get_page_by_uri_path(&subtab.href).is_none() {
-                            errors.push(Error {
-                                code: Error::MISSING_ROOT_README,
-                                message: format!(r#"Missing root README.md for tab "{}". Add a file at "{}/README.md"."#, subtab.label, subtab.href),
-                                description: "All your project's tabs have to have a root README.md file. This is the first page readers will see in your tab.".to_owned(),
-                                file: None,
-            position: None,
-                            });
-                        }
-                    }
-                }
-                Structure::StructureV2(v2) => {
-                    for tab in &v2.tabs {
-                        if !tab.is_external && self.get_page_by_uri_path(&tab.href).is_none() {
-                            errors.push(Error {
+        if let Some(tabs) = self.tabs() {
+            for tab in &tabs.tabs {
+                if !tab.is_external && self.get_page_by_uri_path(&tab.href).is_none() {
+                    errors.push(Error {
                                 code: Error::MISSING_ROOT_README,
                                 message: format!(r#"Missing root README.md for tab "{}". Add a file at "{}/README.md"."#, tab.label, tab.href),
                                 description: "All your project's tabs have to have a root README.md file. This is the first page readers will see in your tab.".to_owned(),
                                 file: None,
             position: None,
                             });
-                        }
+                }
 
-                        for subtab in &tab.subtabs {
-                            if !subtab.is_external
-                                && self.get_page_by_uri_path(&subtab.href).is_none()
-                            {
-                                errors.push(Error {
+                for subtab in &tab.subtabs {
+                    if !subtab.is_external && self.get_page_by_uri_path(&subtab.href).is_none() {
+                        errors.push(Error {
                                   code: Error::MISSING_ROOT_README,
                                   message: format!(r#"Missing root README.md for subtab "{}". Add a file at "{}/README.md"."#, subtab.label, subtab.href),
                                   description: "All your project's tabs have to have a root README.md file. This is the first page readers will see in your tab.".to_owned(),
                                   file: None,
             position: None,
                               });
-                            }
-                        }
                     }
                 }
             }
@@ -867,9 +823,9 @@ impl Project {
         errors
     }
 
-    fn verify_structure(&self) -> Vec<Error> {
-        match &self.structure {
-            Some(structure) => structure::verify(structure),
+    fn verify_tabs(&self) -> Vec<Error> {
+        match &self.tabs {
+            Some(tabs) => tabs.verify(),
             None => vec![],
         }
     }
@@ -880,7 +836,7 @@ impl Project {
         let mut errors = vec![];
 
         if self.navigations.is_none() {
-            let message = if self.structure.is_none() {
+            let message = if self.tabs.is_none() {
                 "Missing navigation.yaml in project root".to_owned()
             } else {
                 "Missing a navigation.yaml".to_owned()
@@ -1017,13 +973,11 @@ impl Project {
 
         let mut path = subtab_path.to_string();
 
-        if let Some(structure) = &self.structure {
-            if let Structure::StructureV2 { .. } = structure.as_ref() {
-                path = format!(
-                    "/{}",
-                    subtab_path.trim_start_matches('/').trim_end_matches('/')
-                )
-            }
+        if let Some(_structure) = &self.tabs {
+            path = format!(
+                "/{}",
+                subtab_path.trim_start_matches('/').trim_end_matches('/')
+            )
         }
 
         match path.as_str() {
@@ -1076,8 +1030,8 @@ impl Project {
         &self.settings
     }
 
-    pub fn structure(&self) -> Option<&Structure> {
-        self.structure.as_deref()
+    pub fn tabs(&self) -> Option<&TabsList> {
+        self.tabs.as_ref()
     }
 
     pub fn autocomplete(
@@ -1131,74 +1085,37 @@ impl Project {
     }
 
     pub fn get_subtab_path_by_uri_path(&self, uri_path: &str) -> Option<String> {
-        match &self.structure {
-            Some(structure) => {
-                match structure.as_ref() {
-                    Structure::StructureV1(structure) => {
-                        let maybe_page = self.get_page_by_uri_path(uri_path);
+        match &self.tabs {
+            Some(tabs) => {
+                let normalized_uri_path = format!(
+                    "/{}",
+                    uri_path.trim_end_matches('/').trim_start_matches('/')
+                );
 
-                        let uri_path = if let Some(p) = &maybe_page {
-                            p.uri_path()
-                        } else {
-                            uri_path
-                        };
+                let mut matching_paths = vec!["/".to_string()];
 
-                        let mut normalized = String::from("/");
-                        normalized.push_str(uri_path.trim_start_matches('/').trim_end_matches('/'));
-                        if normalized != "/" {
-                            normalized.push('/');
-                        }
-
-                        // NOTE: Iterate in reverse order, since the root tab "/" is first, and may match anything
-                        for tab in structure.tabs.iter().rev() {
-                            let mut longest_path: Option<&str> = None;
-                            for path in tab.subtabs.iter().map(|i| &i.path) {
-                                if normalized.starts_with(path)
-                                    && (longest_path.is_none()
-                                        || path.len() > longest_path.unwrap().len())
-                                {
-                                    longest_path = Some(path);
-                                }
-                            }
-                            if longest_path.is_some() {
-                                return longest_path.map(str::to_string);
-                            }
-                        }
-
-                        Some("/".to_string())
+                for tab in tabs.tabs.iter() {
+                    if normalized_uri_path.contains(&tab.href) {
+                        matching_paths.push(tab.href.clone());
                     }
-                    Structure::StructureV2(structure) => {
-                        let normalized_uri_path = format!(
-                            "/{}",
-                            uri_path.trim_end_matches('/').trim_start_matches('/')
-                        );
 
-                        let mut matching_paths = vec!["/".to_string()];
-
-                        for tab in structure.tabs.iter() {
-                            if normalized_uri_path.contains(&tab.href) {
-                                matching_paths.push(tab.href.clone());
-                            }
-
-                            for subtab in &tab.subtabs {
-                                if normalized_uri_path.contains(&subtab.href) {
-                                    matching_paths.push(subtab.href.clone());
-                                };
-                            }
-                        }
-
-                        /*
-                            We get the deepest match. For examples, /foo/bar/md
-                            would return /foo/bar, not /foo.
-                        */
-                        matching_paths
-                            .iter()
-                            .enumerate()
-                            .max_by_key(|(_, path)| path.len())
-                            .map(|(_, value)| value)
-                            .cloned()
+                    for subtab in &tab.subtabs {
+                        if normalized_uri_path.contains(&subtab.href) {
+                            matching_paths.push(subtab.href.clone());
+                        };
                     }
                 }
+
+                /*
+                    We get the deepest match. For examples, /foo/bar/md
+                    would return /foo/bar, not /foo.
+                */
+                matching_paths
+                    .iter()
+                    .enumerate()
+                    .max_by_key(|(_, path)| path.len())
+                    .map(|(_, value)| value)
+                    .cloned()
             }
             None => None,
         }
@@ -1279,7 +1196,6 @@ mod test {
     use pretty_assertions::assert_str_eq;
 
     use super::*;
-    use crate::STRUCTURE_FILE_NAME;
 
     #[test]
     fn verifies_each_page() {
@@ -1693,99 +1609,6 @@ mod test {
     }
 
     #[test]
-    fn verifies_missing_root_navigation_with_structure() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                tabs:
-                  - label: Default
-                    subtabs:
-                      - label: Default
-                        path: /
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-        let error = &project.verify(None, None).unwrap_err()[0];
-
-        assert_eq!(error.message, "Missing navigation.yaml in project root");
-        assert_eq!(error.description, "Could not find navigation.yaml in `/`");
-    }
-
-    #[test]
-    fn verifies_missing_subtab_navigation_with_structure() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text("---\n- heading: Something\n  items:\n".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                tabs:
-                  - label: Default
-                    subtabs:
-                      - label: Default
-                        path: /
-                  - label: Tab1
-                    subtabs:
-                      - label: Subtab1
-                        path: /tab1/subtab1/
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-        let errors = &project.verify(None, None).unwrap_err();
-
-        assert!(
-            errors
-                .iter()
-                .any(|e| e.message == "Missing navigation.yaml for tab"
-                    && e.description == "Could not find navigation.yaml in `/tab1/subtab1/`"),
-            "No error for missing navigation yaml"
-        );
-    }
-
-    #[test]
     fn verifies_navigation_structures_refer_to_existing_user_preferences() {
         let files = vec![
             InputFile {
@@ -2049,7 +1872,6 @@ mod test {
         );
     }
 
-
     #[test]
     fn verifies_the_existence_of_logo_mentioned_in_settings_v2() {
         let files = vec![
@@ -2098,7 +1920,6 @@ mod test {
             "Found following images: [\"_assets/cat.jpg\"].\nMake sure the file name is correct and located under the \"_assets\" directory."
         );
     }
-
 
     #[test]
     fn verifies_the_existence_of_dark_mode_logo_mentioned_in_settings_v2() {
@@ -2153,7 +1974,6 @@ mod test {
             "Found following images: [\"_assets/cat.jpg\", \"_assets/logo.png\"].\nMake sure the file name is correct and located under the \"_assets\" directory."
         );
     }
-
 
     #[test]
     fn verifies_the_existence_of_favicon_mentioned_in_settings_v2() {
@@ -3503,68 +3323,6 @@ mod test {
     }
 
     #[test]
-    fn handles_structure_file() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from("tab1/section1/README.md"),
-                content: InputContent::Text("# Hi, this is section 1".to_string()),
-            },
-            InputFile {
-                path: ["tab1/section1/", NAVIGATION_FILE_NAME].iter().collect(),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                - heading: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                - heading: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                tabs:
-                  - label: Default
-                    subtabs:
-                      - label: Default
-                        path: /
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files.clone()).unwrap();
-        let result = &project.verify(None, None);
-        assert!(result.is_ok());
-    }
-
-    #[test]
     fn convert_uri_to_subtab_path_resolves_subtab_path_without_default() {
         let files = vec![
             InputFile {
@@ -3581,20 +3339,10 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
+
                 tabs:
                   - label: Tab1
-                    subtabs:
-                      - label: Section1
-                        path: /tab1/section1/
+                    path: /tab1/section1/
                 "#}
                     .to_string(),
                 ),
@@ -3609,106 +3357,6 @@ mod test {
         assert_eq!(
             Project::get_subtab_path_by_uri_path(&project, "/"),
             Some("/".to_string())
-        );
-    }
-
-    #[test]
-    fn convert_uri_to_subtab_path_resolves_subtab_path_with_defaults() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text("# Hi".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text("- heading: Something\n".to_string()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
-                tabs:
-                  - label: Default
-                    subtabs:
-                      - label: Default
-                        path: /
-                  - label: Tab1
-                    subtabs:
-                      - label: Tab1 root
-                        path: /tab1/
-                      - label: Section1
-                        path: /tab1/section1/
-                      - label: Section2
-                        path: /tab1/section2/
-                  - label: Tab2
-                    subtabs:
-                      - label: Section3
-                        path: /tab2/section3/
-                      - label: Tab2 root
-                        path: /tab2/
-                "#}
-                    .to_string(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files.clone()).unwrap();
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, ""),
-            Some("/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/"),
-            Some("/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "tab1/section1"),
-            Some("/tab1/section1/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "tab1/section1/"),
-            Some("/tab1/section1/".to_string())
-        );
-
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab1/section1"),
-            Some("/tab1/section1/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab1/section1/"),
-            Some("/tab1/section1/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab1/section1/Foo"),
-            Some("/tab1/section1/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab1/section2/Bar"),
-            Some("/tab1/section2/".to_string())
-        );
-
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab2"),
-            Some("/tab2/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab2/"),
-            Some("/tab2/".to_string())
-        );
-        assert_eq!(
-            Project::get_subtab_path_by_uri_path(&project, "/tab2/section3"),
-            Some("/tab2/section3/".to_string())
         );
     }
 
@@ -3755,24 +3403,12 @@ mod test {
                     indoc! {r#"
                 ---
                 title: Something
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
+
                 tabs:
                   - label: Default
-                    subtabs:
-                      - label: Default
-                        path: /
+                    path: /
                   - label: Tab1
-                    subtabs:
-                      - label: Section1
-                        path: /tab1/section1/
+                    path: /tab1/section1/
                 "#}
                     .to_string(),
                 ),
@@ -3868,7 +3504,6 @@ mod test {
 
         assert_eq!(result[0].message, "Invalid YAML syntax in frontmatter");
     }
-
 
     #[test]
     fn verifies_all_tabs_have_root_v2() {
@@ -4079,24 +3714,12 @@ mod test {
                     values:
                       - Baseball
                       - Football
-                "#}
-                    .to_string(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! {r#"
-                ---
+
                 tabs:
                   - label: Tab1
-                    subtabs:
-                      - label: Default
-                        path: /
+                    path: /
                   - label: Tab2
-                    subtabs:
-                      - label: Section1
-                        path: /tab2/
+                    path: /tab2/
                 "#}
                     .to_string(),
                 ),

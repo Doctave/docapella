@@ -16,11 +16,11 @@ fn normalize_tab_path(path: &str) -> String {
 }
 
 #[derive(PartialEq, Clone, Debug, Serialize)]
-pub struct StructureV2 {
-    pub tabs: Vec<TabV2>,
+pub struct TabsList {
+    pub tabs: Vec<Tab>,
 }
 
-pub fn parse_structure(input: &str) -> Result<StructureV2Description> {
+pub fn parse_structure(input: &str) -> Result<TabsDescription> {
     serde_yaml::from_str(input).map_err(|e| {
         Error::from_serde_yaml(
             e,
@@ -31,10 +31,10 @@ pub fn parse_structure(input: &str) -> Result<StructureV2Description> {
     })
 }
 
-impl StructureV2 {
+impl TabsList {
     pub fn from_tab_descriptions(tabs: Vec<TabDescription>) -> Self {
-        let tabs = tabs.into_iter().map(|i| i.into()).collect::<Vec<TabV2>>();
-        StructureV2 { tabs }
+        let tabs = tabs.into_iter().map(|i| i.into()).collect::<Vec<Tab>>();
+        TabsList { tabs }
     }
 
     pub fn nav_paths(&self) -> Vec<String> {
@@ -59,16 +59,16 @@ impl StructureV2 {
 
     pub fn build(input: &str) -> Result<Self> {
         let description = parse_structure(input)?;
-        let mut tabs: Vec<TabV2> = Vec::new();
+        let mut tabs: Vec<Tab> = Vec::new();
 
         for desc in description.tabs {
             tabs.push(desc.into());
         }
 
-        Ok(StructureV2 { tabs })
+        Ok(TabsList { tabs })
     }
 
-    pub fn subtabs(&self) -> Vec<TabV2> {
+    pub fn subtabs(&self) -> Vec<Tab> {
         self.tabs
             .iter()
             .flat_map(|t| t.subtabs.clone())
@@ -126,9 +126,9 @@ impl StructureV2 {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
-pub struct TabV2 {
+pub struct Tab {
     pub label: String,
-    pub subtabs: Vec<TabV2>,
+    pub subtabs: Vec<Tab>,
     pub href: String,
     pub is_external: bool,
     pub icon: Option<Icon>,
@@ -136,8 +136,8 @@ pub struct TabV2 {
     pub raw_path: Option<String>,
 }
 
-impl TabV2 {
-    fn verify(&self, parent: Option<&TabV2>) -> Vec<Error> {
+impl Tab {
+    fn verify(&self, parent: Option<&Tab>) -> Vec<Error> {
         let mut errors = vec![];
         let id = if parent.is_some() { "Subtab" } else { "Tab" };
 
@@ -185,7 +185,7 @@ impl TabV2 {
         errors
     }
 
-    fn verify_internal(&self, parent: Option<&TabV2>) -> Vec<Error> {
+    fn verify_internal(&self, parent: Option<&Tab>) -> Vec<Error> {
         let mut errors = vec![];
         let id = if parent.is_some() { "Subtab" } else { "Tab" };
 
@@ -247,7 +247,7 @@ impl TabV2 {
         errors
     }
 
-    fn verify_external(&self, parent: Option<&TabV2>) -> Vec<Error> {
+    fn verify_external(&self, parent: Option<&Tab>) -> Vec<Error> {
         let mut errors = vec![];
         let id = if parent.is_some() { "Subtab" } else { "Tab" };
 
@@ -335,19 +335,19 @@ impl TabV2 {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct StructureV2Description {
+pub struct TabsDescription {
     pub tabs: Vec<TabDescription>,
 }
 
-impl From<StructureV2Description> for StructureV2 {
-    fn from(desc: StructureV2Description) -> StructureV2 {
+impl From<TabsDescription> for TabsList {
+    fn from(desc: TabsDescription) -> TabsList {
         let tabs = desc
             .tabs
             .into_iter()
             .map(|i| i.into())
-            .collect::<Vec<TabV2>>();
+            .collect::<Vec<Tab>>();
 
-        StructureV2 { tabs }
+        TabsList { tabs }
     }
 }
 
@@ -371,8 +371,8 @@ pub struct SubTabDescription {
     icon: Option<IconDescription>,
 }
 
-impl From<TabDescription> for TabV2 {
-    fn from(desc: TabDescription) -> TabV2 {
+impl From<TabDescription> for Tab {
+    fn from(desc: TabDescription) -> Tab {
         let TabDescription {
             path,
             external,
@@ -392,12 +392,9 @@ impl From<TabDescription> for TabV2 {
             _ => String::from("/"),
         };
 
-        let subtabs = subtabs
-            .into_iter()
-            .map(|i| i.into())
-            .collect::<Vec<TabV2>>();
+        let subtabs = subtabs.into_iter().map(|i| i.into()).collect::<Vec<Tab>>();
 
-        TabV2 {
+        Tab {
             label,
             subtabs,
             href,
@@ -427,8 +424,8 @@ impl From<SubTabDescription> for TabDescription {
     }
 }
 
-impl From<SubTabDescription> for TabV2 {
-    fn from(desc: SubTabDescription) -> TabV2 {
+impl From<SubTabDescription> for Tab {
+    fn from(desc: SubTabDescription) -> Tab {
         let tab_desc: TabDescription = desc.into();
 
         tab_desc.into()
@@ -437,7 +434,7 @@ impl From<SubTabDescription> for TabV2 {
 
 #[cfg(test)]
 mod test {
-    use crate::{project::Project, InputContent, InputFile, Structure};
+    use crate::{project::Project, InputContent, InputFile};
 
     use super::*;
 
@@ -528,7 +525,7 @@ mod test {
             path: guides3
         "#};
 
-        let structure = StructureV2::build(structure).unwrap();
+        let structure = TabsList::build(structure).unwrap();
         let tabs = structure.tabs;
 
         assert_eq!(tabs[0].href.as_str(), "/guides");
@@ -787,8 +784,8 @@ mod test {
         let result = project.verify(None, None);
         assert!(result.is_ok(), "Failed to build project: {:#?}", result);
 
-        match project.structure() {
-            Some(Structure::StructureV2(StructureV2 { tabs })) => {
+        match project.tabs() {
+            Some(TabsList { tabs }) => {
                 assert_eq!(
                     tabs.first().as_ref().unwrap().icon.as_ref().unwrap().name(),
                     "box".to_owned()
@@ -805,9 +802,6 @@ mod test {
                     tabs.get(1).as_ref().unwrap().icon.as_ref().unwrap().set(),
                     "lucide"
                 );
-            }
-            Some(Structure::StructureV1 { .. }) => {
-                panic!("Expected StructureV2.");
             }
             None => panic!("No structure found"),
         }
@@ -841,8 +835,8 @@ mod test {
         let result = project.verify(None, None);
         assert!(result.is_ok(), "Failed to build project: {:#?}", result);
 
-        match project.structure() {
-            Some(Structure::StructureV2(StructureV2 { tabs })) => {
+        match project.tabs() {
+            Some(TabsList { tabs }) => {
                 let tab = tabs.first().unwrap().clone();
 
                 assert_eq!(
@@ -862,9 +856,6 @@ mod test {
                     tab.subtabs.get(1).unwrap().icon.as_ref().unwrap().set(),
                     "devicon"
                 );
-            }
-            Some(Structure::StructureV1 { .. }) => {
-                panic!("Expected StructureV2.");
             }
             None => panic!("No structure found"),
         }

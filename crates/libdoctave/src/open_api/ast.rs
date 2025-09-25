@@ -7,7 +7,6 @@ use crate::{
     ast_mdx,
     error_renderer::{self, Highlight, Location},
     expressions::Value,
-    markdown::ast,
     primitive_components::{OPENAPI_PATH_KEY, TITLE_KEY},
     render_context::RenderContext,
     renderable_ast::Node,
