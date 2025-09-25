@@ -540,6 +540,8 @@ impl ContentApiResponse {
 
         // Try to fall back to the current subtab's page options, if available
         let page_options = if let Some(handle) = project.get_page_by_uri_path(parent_href) {
+            println!("Found parent page: {:?}", handle);
+            println!("Hide navigation: {:?}", handle.hide_navigation());
             PageOptions {
                 hide_navigation: handle.hide_navigation(),
                 hide_side_table_of_contents: handle.hide_side_table_of_contents(),
@@ -720,9 +722,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from(
-                    "---\ntitle: An Project",
-                )),
+                content: InputContent::Text(String::from("---\ntitle: An Project")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1247,20 +1247,13 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
-            },
-            InputFile {
-                path: PathBuf::from(STRUCTURE_FILE_NAME),
                 content: InputContent::Text(String::from(indoc! { r#"
+                title: An Project
                 tabs:
                   - label: "Guides"
-                    subtabs:
-                      - label: "Getting started"
-                        path: "/"
+                    path: "/"
                   - label: "Foo"
-                    subtabs:
-                      - label: "Getting started"
-                        path: "/foo/"
+                    path: /foo
                 "#})),
             },
             InputFile {
@@ -1598,7 +1591,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from("foo/bar.md"),
-                content: InputContent::Text(String::from("{% bad liquid ")),
+                content: InputContent::Text(String::from("<UnclosedTag>")),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -1638,7 +1631,7 @@ mod test {
         assert_eq!(as_json["page"]["status"], "error");
         assert_eq!(
             as_json["page"]["errors"][0]["message"],
-            "Error parsing liquid template"
+            "Unable to parse Markdown template"
         );
     }
 
@@ -1868,9 +1861,6 @@ mod test {
         }
     }
 
-
-
-
     #[test]
     fn content_image_cache_bust_with_key() {
         let file_list = vec![
@@ -1884,9 +1874,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from(
-                    "---\ntitle: An Project",
-                )),
+                content: InputContent::Text(String::from("---\ntitle: An Project")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -2066,7 +2054,7 @@ mod test {
     }
 
     #[test]
-    fn injects_css_from_context() {
+    fn includes_css_from_files() {
         let file_list = vec![
             InputFile {
                 path: PathBuf::from("README.md"),
@@ -2077,8 +2065,14 @@ mod test {
                 content: InputContent::Text(String::from("[good link](/)")),
             },
             InputFile {
+                path: PathBuf::from("_assets/style.css"),
+                content: InputContent::Text(String::from("some css")),
+            },
+            InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from(
+                    "---\ntitle: An Project\nstyles:\n  - _assets/style.css\n",
+                )),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -2098,7 +2092,6 @@ mod test {
         let response = project.get_content_response_by_uri_path(
             "/foo/bar",
             ResponseContext {
-                custom_css: expected_css.clone(),
                 ..Default::default()
             },
         );
