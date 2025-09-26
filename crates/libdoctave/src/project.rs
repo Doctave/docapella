@@ -7,8 +7,6 @@ use std::hash::Hasher;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use liquid::partials::{EagerCompiler, InMemorySource};
-
 use crate::content_api::{ContentApiResponse, ResponseContext};
 use crate::error_options::ErrorOptions;
 use crate::open_api::ast::PageAst;
@@ -112,7 +110,6 @@ pub struct Project {
     pub content_size_bytes: usize,
     pub assets: Vec<Asset>,
     pub settings: Arc<Settings>,
-    pub(crate) parser: Arc<liquid::Parser>,
     /// After parsing we loose information about what files
     /// were actually available, but want to still be able to
     /// report errors in the `verify` step. So we'll keep
@@ -172,7 +169,6 @@ impl Project {
 
         let mut assets = Vec::new();
         let mut pages = Vec::new();
-        let mut partial_source = InMemorySource::new();
         let mut custom_components = BAKED_COMPONENTS.to_vec();
         let mut open_api_components = HashMap::new();
 
@@ -182,14 +178,6 @@ impl Project {
             .filter(|(path, _)| path != Path::new(DEPRECATED_NAVIGATION_FILE_NAME))
             .filter(|(path, _)| path != Path::new(SETTINGS_FILE_NAME))
         {
-            if path.starts_with("_partials") {
-                fn normalize_partial_path(p: &Path) -> String {
-                    format!("{}", p.display()).replace('\\', "/")
-                }
-
-                partial_source.add(normalize_partial_path(path), content);
-            }
-
             if path.starts_with("_components") || path.starts_with("_topics") {
                 custom_components.push(CustomComponentHandle::new(content, path));
             }
@@ -205,20 +193,6 @@ impl Project {
                 });
             }
         }
-
-        // Setup the the liquid parser so it knows about all partials
-        let parser = liquid::ParserBuilder::new()
-            .partials(EagerCompiler::new(partial_source))
-            .stdlib()
-            .build()
-            .map(Arc::new)
-            .map_err(|e| Error {
-                code: 5,
-                message: "Invalid partial".to_owned(),
-                description: format!("{:?}", e),
-                file: None,
-                position: None,
-            });
 
         // Gather open_api specs
         for spec in settings.open_api() {
@@ -320,7 +294,6 @@ impl Project {
 
         // Safe to unwrap here as errors have been found already
         Ok(Project {
-            parser: parser.unwrap(),
             navigations,
             tabs,
             content_size_bytes,

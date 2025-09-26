@@ -85,7 +85,6 @@ impl Error {
     pub const IO_ERROR: usize = 40;
     pub const OPENAPI_REFERENCE: usize = 50;
     pub const INVALID_OPENAPI_SPEC: usize = 51;
-    pub const LIQUID_TEMPLATE_ERROR: usize = 60;
     pub const OPENAPI_TEMPLATE_ERROR: usize = 70;
     pub const NAVIGATION_ERROR: usize = 80;
     pub const INVALID_FRONTMATTER: usize = 90;
@@ -124,18 +123,6 @@ impl From<std::io::Error> for crate::Error {
         Error {
             code: Self::IO_ERROR,
             message: "IO error occurred".to_owned(),
-            description: format!("{}", other),
-            file: None,
-            position: None,
-        }
-    }
-}
-
-impl From<liquid::Error> for crate::Error {
-    fn from(other: liquid::Error) -> Self {
-        Error {
-            code: Self::LIQUID_TEMPLATE_ERROR,
-            message: "Error parsing liquid template".to_string(),
             description: format!("{}", other),
             file: None,
             position: None,

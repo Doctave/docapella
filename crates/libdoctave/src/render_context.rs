@@ -7,7 +7,6 @@ use crate::page_kind::PageKind;
 use crate::project::Asset;
 use crate::Project;
 use crate::{markdown::CustomComponentHandle, settings::Settings, RenderOptions, BAKED_COMPONENTS};
-use liquid::{Parser, ParserBuilder};
 
 /// This struct represents the context for rendering a page.
 /// The RenderOptions struct is provided from outside of
@@ -16,7 +15,6 @@ use liquid::{Parser, ParserBuilder};
 #[derive(Clone)]
 pub(crate) struct RenderContext<'a> {
     pub options: &'a RenderOptions,
-    pub liquid_parser: &'a Parser,
     pub settings: &'a Settings,
     pub relative_url_base: Option<String>,
     pub file_context: Option<FileContext>,
@@ -30,7 +28,6 @@ pub(crate) struct RenderContext<'a> {
 lazy_static! {
     static ref DEFAULT_OPTS: RenderOptions = RenderOptions::default();
     static ref DEFAULT_SETTINGS: Settings = Settings::default();
-    static ref DEFAULT_PARSER: Parser = ParserBuilder::new().stdlib().build().unwrap();
     static ref DEFAULT_OPENAPI_COMPONENTS: HashMap<String, Components> = HashMap::default();
 }
 
@@ -39,7 +36,6 @@ impl Default for RenderContext<'_> {
         RenderContext {
             options: &DEFAULT_OPTS,
             settings: &DEFAULT_SETTINGS,
-            liquid_parser: &DEFAULT_PARSER,
             pages: &[],
             relative_url_base: None,
             file_context: None,
@@ -61,7 +57,6 @@ impl<'a> RenderContext<'a> {
     pub fn with_project(&mut self, project: &'a Project) {
         self.with_pages(&project.pages);
         self.with_settings(&project.settings);
-        self.with_parser(&project.parser);
         self.with_custom_components(&project.custom_components);
         self.with_assets(&project.assets);
         self.with_openapi_components(&project.open_api_components);
@@ -73,10 +68,6 @@ impl<'a> RenderContext<'a> {
 
     pub fn with_settings(&mut self, settings: &'a Settings) {
         self.settings = settings;
-    }
-
-    pub fn with_parser(&mut self, parser: &'a Parser) {
-        self.liquid_parser = parser;
     }
 
     pub fn with_custom_components(&mut self, components: &'a [CustomComponentHandle]) {
@@ -160,7 +151,6 @@ impl std::fmt::Debug for RenderContext<'_> {
         fmt.debug_struct("RenderContext")
             .field("options", &self.options)
             .field("settings", &self.settings)
-            .field("liquid_parser", &"<LiquidParser ..>")
             .field("relative_url_base", &self.relative_url_base)
             .field("custom_components", &self.custom_components)
             .field("assets", &self.assets)
