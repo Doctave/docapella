@@ -441,16 +441,16 @@ mod test {
                         "field_name": "name"
                       }
                     },
-                    "age": {
-                      "type": "number",
-                      "doctave_metadata": {
-                        "field_name": "age"
-                      }
-                    },
                     "job": {
                       "type": "string",
                       "doctave_metadata": {
                         "field_name": "job"
+                      }
+                    },
+                    "age": {
+                      "type": "number",
+                      "doctave_metadata": {
+                        "field_name": "age"
                       }
                     }
                   }
@@ -1048,12 +1048,6 @@ mod test {
                     {
                       "type": "object",
                       "properties": {
-                        "name": {
-                          "type": "string",
-                          "doctave_metadata": {
-                            "field_name": "name"
-                          }
-                        },
                         "user": {
                           "type": "object",
                           "properties": {
@@ -1066,6 +1060,12 @@ mod test {
                           },
                           "doctave_metadata": {
                             "field_name": "user"
+                          }
+                        },
+                        "name": {
+                          "type": "string",
+                          "doctave_metadata": {
+                            "field_name": "name"
                           }
                         }
                       }

@@ -83,8 +83,8 @@ mod test {
               "summary": "A sample example",
               "description": "This is a sample example with a value",
               "value": {
-                "age": 30,
-                "name": "John Doe"
+                "name": "John Doe",
+                "age": 30
               }
             }"#}
         )
@@ -169,8 +169,8 @@ mod test {
               "summary": "A sample example",
               "description": "This is a sample example with a value",
               "value": {
-                "age": 30,
-                "name": "John Doe"
+                "name": "John Doe",
+                "age": 30
               }
             }"#}
         )

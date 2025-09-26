@@ -1404,12 +1404,6 @@ mod tests {
                       "title": "Some User",
                       "type": "object",
                       "properties": {
-                        "name": {
-                          "type": "string",
-                          "doctave_metadata": {
-                            "field_name": "name"
-                          }
-                        },
                         "users": {
                           "type": "array",
                           "items": {
@@ -1420,6 +1414,12 @@ mod tests {
                           },
                           "doctave_metadata": {
                             "field_name": "users"
+                          }
+                        },
+                        "name": {
+                          "type": "string",
+                          "doctave_metadata": {
+                            "field_name": "name"
                           }
                         }
                       },
@@ -1751,12 +1751,6 @@ mod tests {
                             "title": "Some User",
                             "type": "object",
                             "properties": {
-                              "name": {
-                                "type": "string",
-                                "doctave_metadata": {
-                                  "field_name": "name"
-                                }
-                              },
                               "users": {
                                 "type": "array",
                                 "items": {
@@ -1767,6 +1761,12 @@ mod tests {
                                 },
                                 "doctave_metadata": {
                                   "field_name": "users"
+                                }
+                              },
+                              "name": {
+                                "type": "string",
+                                "doctave_metadata": {
+                                  "field_name": "name"
                                 }
                               }
                             },
@@ -1795,12 +1795,6 @@ mod tests {
                             "title": "Some User",
                             "type": "object",
                             "properties": {
-                              "name": {
-                                "type": "string",
-                                "doctave_metadata": {
-                                  "field_name": "name"
-                                }
-                              },
                               "users": {
                                 "type": "array",
                                 "items": {
@@ -1811,6 +1805,12 @@ mod tests {
                                 },
                                 "doctave_metadata": {
                                   "field_name": "users"
+                                }
+                              },
+                              "name": {
+                                "type": "string",
+                                "doctave_metadata": {
+                                  "field_name": "name"
                                 }
                               }
                             },
@@ -1922,12 +1922,6 @@ mod tests {
                             "title": "Some User",
                             "type": "object",
                             "properties": {
-                              "name": {
-                                "type": "string",
-                                "doctave_metadata": {
-                                  "field_name": "name"
-                                }
-                              },
                               "users": {
                                 "type": "array",
                                 "items": {
@@ -1938,6 +1932,12 @@ mod tests {
                                 },
                                 "doctave_metadata": {
                                   "field_name": "users"
+                                }
+                              },
+                              "name": {
+                                "type": "string",
+                                "doctave_metadata": {
+                                  "field_name": "name"
                                 }
                               }
                             },
@@ -1966,12 +1966,6 @@ mod tests {
                             "title": "Some User",
                             "type": "object",
                             "properties": {
-                              "name": {
-                                "type": "string",
-                                "doctave_metadata": {
-                                  "field_name": "name"
-                                }
-                              },
                               "users": {
                                 "type": "array",
                                 "items": {
@@ -1982,6 +1976,12 @@ mod tests {
                                 },
                                 "doctave_metadata": {
                                   "field_name": "users"
+                                }
+                              },
+                              "name": {
+                                "type": "string",
+                                "doctave_metadata": {
+                                  "field_name": "name"
                                 }
                               }
                             },

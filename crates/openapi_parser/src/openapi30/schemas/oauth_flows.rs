@@ -93,16 +93,16 @@ mod test {
               "implicit": {
                 "authorizationUrl": "https://example.com/oauth/authorize",
                 "scopes": {
-                  "read:pets": "read your pets",
-                  "write:pets": "modify pets in your account"
+                  "write:pets": "modify pets in your account",
+                  "read:pets": "read your pets"
                 }
               },
               "authorizationCode": {
                 "authorizationUrl": "https://example.com/oauth/authorize",
                 "tokenUrl": "https://example.com/oauth/token",
                 "scopes": {
-                  "read:pets": "read your pets",
-                  "write:pets": "modify pets in your account"
+                  "write:pets": "modify pets in your account",
+                  "read:pets": "read your pets"
                 }
               }
             }"#}

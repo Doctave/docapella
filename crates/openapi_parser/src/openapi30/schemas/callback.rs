@@ -166,26 +166,6 @@ mod test {
             callback.pretty_print(),
             indoc! {r#"
             {
-              "{$request.query.alternateUrl}": {
-                "put": {
-                  "responses": {
-                    "200": {
-                      "description": "alternate callback successfully processed"
-                    }
-                  },
-                  "requestBody": {
-                    "description": "Alternate callback payload",
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object"
-                        }
-                      }
-                    }
-                  },
-                  "method": "put"
-                }
-              },
               "{$request.query.queryUrl}": {
                 "post": {
                   "responses": {
@@ -204,6 +184,26 @@ mod test {
                     }
                   },
                   "method": "post"
+                }
+              },
+              "{$request.query.alternateUrl}": {
+                "put": {
+                  "responses": {
+                    "200": {
+                      "description": "alternate callback successfully processed"
+                    }
+                  },
+                  "requestBody": {
+                    "description": "Alternate callback payload",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  },
+                  "method": "put"
                 }
               }
             }"#}
