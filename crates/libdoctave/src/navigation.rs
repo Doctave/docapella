@@ -951,6 +951,7 @@ mod test {
 
     use super::*;
 
+    #[derive(Debug)]
     struct ProjectBuilder {
         inputs: Vec<InputFile>,
     }
@@ -2590,14 +2591,14 @@ mod test {
               href: /tab1/foo.md
             - label: Bar
               href: /bar.md
-          tabs:
-            - label: Tab1
-              path: /tab1/
         "#};
 
         let settings = indoc! {r#"
         ---
         title: Sections Example
+        tabs:
+          - label: Tab1
+            path: /tab1/
         "#};
 
         let mut builder = ProjectBuilder::default();
@@ -2653,7 +2654,7 @@ mod test {
 
     #[test]
     fn does_not_prefix_external_hrefs() {
-        let tab_nav = indoc! {r#"
+        let nav = indoc! {r#"
         - heading: Section1
           items:
             - label: Foo
@@ -2667,8 +2668,8 @@ mod test {
 
         let mut builder = ProjectBuilder::default();
         builder.with_file(
-            format!("tab1/section1/{}", crate::NAVIGATION_FILE_NAME),
-            tab_nav,
+            crate::NAVIGATION_FILE_NAME,
+            nav,
         );
         builder.with_file(crate::SETTINGS_FILE_NAME, settings);
         let project = builder.build().unwrap();
@@ -2677,7 +2678,7 @@ mod test {
             ..Default::default()
         };
 
-        let nav = project.navigation(Some(&opts), "/tab1/section1/").unwrap();
+        let nav = project.navigation(Some(&opts), "/").unwrap();
 
         assert_eq!(
             nav.sections[0].items[0].external_href(),

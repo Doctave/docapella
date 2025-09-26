@@ -577,35 +577,30 @@ impl Project {
             }
         });
 
-        if self.pages().par_iter().any(|handle| match handle.page {
-            PageKind::Markdown(m) => m.experimental_template_rendered_enabled(true),
-            _ => false,
-        }) {
-            let mut ctx = RenderContext::new();
-            ctx.with_project(self);
-            ctx.with_maybe_options(opts);
+        let mut ctx = RenderContext::new();
+        ctx.with_project(self);
+        ctx.with_maybe_options(opts);
 
-            for handle in &self.custom_components {
-                if let Err(errs) = handle.verify(&ctx) {
-                    for e in errs {
-                        errors.push(Error {
-                            code: Error::INVALID_COMPONENT,
-                            message: e.to_string(),
-                            description: e.render(&handle.content, &ctx),
-                            file: Some(handle.path.clone()),
-                            position: None,
-                        });
-                    }
-                }
-                if let Err(e) = handle.build() {
+        for handle in &self.custom_components {
+            if let Err(errs) = handle.verify(&ctx) {
+                for e in errs {
                     errors.push(Error {
                         code: Error::INVALID_COMPONENT,
                         message: e.to_string(),
                         description: e.render(&handle.content, &ctx),
                         file: Some(handle.path.clone()),
                         position: None,
-                    })
+                    });
                 }
+            }
+            if let Err(e) = handle.build() {
+                errors.push(Error {
+                    code: Error::INVALID_COMPONENT,
+                    message: e.to_string(),
+                    description: e.render(&handle.content, &ctx),
+                    file: Some(handle.path.clone()),
+                    position: None,
+                })
             }
         }
 
@@ -1248,7 +1243,7 @@ mod test {
     }
 
     #[test]
-    fn verifies_custom_components_if_even_one_page_has_enabled_experimental_features() {
+    fn verifies_custom_components() {
         let files = vec![
             InputFile {
                 path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
@@ -1262,11 +1257,6 @@ mod test {
                 path: PathBuf::from("README.md"),
                 content: InputContent::Text(
                     indoc! {r#"
-                    ---
-                    experimental:
-                      v2_templates: true
-                    ---
-
                     <Component.Example />
                     "#}
                     .to_owned(),
@@ -1369,11 +1359,6 @@ mod test {
                 path: PathBuf::from("README.md"),
                 content: InputContent::Text(
                     indoc! {r#"
-                    ---
-                    experimental:
-                      v2_templates: true
-                    ---
-
                     <Topic.Example />
                     "#}
                     .to_owned(),
@@ -1476,136 +1461,6 @@ mod test {
         } else {
             panic!("Expected markdown AST");
         }
-    }
-
-    #[test]
-    fn ignores_custom_components_verification_if_even_no_page_has_enabled_experimental_features() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project\n")),
-            },
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(
-                    indoc! {r#"
-                    # I'm vanilla
-                    "#}
-                    .to_owned(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from("_components/example.md"),
-                content: InputContent::Text(
-                    indoc! {r#"
-                    <Foo></Bar>
-                    "#}
-                    .to_owned(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-
-        let opts = RenderOptions::default();
-
-        assert_eq!(project.verify(Some(&opts), None), Ok(()));
-    }
-
-    #[test]
-    fn defaults_v2_projects_to_v2_rendering() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! { r#"
-                ---
-                title: An Project
-                "# }
-                    .to_owned(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(
-                    indoc! {r#"
-                    <Foo></Bar>
-                    "#}
-                    .to_owned(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-
-        let opts = RenderOptions::default();
-        let errors = project.verify(Some(&opts), None).unwrap_err();
-
-        assert_str_eq!(
-            errors[0].description,
-            indoc! {r#"
-            Unexpected closing tag `</Bar>`, expected corresponding closing tag for `<Foo>`
-
-                1 │ <Foo></Bar>
-                    ▲    ▲
-                    │    ╵
-                    └─ Opening tag
-                         ╷
-                         └─ Expected close tag
-
-            "#}
-        );
-    }
-
-    #[test]
-    fn opt_out_v2_projects_from_v2_rendering() {
-        let files = vec![
-            InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(
-                    indoc! { r#"
-                ---
-                title: An Project
-                "# }
-                    .to_owned(),
-                ),
-            },
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(
-                    indoc! {r#"
-                    ---
-                    experimental:
-                      v2_templates: false
-                    ---
-
-                    <Foo></Bar>
-                    "#}
-                    .to_owned(),
-                ),
-            },
-        ];
-
-        let project = Project::from_file_list(files).unwrap();
-
-        let opts = RenderOptions::default();
-
-        assert!(
-            project.verify(Some(&opts), None).is_ok(),
-            "Did not skip v2 component verification"
-        );
     }
 
     #[test]
@@ -3612,11 +3467,12 @@ mod test {
                 path: PathBuf::from("README.md"),
                 content: InputContent::Text(
                     indoc! { r#"
-                {% if DOCTAVE.user_preferences.game == 'Football' %}
-                [This is a football link](https://football.com)
-                {% else if DOCTAVE.user_preferences.game == 'Baseball' %}
-                [This is a baseball link](https://baseball.com)
-                {% endif %}
+                <Fragment if={@user_preferences.game == "Football"}>
+                    [This is a football link](https://football.com)
+                </Fragment>
+                <Fragment if={@user_preferences.game == "Baseball"}>
+                    [This is a baseball link](https://baseball.com)
+                </Fragment>
                 "# }
                     .to_string(),
                 ),

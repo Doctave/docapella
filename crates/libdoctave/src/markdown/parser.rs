@@ -383,8 +383,16 @@ pub(crate) fn extract_asset_links(
     Ok(links)
 }
 
-pub(crate) fn extract_external_links(input: &str) -> crate::Result<Vec<String>> {
-    let ast = to_ast(input, &RenderContext::new())?;
+pub(crate) fn extract_external_links(
+    input: &str,
+    ctx: &RenderContext,
+) -> crate::Result<Vec<String>> {
+    println!("Extracting external links from {}", input);
+    let ast = to_ast_mdx(input, ctx).map_err(|e| {
+        println!("Error: {:#?}", e);
+        e
+    })?;
+    println!("AST: {:#?}", ast);
 
     let unique_links = ast
         .walk()
@@ -1094,7 +1102,7 @@ mod test {
         "# };
 
         assert_eq!(
-            extract_external_links(input),
+            extract_external_links(input, &RenderContext::new()),
             Ok(vec![
                 "https://api.example.com".to_string(),
                 "https://www.example.com".to_string()
@@ -1112,7 +1120,7 @@ mod test {
         "# };
 
         assert_eq!(
-            extract_external_links(input),
+            extract_external_links(input, &RenderContext::new()),
             Ok(vec![
                 "https://api.example.com".to_string(),
                 "https://www.example.com".to_string()

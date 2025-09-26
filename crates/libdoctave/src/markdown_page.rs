@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use crate::frontmatter::{Frontmatter, PageWidth};
@@ -84,34 +83,17 @@ impl MarkdownPage {
         // We will expand the links below, once we've gathered the links, and
         // this lets us give the user the actual URI that they've written in
         // the markdown file as the error message, instead of the expanded version.
-        if self.experimental_template_rendered_enabled(true) {
-            markdown::parser::extract_links(&self.content, ctx)
-        } else {
-            let full_content = self.apply_partials(ctx)?;
-            markdown::parser::extract_links(&full_content, ctx)
-        }
+        markdown::parser::extract_links(&self.content, ctx)
     }
 
     pub(crate) fn asset_links(&self, ctx: &mut RenderContext) -> Result<Vec<OutgoingLink>> {
-        ctx.with_url_base_by_fs_path(&self.path);
-
-        if self.experimental_template_rendered_enabled(true) {
-            markdown::parser::extract_asset_links(&self.content, ctx)
-        } else {
-            let full_content = self.apply_partials(ctx)?;
-            markdown::parser::extract_asset_links(&full_content, ctx)
-        }
+        markdown::parser::extract_asset_links(&self.content, ctx)
     }
 
     pub(crate) fn external_links(&self, ctx: &mut RenderContext) -> Result<Vec<String>> {
         ctx.with_url_base_by_page_uri(&self.uri_path);
 
-        if self.experimental_template_rendered_enabled(true) {
-            markdown::parser::extract_external_links(&self.content)
-        } else {
-            let full_content = self.apply_partials(ctx)?;
-            markdown::parser::extract_external_links(&full_content)
-        }
+        markdown::parser::extract_external_links(&self.content, ctx)
     }
 
     fn titelize(path: &Path) -> Option<String> {
@@ -125,42 +107,6 @@ impl MarkdownPage {
         .map(|s| s.replace(['-', '_'], " "))
     }
 
-    pub fn apply_partials(&self, ctx: &mut RenderContext) -> crate::Result<String> {
-        let mut globals = liquid::Object::new();
-
-        let preferences = ctx
-            .settings
-            .user_preferences()
-            .iter()
-            .map(|(k, p)| (k.to_string(), p.default.to_string()))
-            .chain(ctx.options.user_preferences.clone())
-            .collect::<HashMap<_, _>>();
-
-        // We get a type error without this clone on preferences? I think it has something to do with
-        // how the marco is built internally.
-        #[allow(clippy::redundant_clone)]
-        globals.insert(
-            "DOCTAVE".into(),
-            liquid_core::Value::Object(liquid::object!({
-                "user_preferences": liquid::model::Value::Object(liquid::object!(preferences.clone())),
-            }))
-        );
-
-        let parsed = ctx
-            .liquid_parser
-            .parse(frontmatter::without(&self.content))?;
-
-        parsed.render(&globals).map_err(|e| e.into())
-    }
-
-    pub fn experimental_template_rendered_enabled(&self, is_v2: bool) -> bool {
-        if let Ok(fm) = self.frontmatter() {
-            fm.experimental.v2_templates.unwrap_or(is_v2)
-        } else {
-            is_v2
-        }
-    }
-
     pub fn ast(&self, ctx: &mut RenderContext) -> crate::Result<Node> {
         ctx.with_url_base_by_fs_path(&self.path);
         ctx.with_file_context(FileContext::new(
@@ -169,13 +115,7 @@ impl MarkdownPage {
             self.path.clone(),
         ));
 
-        if self.experimental_template_rendered_enabled(true) {
-            markdown::ast_mdx(frontmatter::without(&self.content), ctx)
-        } else {
-            let full = self.apply_partials(ctx)?;
-
-            markdown::ast(&full, ctx)
-        }
+        markdown::ast_mdx(frontmatter::without(&self.content), ctx)
     }
 
     pub fn on_this_page_headings(&self, ctx: &mut RenderContext) -> Vec<OnThisPageHeading> {
@@ -227,43 +167,17 @@ impl std::fmt::Debug for MarkdownPage {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{renderable_ast::NodeKind, settings::Settings, RenderOptions};
     use pretty_assertions::{assert_eq, assert_str_eq};
     use std::path::Path;
 
     #[test]
-    fn use_experimental_mdx_renderer_with_frontmatter_option() {
+    fn renderer_offsets_error_lines_by_frontmatter_length() {
         let page = MarkdownPage::new(
             Path::new("README.md"),
             indoc! {"
             ---
-            experimental:
-              v2_templates: true
-            ---
-            <Box />
-        "}
-            .as_bytes()
-            .to_owned(),
-        );
 
-        let mut ctx = RenderContext::new();
-        let root = page.ast(&mut ctx).unwrap();
 
-        assert!(
-            matches!(root.children[0].kind, NodeKind::Box { .. }),
-            "Not parsed with experimental parser. Got: {:#?}",
-            root
-        );
-    }
-
-    #[test]
-    fn experimental_renderer_offsets_error_lines_by_frontmatter_length() {
-        let page = MarkdownPage::new(
-            Path::new("README.md"),
-            indoc! {"
-            ---
-            experimental:
-              v2_templates: true
             ---
 
             Hello
@@ -293,13 +207,13 @@ mod test {
     }
 
     #[test]
-    fn experimental_renderer_offsets_error_lines_by_frontmatter_length_for_ast() {
+    fn renderer_offsets_error_lines_by_frontmatter_length_for_ast() {
         let page = MarkdownPage::new(
             Path::new("README.md"),
             indoc! {"
             ---
-            experimental:
-              v2_templates: true
+
+
             ---
 
             Hello
@@ -326,31 +240,6 @@ mod test {
 
             "#}
         );
-    }
-
-    #[test]
-    fn defaults_to_old_renderer() {
-        let page = MarkdownPage::new(
-            Path::new("README.md"),
-            indoc! {"
-            <Foo />
-        "}
-            .as_bytes()
-            .to_owned(),
-        );
-
-        let mut ctx = RenderContext::new();
-        let root = page.ast(&mut ctx).unwrap();
-
-        if let Node {
-            kind: NodeKind::HtmlTag { value },
-            ..
-        } = &root.children[0]
-        {
-            assert_eq!(value, "<Foo />");
-        } else {
-            panic!("Not parsed with old parser by default. Got: {:#?}", root);
-        }
     }
 
     #[test]
@@ -535,64 +424,6 @@ mod test {
         let headings = page.on_this_page_headings(&mut ctx);
 
         assert_eq!(headings.len(), 0);
-    }
-
-    #[test]
-    fn exposes_user_preferences_as_liquid_variable() {
-        let page = MarkdownPage::new(
-            Path::new("README.md"),
-            indoc! {r#"
-            {% if DOCTAVE.user_preferences.foo == "bar" %}
-            BAR
-            {% endif %}
-            "#}
-            .as_bytes()
-            .to_owned(),
-        );
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("foo".to_string(), "bar".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-        let rendered = page.ast(&mut ctx).unwrap().debug_string().unwrap();
-
-        assert!(rendered.contains("BAR"));
-    }
-
-    #[test]
-    fn exposes_default_user_preferences_as_liquid_variable() {
-        let settings: Settings = Settings::parse(indoc! {r#"
-        ---
-        title: Example
-        user_preferences:
-          foo:
-            label: Plan
-            default: bar
-            values:
-              - bar
-              - something else
-        "#})
-        .unwrap();
-
-        let page = MarkdownPage::new(
-            Path::new("README.md"),
-            indoc! {r#"
-            {% if DOCTAVE.user_preferences.foo == "bar" %}
-            BAR
-            {% endif %}
-
-            "#}
-            .as_bytes()
-            .to_owned(),
-        );
-
-        let mut ctx = RenderContext::new();
-        ctx.with_settings(&settings);
-        let rendered = page.ast(&mut ctx).unwrap().debug_string().unwrap();
-
-        assert!(rendered.contains("BAR"));
     }
 
     #[test]

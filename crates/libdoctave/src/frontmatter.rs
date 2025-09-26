@@ -25,8 +25,6 @@ pub struct Frontmatter {
     #[serde(default = "default_as_true")]
     pub breadcrumbs: bool,
     #[serde(default)]
-    pub experimental: Experimental,
-    #[serde(default)]
     pub search: Search,
 }
 
@@ -40,7 +38,6 @@ impl Default for Frontmatter {
             title: None,
             meta: FrontmatterMeta::default(),
             breadcrumbs: true,
-            experimental: Experimental::default(),
             page_width: PageWidth::default(),
             search: Search::default(),
         }
@@ -58,11 +55,6 @@ pub enum PageWidth {
 #[derive(Deserialize, Serialize, Debug, Default, PartialEq)]
 pub struct FrontmatterMeta {
     pub description: Option<String>,
-}
-
-#[derive(Deserialize, Serialize, Debug, Default, PartialEq)]
-pub struct Experimental {
-    pub v2_templates: Option<bool>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Default, PartialEq)]

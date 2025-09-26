@@ -484,7 +484,6 @@ impl Operation {
         Operation::from_parsed(spec, "webhook".into(), "".into(), None, security_schemes)
     }
 
-    // Template-friendly methods moved from view layer
     pub fn identifier(&self) -> String {
         format!(
             "{}-{}-{}",
@@ -1376,7 +1375,6 @@ impl Example {
         }
     }
 
-    // Template-friendly methods moved from view layer
     pub fn identifier(&self, parent_id: &str) -> String {
         format!("example-{}-{}", self.name, parent_id)
     }

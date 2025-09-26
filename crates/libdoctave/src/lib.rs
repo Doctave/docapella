@@ -902,13 +902,14 @@ mod test {
         let file_list = vec![
             InputFile {
                 path: PathBuf::from("README.md"),
-                content: InputContent::Text(String::from(indoc! {"
-                    {% if DOCTAVE.user_preferences.type == 'advanced' %}
+                content: InputContent::Text(String::from(indoc! {r#"
+                    <Fragment if={@user_preferences.type == "advanced"}>
                     [bad link](does_not_exist.md)
-                    {% else %}
+                    </Fragment>
+                    <Fragment else>
                     [good link](README.md)
-                    {% endif %}
-                "})),
+                    </Fragment>
+                "#})),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -1440,51 +1441,6 @@ mod test {
         assert!(
             nav.has_link_to("/api"),
             "API overview link missing in navigation"
-        );
-    }
-
-    #[test]
-    fn it_renders_partials_in_markdown_files_when_loaded() {
-        let file_list = vec![
-            InputFile {
-                path: PathBuf::from("README.md"),
-                content: InputContent::Text(String::from(
-                    "{% include \"_partials/example.md\" name: \"Alice\" %}",
-                )),
-            },
-            InputFile {
-                path: if cfg!(windows) {
-                    PathBuf::from("_partials\\example.md")
-                } else {
-                    PathBuf::from("_partials/example.md")
-                },
-                content: InputContent::Text(String::from("Hello, {{ name }}")),
-            },
-            InputFile {
-                path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {"
-                        ---
-                        title: An Project
-                        "})),
-            },
-            InputFile {
-                path: PathBuf::from(NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from(indoc! {r#"
-            - heading: "Guides"
-            "#})),
-            },
-        ];
-
-        let project = Project::from_file_list(file_list).unwrap();
-
-        let page = project.get_page_by_uri_path("/").unwrap();
-        assert_eq!(
-            page.ast(Some(&RenderOptions::default()))
-                .unwrap()
-                .as_markdown()
-                .unwrap()
-                .inner_text(),
-            "Hello, Alice"
         );
     }
 

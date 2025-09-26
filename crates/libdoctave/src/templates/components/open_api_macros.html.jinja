@@ -1,4 +1,4 @@
-{% from "components/markdown.html.jinja" import markdown %}
+{% from "components/markdown.html.jinja" import prose %}
 
 {# 
   Macro: render_example_block
@@ -47,7 +47,7 @@
           </div>
           {% if example.description_ast %}
             <div class="open-api-example-description">
-              {{ markdown(example.description_ast, true) }}
+              {{ prose(example.description_ast, true) }}
             </div>
           {% endif %}
         </div>

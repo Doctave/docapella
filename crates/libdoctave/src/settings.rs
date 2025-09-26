@@ -670,10 +670,6 @@ pub struct Footer {
 #[serde(deny_unknown_fields)]
 #[serde(tag = "name")]
 pub struct Theme {
-    // NOTE: Coming soon
-    // style: ThemeStyle
-    // NOTE: Coming soon
-    // layout: ThemeLayout
     #[serde(default)]
     pub color_mode: ColorMode,
     #[serde(default)]
@@ -1475,12 +1471,13 @@ mod test {
         ---
         title: Acme Inc
 
-        logo:
-          src: _assets/logo.png
-          src_dark: _assets/logo-dark.png
+        theme:
+          logo:
+            src: _assets/logo.png
+            src_dark: _assets/logo-dark.png
 
-        favicon:
-          src: _assets/favicon.svg
+          favicon:
+            src: _assets/favicon.svg
         "##};
 
         let mut settings = Settings::parse(input).unwrap();
@@ -1608,12 +1605,13 @@ mod test {
         ---
         title: Acme Inc
 
-        logo:
-          src: /_assets/logo.png
-          src_dark: /_assets/logo-dark.png
+        theme:
+          logo:
+            src: /_assets/logo.png
+            src_dark: /_assets/logo-dark.png
 
-        favicon:
-          src: /_assets/favicon.svg
+          favicon:
+            src: /_assets/favicon.svg
         "##};
 
         let mut settings = Settings::parse(input).unwrap();
@@ -1671,18 +1669,19 @@ mod test {
         ---
         title: Acme Inc
 
-        colors:
+        theme:
+          colors:
             main: \"#CECECE\"
 
         header:
-            links:
-                - text: Google
-                  external: https://www.google.com
-                - text: Example
-                  external: https://www.example.com
-            cta:
-                text: Sign Up
-                external: https://www.example.com
+          links:
+            - text: Google
+              external: https://www.google.com
+            - text: Example
+              external: https://www.example.com
+          cta:
+            text: Sign Up
+            external: https://www.example.com
 
 
         open_api:
@@ -2076,7 +2075,8 @@ mod test {
         ---
         title: Acme Inc
 
-        color_mode: "dark"
+        theme:
+          color_mode: "dark"
         "##};
 
         let settings: Settings = serde_yaml::from_str(input).unwrap();
@@ -2284,7 +2284,7 @@ mod test {
             // from "tabs" key
             let input = indoc! {r##"
             ---
-                title: Acme Inc
+            title: Acme Inc
             tabs:
               - label: "Tab 1"
                 path: "/tab1"
@@ -2338,7 +2338,7 @@ mod test {
 
             let err = Settings::parse(input).unwrap_err();
             println!("{:#?}", err);
-            assert_eq!(err.description, "There was an error parsing your docapella.yaml:\n\ntheme: invalid type: string \"color_mode:\\\"kettle\", expected struct Theme at line 6 column 3");
+            assert_eq!(err.description, "There was an error parsing your docapella.yaml:\n\ntheme: invalid type: string \"color_mode:\\\"kettle\", expected struct Theme at line 5 column 3");
         }
     }
 }
