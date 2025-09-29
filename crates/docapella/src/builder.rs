@@ -5,6 +5,7 @@ use std::path::Path;
 use libdoctave::content_api::ViewMode;
 use libdoctave::{renderer::Renderer, ContentApiResponse, Project, ResponseContext};
 use owo_colors::{OwoColorize as _, Stream};
+use rayon::prelude::*;
 
 /// Builds the project by finding all the files in the working directory and rendering them to
 /// the output directory.
@@ -62,26 +63,55 @@ pub(crate) fn build<W: std::io::Write>(
 
             let start = std::time::Instant::now();
 
-            for page in project.pages() {
-                let mut path = out_dir.to_path_buf();
-                path.push(page.out_path());
+            let results: Vec<Result<()>> = project
+                .pages()
+                .par_iter()
+                .map(|page| {
+                    let mut path = out_dir.to_path_buf();
+                    path.push(page.out_path());
 
-                if !path.exists() {
-                    std::fs::create_dir_all(path.parent().unwrap())?;
+                    if !path.exists() {
+                        std::fs::create_dir_all(path.parent().unwrap())?;
+                    }
+
+                    let mut ctx = ResponseContext::default();
+                    ctx.options.webbify_internal_urls = true;
+                    ctx.view_mode = view_mode.clone();
+                    let response = ContentApiResponse::content(page.clone(), &project, ctx);
+
+                    let rendered = renderer.render_page(response).map_err(|e| {
+                        crate::Error::General(format!("Failed to render page: {:?}", e))
+                    })?;
+
+                    std::fs::write(path, rendered)?;
+
+                    Ok(())
+                })
+                .collect();
+
+            let mut errors: Vec<crate::Error> = vec![];
+            for result in results {
+                if let Err(e) = result {
+                    errors.push(e);
                 }
-
-                let mut ctx = ResponseContext::default();
-                ctx.options.webbify_internal_urls = true;
-                ctx.view_mode = view_mode.clone();
-                let response = ContentApiResponse::content(page, &project, ctx);
-
-                let rendered = renderer.render_page(response).map_err(|e| {
-                    crate::Error::General(format!("Failed to render page: {:?}", e))
-                })?;
-
-                std::fs::write(path, rendered)?;
             }
 
+            if !errors.is_empty() {
+                writeln!(
+                    stdout,
+                    "Failed to build project. Found {} errors.",
+                    errors.len()
+                )?;
+                for error in errors {
+                    writeln!(stdout, "{:?}", error)?;
+                }
+
+                return Err(crate::Error::General(String::from(
+                    "Failed to build project",
+                )));
+            }
+
+            // Copy assets
             if !project.assets.is_empty() {
                 for asset in &project.assets {
                     let path = out_dir.join(&asset.path);
