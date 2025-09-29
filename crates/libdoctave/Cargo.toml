@@ -41,7 +41,6 @@ deunicode = "=1.4.0"
 itermap = "0.2.2"
 unix_path = "1.0.1"
 include_dir = "0.7.3"
-palette = "0.7.3"
 markdown_rs = { rev="5f781cdbf08801706479032d22c6c4fb64dc6c7d", package="markdown", git="https://github.com/wooorm/markdown-rs" }
 regex = "1.10.3"
 thiserror = "1.0.24"
