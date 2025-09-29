@@ -173,12 +173,10 @@ impl OperationAst {
         operation: &super::model::Operation,
         ctx: &crate::render_context::RenderContext,
     ) -> Result<Self> {
-        println!("Before {:?}", operation.description);
         let description_ast = operation
             .description
             .as_ref()
             .and_then(|description| ast_for_openapi(description, ctx).ok());
-        println!("After {:?}", description_ast);
 
         let mut header_params = vec![];
         for param in &operation.header_parameters {
