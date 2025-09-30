@@ -1,5 +1,23 @@
 <div class="navigation-container">
-  {% for section in navigation.sections %}
-    {% include "components/navigation_section.html.jinja" %}
-  {% endfor %}
+  {% if navigation.status == "error" %}
+    <div class="navigation-error">
+      <h2>
+        Error parsing navigation
+      <h2>
+
+      {% for error in navigation.errors %}
+      <div class="navigation-error-item">
+        <div class="navigation-error-item-header">
+          <span><code>{{ error.file }}</code></span>
+          <p>{{ error.message }}</p>
+        </div>
+        <div class="navigation-error-description"><code>{{ error.description|escape }}</code></div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% for section in navigation.sections %}
+      {% include "components/navigation_section.html.jinja" %}
+    {% endfor %}
+  {% endif %}
 </div>
