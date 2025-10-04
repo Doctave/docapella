@@ -21,28 +21,16 @@ use crate::SearchIndex;
 
 use crate::vale::{vale_results_to_errors, vale_runtime_error_to_error};
 use crate::{
-    ast_mdx_fault_tolerant, frontmatter, markdown_navigation, navigation, renderable_ast,
-    uri_to_fs_path, Ast, CustomComponentHandle, Error, MarkdownPage, RenderOptions,
-    BAKED_COMPONENTS, DEPRECATED_NAVIGATION_FILE_NAME, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME,
+    ast_mdx_fault_tolerant, frontmatter, navigation, renderable_ast, uri_to_fs_path, Ast,
+    CustomComponentHandle, Error, MarkdownPage, RenderOptions, BAKED_COMPONENTS,
+    NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME,
 };
 use std::collections::HashMap;
 
 static BOILERPLATE_PROJECT: Dir = include_dir!("./crates/libdoctave/boilerplate_project");
 
 #[derive(Clone, Debug)]
-pub(crate) enum NavigationHandle {
-    LegacyMarkdown(String),
-    Yaml(String),
-}
-
-impl NavigationHandle {
-    fn file_name(&self) -> String {
-        match &self {
-            NavigationHandle::LegacyMarkdown(_) => DEPRECATED_NAVIGATION_FILE_NAME.to_string(),
-            NavigationHandle::Yaml(_) => NAVIGATION_FILE_NAME.to_string(),
-        }
-    }
-}
+pub(crate) struct NavigationHandle(pub String);
 
 #[derive(Debug, Clone)]
 pub struct Asset {
@@ -175,7 +163,6 @@ impl Project {
         // Go through all files in the list, sorting out partials and pages
         for (path, content) in list
             .iter()
-            .filter(|(path, _)| path != Path::new(DEPRECATED_NAVIGATION_FILE_NAME))
             .filter(|(path, _)| path != Path::new(SETTINGS_FILE_NAME))
         {
             if path.starts_with("_components") || path.starts_with("_topics") {
@@ -243,7 +230,7 @@ impl Project {
                 let handle = list
                     .iter()
                     .find(|(file_path, _)| file_path == &nav_file_path)
-                    .map(|(_, c)| NavigationHandle::Yaml(c.clone()));
+                    .map(|(_, c)| NavigationHandle(c.clone()));
 
                 navs.push((path.to_string(), handle));
             });
@@ -254,24 +241,16 @@ impl Project {
                 Some(HashMap::from_iter(navs))
             }
         } else {
-            let navigation_handle = match (
-                list.iter()
-                    .find(|(p, _)| p == Path::new(DEPRECATED_NAVIGATION_FILE_NAME)),
-                list.iter()
-                    .find(|(p, _)| p == Path::new(NAVIGATION_FILE_NAME)),
-            ) {
-                (None, Some((_, content))) => Some(NavigationHandle::Yaml(content.clone())),
-                (Some(_), Some((_, content))) => Some(NavigationHandle::Yaml(content.clone())),
-                (Some((_, old)), None) => Some(NavigationHandle::LegacyMarkdown(old.clone())),
-                (None, None) => None,
-            };
+            let navigation_handle = list
+                .iter()
+                .find(|(p, _)| p == Path::new(NAVIGATION_FILE_NAME))
+                .map(|(_, content)| NavigationHandle(content.clone()));
 
             navigation_handle.map(|nav| HashMap::from_iter(vec![("/".to_string(), Some(nav))]))
         };
 
         for (path, content) in list
             .iter()
-            .filter(|(path, _)| path != Path::new(DEPRECATED_NAVIGATION_FILE_NAME))
             .filter(|(path, _)| path != Path::new(SETTINGS_FILE_NAME))
             .filter(|(path, _)| path.extension() == Some(std::ffi::OsStr::new("md")))
         {
@@ -720,7 +699,7 @@ impl Project {
                     .iter()
                     .filter_map(|(path, handle)| handle.as_ref().map(|h| (path, h)));
                 for (subtab_path, nav_handle) in navigations_with_handle {
-                    let nav_file_path = PathBuf::from(subtab_path).join(nav_handle.file_name());
+                    let nav_file_path = PathBuf::from(subtab_path).join(NAVIGATION_FILE_NAME);
 
                     if let Ok(nav) = self.navigation(Some(opts), subtab_path) {
                         for internal_link in nav.gather_links() {
@@ -800,7 +779,7 @@ impl Project {
 
     /// Verifies that the structure of the navigation is correct.
     /// Note this does not check for broken links.
-    fn verify_navigation(&self, opts: Option<&RenderOptions>) -> Vec<Error> {
+    fn verify_navigation(&self, _opts: Option<&RenderOptions>) -> Vec<Error> {
         let mut errors = vec![];
 
         if self.navigations.is_none() {
@@ -823,19 +802,9 @@ impl Project {
             for (subtab_path, nav_handle) in navs {
                 let mut errors_for_nav = vec![];
                 if let Some(nav_handle) = nav_handle {
-                    let nav_file_path = PathBuf::from(subtab_path).join(nav_handle.file_name());
-
-                    match nav_handle {
-                        NavigationHandle::Yaml(ref content) => {
-                            let mut nav_errors = navigation::verify(content, self);
-                            errors_for_nav.append(&mut nav_errors);
-                        }
-                        NavigationHandle::LegacyMarkdown(_) => {
-                            if let Err(e) = self.root_navigation(opts) {
-                                errors_for_nav.push(e);
-                            }
-                        }
-                    }
+                    let nav_file_path = PathBuf::from(subtab_path).join(NAVIGATION_FILE_NAME);
+                    let mut nav_errors = navigation::verify(&nav_handle.0, self);
+                    errors_for_nav.append(&mut nav_errors);
 
                     // This is kind of ugly, but right now a bit hesitant to pass context
                     // into navigation verification just for error reporting as it runs
@@ -957,10 +926,7 @@ impl Project {
 
         match &self.navigations {
             Some(navs) => match navs.get(&path) {
-                Some(Some(NavigationHandle::LegacyMarkdown(ref md))) => {
-                    markdown_navigation::Navigation::from_markdown(md, &ctx)
-                }
-                Some(Some(NavigationHandle::Yaml(ref yaml))) => navigation::build(yaml, &ctx, self),
+                Some(Some(nav_handle)) => navigation::build(&nav_handle.0, &ctx, self),
                 None | Some(None) => Err(Error {
                     code: Error::MISSING_NAVIGATION,
                     message: "Missing navigation.yaml for tab".to_owned(),
@@ -1169,8 +1135,8 @@ mod test {
     fn verifies_each_page() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -1219,8 +1185,8 @@ mod test {
     fn verifies_custom_components() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -1260,8 +1226,8 @@ mod test {
     fn custom_components_topic_alias() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -1321,8 +1287,8 @@ mod test {
     fn verifies_custom_components_with_topics_alias() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -1362,8 +1328,8 @@ mod test {
     fn custom_components_with_topics_alias_attributes_work() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -3642,8 +3608,8 @@ mod test {
     fn v2_verifies_accent_color() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4298,8 +4264,8 @@ mod test {
     fn download_link_works_with_openapi_non_assets_folder() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4363,8 +4329,8 @@ mod test {
     fn parses_openapi_schema_node() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4465,8 +4431,8 @@ mod test {
     fn openapi_schemas_can_be_toggled_to_not_expanded() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4567,8 +4533,8 @@ mod test {
     fn openapi_schema_node_error_when_schema_not_found() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4662,8 +4628,8 @@ mod test {
     fn openapi_schema_node_error_when_openapi_not_found() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4711,8 +4677,8 @@ mod test {
     fn parses_openapi_schema_node_with_expanded() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4814,8 +4780,8 @@ mod test {
     fn parses_openapi_schema_node_with_expanded_stringified() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4916,8 +4882,8 @@ mod test {
     fn can_get_the_ast_for_a_virtual_page_in_a_project() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -4964,8 +4930,8 @@ mod test {
     fn can_get_errors_for_a_virtual_page_in_a_project() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -5006,8 +4972,8 @@ mod test {
     fn can_offset_virtual_file_error_offsets_by_frontmatter() {
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text("".to_owned()),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text("---".to_owned()),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),

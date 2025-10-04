@@ -14,7 +14,6 @@ mod error_options;
 mod frontmatter;
 pub mod icon;
 pub mod markdown;
-pub mod markdown_navigation;
 pub mod markdown_page;
 pub mod navigation;
 pub mod open_api;
@@ -58,7 +57,6 @@ pub use markdown::autocomplete::{CompletionItem, CompletionItemKind};
 use std::path::{Path, PathBuf};
 
 pub const NAVIGATION_FILE_NAME: &str = "navigation.yaml";
-pub const DEPRECATED_NAVIGATION_FILE_NAME: &str = "_Navigation.md";
 pub const SETTINGS_FILE_NAME: &str = "docapella.yaml";
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -267,7 +265,10 @@ mod test {
     #[test]
     fn get_page_by_uri_path() {
         let navigation = indoc! {"
-        * [Root](README.md)
+        ---
+        - items:
+          - label: Root
+            href: README.md
         "};
         let root = indoc! {"
         # I am Root!
@@ -275,7 +276,7 @@ mod test {
 
         let files = vec![
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
                 content: InputContent::Text(navigation.to_owned()),
             },
             InputFile {
@@ -364,8 +365,10 @@ mod test {
                 content: InputContent::Text(String::from("# Backend")),
             },
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from("* [Root](README.md)")),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text(String::from(
+                    "---\n- items:\n  - label: Root\n    href: README.md",
+                )),
             },
         ];
 
@@ -382,8 +385,10 @@ mod test {
                 content: InputContent::Text(String::from("# Frontend")),
             },
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from("* [Frontend](frontend/info.md)")),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text(String::from(
+                    "---\n- items:\n  - label: Frontend\n    href: frontend/info.md",
+                )),
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
@@ -491,8 +496,8 @@ mod test {
                 content: InputContent::Text(String::from("# Content")),
             },
             InputFile {
-                path: PathBuf::from("_Navigation.md"),
-                content: InputContent::Text(String::from("# Frontend")),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text(String::from("---")),
             },
         ];
 
@@ -534,8 +539,10 @@ mod test {
                 ))),
             },
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from("* [Root](README.md)")),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text(String::from(
+                    "---\n- items:\n  - label: Root\n    href: README.md",
+                )),
             },
         ];
 
@@ -547,7 +554,7 @@ mod test {
     }
 
     #[test]
-    fn deprecated_navigation_file_markdown_parser_opts() {
+    fn yaml_navigation_file_parser_opts() {
         let file_list = vec![
             InputFile {
                 path: PathBuf::from("Meh.md"),
@@ -558,8 +565,10 @@ mod test {
                 content: InputContent::Text(String::from("---\ntitle: An Project")),
             },
             InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from("# Frontend\n\n* [Meh](/Meh.md)")),
+                path: PathBuf::from(NAVIGATION_FILE_NAME),
+                content: InputContent::Text(String::from(
+                    "---\n- heading: Frontend\n  items:\n  - label: Meh\n    href: /Meh.md",
+                )),
             },
         ];
 
@@ -612,7 +621,7 @@ mod test {
     }
 
     #[test]
-    fn uses_modern_navigation_if_it_is_available_over_old_one() {
+    fn uses_modern_navigation_file() {
         let file_list = vec![
             InputFile {
                 path: PathBuf::from("Meh.md"),
@@ -630,10 +639,6 @@ mod test {
               - label: "New"
                 href: "/Meh.md"
             "#})),
-            },
-            InputFile {
-                path: PathBuf::from(DEPRECATED_NAVIGATION_FILE_NAME),
-                content: InputContent::Text(String::from("# Guides\n\n* [Old](/Meh.md)")),
             },
         ];
 

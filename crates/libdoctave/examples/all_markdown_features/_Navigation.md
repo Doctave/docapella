@@ -1,2 +1,0 @@
-* [Root](README.md)
-
