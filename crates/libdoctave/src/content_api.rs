@@ -660,7 +660,7 @@ mod test {
 
     use crate::{
         settings::{FooterLink, HeaderLink, InternalLink},
-        InputContent, InputFile, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME
+        InputContent, InputFile, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME,
     };
 
     use std::path::{Path, PathBuf};
@@ -780,9 +780,7 @@ mod test {
                 project: Project { tabs, .. },
                 ..
             } => {
-                let tab1 = tabs
-                    .iter()
-                    .find(|tab| tab.label == "Getting started");
+                let tab1 = tabs.iter().find(|tab| tab.label == "Getting started");
                 let tab2 = tabs.iter().find(|tab| tab.label == "Fizz");
 
                 assert_eq!(tab1.unwrap().href, "/dev/foo");

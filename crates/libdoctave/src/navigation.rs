@@ -2667,10 +2667,7 @@ mod test {
         "#};
 
         let mut builder = ProjectBuilder::default();
-        builder.with_file(
-            crate::NAVIGATION_FILE_NAME,
-            nav,
-        );
+        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
         builder.with_file(crate::SETTINGS_FILE_NAME, settings);
         let project = builder.build().unwrap();
         let opts = RenderOptions {
