@@ -1,4 +1,6 @@
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
+use owo_colors::{OwoColorize as _, Stream};
+use std::io::Write;
 use std::path::PathBuf;
 
 use docapella::commands::build::{run as build, BuildArgs};
@@ -83,7 +85,36 @@ fn main() {
     };
 
     if let Err(e) = result {
-        println!("{:?}", e);
+        match e {
+            docapella::Error::General(msg) => {
+                writeln!(&mut stdout, "{}", msg).expect("Failed to write to stdout");
+            }
+            docapella::Error::IoError(e) => {
+                writeln!(&mut stdout, "{}", e).expect("Failed to write to stdout");
+            }
+            docapella::Error::FatalBuildError(errors) => {
+                writeln!(
+                    &mut stdout,
+                    "{}",
+                    "Unable to build project".if_supports_color(Stream::Stdout, |s| s.red())
+                )
+                .expect("Failed to write to stdout");
+                writeln!(&mut stdout, "--------------------------------")
+                    .expect("Failed to write to stdout");
+                for error in errors {
+                    writeln!(
+                        &mut stdout,
+                        "{} | [{}]",
+                        error.message,
+                        error.file.unwrap_or_default().display(),
+                    )
+                    .expect("Failed to write to stdout");
+                    writeln!(&mut stdout, "{}", error.description,)
+                        .expect("Failed to write to stdout");
+                }
+            }
+        }
+
         std::process::exit(1);
     }
 }

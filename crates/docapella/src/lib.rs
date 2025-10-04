@@ -17,4 +17,6 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("{0}")]
     General(String),
+    #[error("Fatal build error")]
+    FatalBuildError(Vec<libdoctave::Error>),
 }

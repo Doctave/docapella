@@ -152,11 +152,6 @@ pub(crate) fn build<W: std::io::Write>(
 
             Ok(())
         }
-        Err(e) => {
-            println!("{:?}", e);
-            Err(crate::Error::General(String::from(
-                "Failed to build project",
-            )))
-        }
+        Err(e) => Err(crate::Error::FatalBuildError(e)),
     }
 }
