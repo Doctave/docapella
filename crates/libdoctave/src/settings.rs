@@ -4,12 +4,10 @@ use crate::parser::{is_external_link, rewrite_image_src, to_final_link};
 use crate::project::Asset;
 use crate::render_context::RenderContext;
 use crate::tabs::{TabDescription, TabsList};
-use crate::utils::cartesian_product;
 /// Settings for a given site backed by a `docapella.yaml` file.
 use crate::{Error, Project, RenderOptions, Result, SETTINGS_FILE_NAME};
 /// Settings for a given site backed by a `docapella.yaml` file.
 use serde::{Deserialize, Deserializer, Serialize};
-use std::collections::HashMap;
 use std::fmt::{self, Display};
 use std::path::{Path, PathBuf};
 use url::Url;
@@ -204,38 +202,14 @@ impl Settings {
         self.vale.as_ref()
     }
 
-    pub fn user_preferences(&self) -> &HashMap<String, UserPreference> {
-        &self.user_preferences
-    }
-
     pub fn styles(&self) -> &[PathBuf] {
         self.styles.as_slice()
-    }
-
-    pub(crate) fn user_preference_combinations(
-        &self,
-    ) -> Vec<HashMap<String, UserPreferenceOption>> {
-        cartesian_product(
-            self.user_preferences()
-                .iter()
-                .map(|(key, pref)| {
-                    pref.values
-                        .iter()
-                        .map(|v| (key.to_owned(), v.to_owned()))
-                        .collect::<Vec<_>>()
-                })
-                .collect::<Vec<_>>(),
-        )
-        .into_iter()
-        .map(|combination| combination.into_iter().collect::<HashMap<_, _>>())
-        .collect::<Vec<_>>()
     }
 
     pub fn verify(&self, project: &Project, errors: &mut Vec<Error>) {
         // Shared verifications
         self.verify_openapi_specs(project, errors);
         self.verify_favicon(project, errors);
-        self.verify_user_preferences(project, errors);
         self.verify_styles(project, errors);
         self.verify_redirects(project, errors);
         self.verify_logo(project, errors);
@@ -370,31 +344,6 @@ impl Settings {
                     ),
                     file: Some(PathBuf::from(crate::SETTINGS_FILE_NAME)),
             position: None,
-                });
-            }
-        }
-    }
-
-    fn verify_user_preferences(&self, _project: &Project, errors: &mut Vec<Error>) {
-        for (key, pref) in self.user_preferences() {
-            if !pref.values.iter().any(|v| v.value == pref.default) {
-                errors.push(Error {
-                    code: Error::INVALID_DOCTAVE_YAML,
-                    message: format!(
-                        "User preference \"{}\" default value not in list of possible values",
-                        key
-                    ),
-                    description: format!(
-                        "Expected default value to be one of {}.\nFound \"{}\".",
-                        pref.values
-                            .iter()
-                            .map(|s| format!("\"{}\"", s))
-                            .collect::<Vec<_>>()
-                            .join(", "),
-                        pref.default
-                    ),
-                    file: Some(PathBuf::from(crate::SETTINGS_FILE_NAME)),
-                    position: None,
                 });
             }
         }
@@ -613,8 +562,6 @@ pub struct Settings {
     pub styles: Vec<PathBuf>,
     #[serde(default)]
     pub redirects: Vec<Redirect>,
-    #[serde(default)]
-    pub user_preferences: HashMap<String, UserPreference>,
     #[serde(default, rename(deserialize = "tabs"))]
     pub tab_descriptions: Vec<TabDescription>,
     #[serde(default)]
@@ -632,7 +579,6 @@ impl Default for Settings {
             open_api: Vec::new(),
             styles: Vec::new(),
             redirects: Vec::new(),
-            user_preferences: HashMap::new(),
             tab_descriptions: Vec::new(),
             footer: Footer::default(),
             vale: None,
@@ -758,52 +704,6 @@ pub struct HeaderSettings {
     #[serde(default)]
     pub links: Vec<HeaderLink>,
     pub cta: Option<HeaderCta>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-enum EnumVal {
-    Simple(String),
-    Complex { value: String, label: String },
-}
-
-#[derive(Debug, Clone, Deserialize, PartialEq, Serialize, Ord, Eq, PartialOrd)]
-#[serde(from = "EnumVal")]
-pub struct UserPreferenceOption {
-    pub value: String,
-    pub label: String,
-}
-
-impl From<EnumVal> for UserPreferenceOption {
-    fn from(other: EnumVal) -> Self {
-        match other {
-            EnumVal::Simple(val) => val.into(),
-            EnumVal::Complex { value, label } => Self { value, label },
-        }
-    }
-}
-
-impl From<String> for UserPreferenceOption {
-    fn from(other: String) -> Self {
-        Self {
-            value: other.clone(),
-            label: other,
-        }
-    }
-}
-
-impl Display for UserPreferenceOption {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.value)
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct UserPreference {
-    pub label: String,
-    pub default: String,
-    pub values: Vec<UserPreferenceOption>,
 }
 
 /// A intermediary struct use to parse colors.
@@ -1687,14 +1587,6 @@ mod test {
         open_api:
             - spec_file: /path/to/spec.json
               uri_prefix: /bobby
-
-        user_preferences:
-          plan:
-            label: Your Plan
-            default: Plan A
-            values:
-              - Plan A
-              - Plan B
         "};
 
         let settings: Settings = serde_yaml::from_str(input).unwrap();
@@ -1924,134 +1816,6 @@ mod test {
     }
 
     #[test]
-    fn user_preferences_complex() {
-        let input = indoc! {"
-        ---
-        title: Acme Inc
-
-        user_preferences:
-          plan:
-            label: Your Plan
-            default: Plan A
-            values:
-              - label: Plan A
-                value: plan_a
-              - label: Plan B
-                value: plan_b
-        "};
-
-        let settings: Settings = serde_yaml::from_str(input).unwrap();
-
-        assert_eq!(
-            &settings.user_preferences.get("plan").unwrap().values,
-            &vec![
-                UserPreferenceOption {
-                    value: "plan_a".to_string(),
-                    label: "Plan A".to_string()
-                },
-                UserPreferenceOption {
-                    value: "plan_b".to_string(),
-                    label: "Plan B".to_string()
-                }
-            ]
-        );
-    }
-
-    #[test]
-    fn user_preferences_simple() {
-        let input = indoc! {"
-        ---
-        title: Acme Inc
-
-        user_preferences:
-          plan:
-            label: Your Plan
-            default: Plan A
-            values:
-              - Plan A
-              - Plan B
-        "};
-
-        let settings: Settings = serde_yaml::from_str(input).unwrap();
-
-        assert_eq!(
-            &settings.user_preferences.get("plan").unwrap().values,
-            &vec![
-                UserPreferenceOption {
-                    value: "Plan A".to_string(),
-                    label: "Plan A".to_string()
-                },
-                UserPreferenceOption {
-                    value: "Plan B".to_string(),
-                    label: "Plan B".to_string()
-                }
-            ]
-        );
-
-        assert_eq!(
-            &settings.user_preferences.get("plan").unwrap().default,
-            "Plan A"
-        );
-    }
-
-    #[test]
-    fn user_preference_combinations() {
-        let input = indoc! {"
-        ---
-        title: Acme Inc
-
-        user_preferences:
-          AAA:
-            label: Your Plan
-            default: AAA 1
-            values:
-              - AAA 1
-              - AAA 2
-          BBB:
-            label: Your Price
-            default: BBB 1
-            values:
-              - BBB 1
-              - BBB 2
-        "};
-
-        let settings = Settings::parse(input).unwrap();
-
-        let mut actual = settings
-            .user_preference_combinations()
-            .into_iter()
-            .map(|c| {
-                let mut tmp = c.into_iter().map(|(a, b)| (a, b.value)).collect::<Vec<_>>();
-                tmp.sort();
-                tmp
-            })
-            .collect::<Vec<_>>();
-        actual.sort();
-
-        let mut expected = vec![
-            vec![
-                ("AAA".to_owned(), "AAA 1".to_owned()),
-                ("BBB".to_owned(), "BBB 1".to_owned()),
-            ],
-            vec![
-                ("AAA".to_owned(), "AAA 1".to_owned()),
-                ("BBB".to_owned(), "BBB 2".to_owned()),
-            ],
-            vec![
-                ("AAA".to_owned(), "AAA 2".to_owned()),
-                ("BBB".to_owned(), "BBB 1".to_owned()),
-            ],
-            vec![
-                ("AAA".to_owned(), "AAA 2".to_owned()),
-                ("BBB".to_owned(), "BBB 2".to_owned()),
-            ],
-        ];
-        expected.sort();
-        // Convert to Vec<HashMap> to Vec<Vec> for stable sorting in comparison
-        assert_eq!(actual, expected);
-    }
-
-    #[test]
     fn styles() {
         let input = indoc! {"
         ---
@@ -2132,16 +1896,6 @@ mod test {
             - from: /foo
               to: /bar
 
-        user_preferences:
-          plan:
-            label: Your Plan
-            default: Plan A
-            values:
-              - label: Plan A
-                value: plan_a
-              - label: Plan B
-                value: plan_b
-
         footer:
           links:
             - label: Terms of Service
@@ -2221,26 +1975,6 @@ mod test {
                     facebook: None,
                 })
             );
-            assert_eq!(
-                settings.user_preferences(),
-                &HashMap::from([(
-                    "plan".to_string(),
-                    UserPreference {
-                        label: "Your Plan".to_string(),
-                        default: "Plan A".to_string(),
-                        values: vec![
-                            UserPreferenceOption {
-                                value: "plan_a".to_string(),
-                                label: "Plan A".to_string()
-                            },
-                            UserPreferenceOption {
-                                value: "plan_b".to_string(),
-                                label: "Plan B".to_string()
-                            }
-                        ]
-                    }
-                )])
-            );
         }
 
         #[test]
@@ -2264,7 +1998,6 @@ mod test {
                     facebook: None,
                 })
             );
-            assert_eq!(settings.user_preferences(), &HashMap::new(),);
             assert_eq!(settings.redirects(), &[]);
             assert_eq!(
                 settings.theme().unwrap(),

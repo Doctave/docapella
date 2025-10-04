@@ -143,34 +143,6 @@ mod test {
         }
 
         #[test]
-        fn evaluates_user_preferences() {
-            let markdown = indoc! {r#"
-            { @user_preferences.plan }
-            "#};
-
-            let opts = RenderOptions {
-                user_preferences: HashMap::from([("plan".to_string(), "enterprise".to_string())]),
-                ..Default::default()
-            };
-
-            let mut ctx = RenderContext::new();
-            ctx.with_options(&opts);
-
-            let html = ast_mdx(markdown, &ctx).unwrap().debug_string().unwrap();
-
-            assert_str_eq!(
-                html,
-                indoc! { r#"
-                <Paragraph>
-                    <Text>
-                        enterprise
-                    </Text>
-                </Paragraph>
-                "# }
-            );
-        }
-
-        #[test]
         fn supports_tables() {
             let markdown = indoc! {r#"
             |foo|

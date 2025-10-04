@@ -15,18 +15,6 @@ pub struct Environment {
 }
 
 impl Environment {
-    pub fn from_user_prefs(prefs: &HashMap<String, String>) -> Self {
-        let mut env_prefs = IndexMap::new();
-
-        for (key, value) in prefs {
-            env_prefs.insert(key.to_owned(), Value::String(value.to_owned()));
-        }
-
-        let mut env = Environment::default();
-        env.add_global("user_preferences", Value::Object(env_prefs));
-        env
-    }
-
     pub fn add_global<I: Into<String>>(&mut self, identifier: I, val: Value) {
         if let Some(s) = self.scopes.first_mut() {
             s.add(identifier.into(), val)

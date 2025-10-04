@@ -1,6 +1,5 @@
 use std::collections::HashSet;
-use std::path::PathBuf;
-use std::{collections::HashMap, path::Path};
+use std::path::{Path, PathBuf};
 
 use crate::render_context::RenderContext;
 use crate::{markdown, page_kind::PageKind, project::Project, Error, Result};
@@ -315,35 +314,17 @@ impl Item {
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(untagged)]
-pub enum Filter {
-    Equals { equals: String },
-    OneOf { one_of: Vec<String> },
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-pub struct UserPreferencesFilter {
-    pub user_preferences: HashMap<String, Filter>,
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SectionDescription {
     pub heading: Option<String>,
     pub collapsed: Option<bool>,
     pub collapsible: Option<bool>,
     pub items: Option<Vec<ItemDescription>>,
-    pub show_if: Option<UserPreferencesFilter>,
 }
 
 impl SectionDescription {
     fn verify(&self, project: &Project) -> Vec<Error> {
         let mut errors = vec![];
-
-        // User preference verifications
-        if let Some(show_if) = &self.show_if {
-            verify_user_preference_filter(show_if, project, &mut errors);
-        }
 
         if let Some(items) = &self.items {
             for item in items {
@@ -360,10 +341,9 @@ impl SectionDescription {
             collapsed,
             collapsible,
             items,
-            show_if,
         } = self;
 
-        let section = Section {
+        Some(Section {
             heading,
             collapsed: collapsed.unwrap_or(false),
             collapsible: collapsible.or(collapsed).unwrap_or(false),
@@ -375,167 +355,7 @@ impl SectionDescription {
                         .collect::<Vec<_>>()
                 })
                 .unwrap_or_default(),
-        };
-
-        if should_show(show_if.as_ref(), ctx) {
-            Some(section)
-        } else {
-            None
-        }
-    }
-}
-
-/// Figure out if we should show a given item given its `show_if` filter and the
-/// current render context.
-///
-/// In short, if we do have a filter based on a user preference, we check if the
-/// filter matches either the provided user pref from the context, or the default
-/// pref if one is not set by the user.
-fn should_show(show_if: Option<&UserPreferencesFilter>, ctx: &RenderContext) -> bool {
-    let filters = if let Some(s) = show_if {
-        s
-    } else {
-        return true;
-    };
-
-    filters.user_preferences.iter().all(|(k, v)| match v {
-        Filter::Equals { equals } => {
-            ctx.options
-                .user_preferences
-                .get(k)
-                .or_else(|| ctx.settings.user_preferences().get(k).map(|p| &p.default))
-                == Some(equals)
-        }
-        Filter::OneOf { one_of } => one_of.iter().any(|l| {
-            ctx.options
-                .user_preferences
-                .get(k)
-                .or_else(|| ctx.settings.user_preferences().get(k).map(|p| &p.default))
-                == Some(l)
-        }),
-    })
-}
-
-fn verify_user_preference_filter(
-    filter: &UserPreferencesFilter,
-    project: &Project,
-    errors: &mut Vec<Error>,
-) {
-    verify_user_preference_filter_keys(filter, project, errors);
-    verify_user_preference_filter_values(filter, project, errors);
-}
-
-fn verify_user_preference_filter_keys(
-    filter: &UserPreferencesFilter,
-    project: &Project,
-    errors: &mut Vec<Error>,
-) {
-    for filter_key in filter.user_preferences.keys() {
-        if !project
-            .settings()
-            .user_preferences()
-            .keys()
-            .any(|k| k == filter_key)
-        {
-            errors.push(Error {
-                code: Error::INVALID_NAVIGATION,
-                message: format!(
-                    "Unknown user preference \"{}\" found in navigation",
-                    filter_key
-                ),
-                description: if !project.settings().user_preferences().is_empty() {
-                    format!(
-                        "Expected one of [{}].\nFound \"{}\".",
-                        project
-                            .settings()
-                            .user_preferences()
-                            .keys()
-                            .map(|s| format!("\"{}\"", s))
-                            .collect::<Vec<_>>()
-                            .join(", "),
-                        filter_key
-                    )
-                } else {
-                    "No custom user preferences defined in docapella.yaml.".to_string()
-                },
-                file: Some(PathBuf::from(crate::NAVIGATION_FILE_NAME)),
-                position: None,
-            });
-        }
-    }
-}
-
-fn verify_user_preference_filter_values(
-    filter: &UserPreferencesFilter,
-    project: &Project,
-    errors: &mut Vec<Error>,
-) {
-    for (key, filter) in filter.user_preferences.iter() {
-        match filter {
-            Filter::Equals { equals } => {
-                if let Some(possible_values) = &project
-                    .settings()
-                    .user_preferences()
-                    .get(key)
-                    .map(|p| &p.values)
-                {
-                    if !possible_values.iter().any(|v| &v.value == equals) {
-                        errors.push(Error {
-                                code: Error::INVALID_NAVIGATION,
-                                message: format!(
-                                    "Unknown value \"{}\" for user preference \"{}\" found in navigation",
-                                    equals,
-                                    key
-                                ),
-                                description:  format!(
-                                        "Expected one of [{}].\nFound \"{}\".",
-                                        possible_values.iter()
-                                            .map(|s| format!("\"{}\"", s))
-                                            .collect::<Vec<_>>()
-                                            .join(", "),
-                                        equals
-                                    )
-                                ,
-                                file: Some(PathBuf::from(crate::NAVIGATION_FILE_NAME)),
-            position: None,
-                            });
-                    }
-                }
-            }
-            Filter::OneOf { ref one_of } => {
-                // Can't be None because of above check
-                if let Some(possible_values) = &project
-                    .settings()
-                    .user_preferences()
-                    .get(key)
-                    .map(|p| &p.values)
-                {
-                    for candidate in one_of {
-                        if !possible_values.iter().any(|v| &v.value == candidate) {
-                            errors.push(Error {
-                                code: Error::INVALID_NAVIGATION,
-                                message: format!(
-                                    "Unknown value \"{}\" for user preference \"{}\" found in navigation",
-                                    candidate,
-                                    key
-                                ),
-                                description: format!(
-                                        "Expected any of [{}].\nFound \"{}\".",
-                                        possible_values.iter()
-                                            .map(|s| format!("\"{}\"", s))
-                                            .collect::<Vec<_>>()
-                                            .join(", "),
-                                        candidate
-                                    )
-                                ,
-                                file: Some(PathBuf::from(crate::NAVIGATION_FILE_NAME)),
-            position: None,
-                            });
-                        }
-                    }
-                }
-            }
-        }
+        })
     }
 }
 
@@ -549,29 +369,22 @@ pub enum ItemDescription {
         title: Option<String>,
         collapsed: Option<bool>,
         collapsible: Option<bool>,
-        show_if: Option<UserPreferencesFilter>,
         items: Option<Vec<ItemDescription>>,
     },
     Subheading {
         subheading: String,
         collapsed: Option<bool>,
         collapsible: Option<bool>,
-        show_if: Option<UserPreferencesFilter>,
         items: Option<Vec<ItemDescription>>,
     },
     OpenApi {
         open_api_spec: String,
-        show_if: Option<UserPreferencesFilter>,
         only: Option<Vec<String>>,
     },
 }
 
 impl ItemDescription {
     fn verify(&self, project: &Project, errors: &mut Vec<Error>) {
-        if let Some(show_if) = self.show_if() {
-            verify_user_preference_filter(show_if, project, errors);
-        }
-
         if let Some(items) = self.items() {
             for item in items {
                 item.verify(project, errors)
@@ -701,26 +514,17 @@ impl ItemDescription {
                 collapsed,
                 collapsible,
                 items,
-                show_if,
-            } => {
-                let heading = Item::Subheading {
-                    label: subheading,
-                    collapsed: Some(collapsed.unwrap_or(false)),
-                    collapsible: collapsible.or(collapsed).or(Some(false)),
-                    items: items.map(|s| {
-                        s.into_iter()
-                            .filter_map(|i| i.resolve(ctx, project))
-                            .flatten()
-                            .collect::<Vec<_>>()
-                    }),
-                };
-
-                if should_show(show_if.as_ref(), ctx) {
-                    Some(vec![heading])
-                } else {
-                    None
-                }
-            }
+            } => Some(vec![Item::Subheading {
+                label: subheading,
+                collapsed: Some(collapsed.unwrap_or(false)),
+                collapsible: collapsible.or(collapsed).or(Some(false)),
+                items: items.map(|s| {
+                    s.into_iter()
+                        .filter_map(|i| i.resolve(ctx, project))
+                        .flatten()
+                        .collect::<Vec<_>>()
+                }),
+            }]),
             ItemDescription::Link {
                 label,
                 href,
@@ -729,46 +533,30 @@ impl ItemDescription {
                 collapsed,
                 collapsible,
                 items,
-                show_if,
-            } => {
-                let link = Item::Link {
-                    label,
-                    href: href.map(|href| markdown::parser::to_final_link(&href, ctx)),
-                    external_href: external,
-                    title,
-                    collapsed: Some(collapsed.unwrap_or(false)),
-                    collapsible: collapsible.or(collapsed).or(Some(false)),
-                    http_method: None,
-                    items: items.map(|s| {
-                        s.into_iter()
-                            .filter_map(|i| i.resolve(ctx, project))
-                            .flatten()
-                            .collect::<Vec<_>>()
-                    }),
-                };
-
-                if should_show(show_if.as_ref(), ctx) {
-                    Some(vec![link])
-                } else {
-                    None
-                }
-            }
+            } => Some(vec![Item::Link {
+                label,
+                href: href.map(|href| markdown::parser::to_final_link(&href, ctx)),
+                external_href: external,
+                title,
+                collapsed: Some(collapsed.unwrap_or(false)),
+                collapsible: collapsible.or(collapsed).or(Some(false)),
+                http_method: None,
+                items: items.map(|s| {
+                    s.into_iter()
+                        .filter_map(|i| i.resolve(ctx, project))
+                        .flatten()
+                        .collect::<Vec<_>>()
+                }),
+            }]),
             ItemDescription::OpenApi {
                 open_api_spec,
-                show_if,
                 only,
-            } => {
-                if should_show(show_if.as_ref(), ctx) {
-                    Some(Self::resolve_open_api_specs(
-                        open_api_spec.as_str(),
-                        only.as_ref(),
-                        project,
-                        ctx,
-                    ))
-                } else {
-                    None
-                }
-            }
+            } => Some(Self::resolve_open_api_specs(
+                open_api_spec.as_str(),
+                only.as_ref(),
+                project,
+                ctx,
+            )),
         }
     }
 
@@ -921,14 +709,6 @@ impl ItemDescription {
             ItemDescription::Subheading { items, .. } => items.as_ref().map(|i| &i[..]),
             ItemDescription::Link { items, .. } => items.as_ref().map(|i| &i[..]),
             ItemDescription::OpenApi { .. } => None,
-        }
-    }
-
-    fn show_if(&self) -> Option<&UserPreferencesFilter> {
-        match &self {
-            ItemDescription::Subheading { show_if, .. } => show_if.as_ref(),
-            ItemDescription::Link { show_if, .. } => show_if.as_ref(),
-            ItemDescription::OpenApi { show_if, .. } => show_if.as_ref(),
         }
     }
 
@@ -1416,138 +1196,6 @@ mod test {
     }
 
     #[test]
-    fn can_mark_sections_to_be_shown_given_a_user_preference() {
-        let nav = indoc! {r#"
-        - heading: "Guides"
-          show_if:
-            user_preferences:
-              plan:
-                equals: Plan A
-          items:
-            - label: "Create an account"
-              href: "/guides/getting-started/create-an-account.md"
-        "#};
-        let settings = indoc! {r#"
-        ---
-        title: Example
-        user_preferences:
-          plan:
-            label: Plan
-            default: Plan A
-            values:
-              - Plan A
-              - Plan B
-        "#};
-
-        let mut builder = ProjectBuilder::default();
-        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
-        builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-        let project = builder.build().unwrap();
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan A".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections.len(), 1);
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan B".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections.len(), 0);
-    }
-
-    #[test]
-    fn can_mark_links_to_be_shown_given_a_user_preference() {
-        let nav = indoc! {r#"
-        - heading: "Guides"
-          items:
-            - label: "Create an account"
-              href: "/guides/getting-started/create-an-account.md"
-              show_if:
-                user_preferences:
-                  plan:
-                    equals: Plan A
-        "#};
-        let mut builder = ProjectBuilder::default();
-        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
-
-        let project = builder.build().unwrap();
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan A".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections[0].items.len(), 1);
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan B".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections[0].items.len(), 0);
-    }
-
-    #[test]
-    fn verify_nested_show_if_user_preferences() {
-        let settings = indoc! {r#"
-        ---
-        title: Example
-        user_preferences:
-          plan:
-            label: Plan
-            default: Plan A
-            values:
-              - Plan A
-              - Plan B
-        "#};
-
-        let nav = indoc! {r#"
-        - heading: "Guides"
-          items:
-            - label: "Create an account"
-              href: README.md
-              show_if:
-                user_preferences:
-                  plan:
-                    equals: SURPRISE BATMAN
-              items:
-              - label: "Managing an account"
-                href: README.md
-                show_if:
-                  user_preferences:
-                    plan:
-                      equals: SURPRISE SPIDERMAN
-        "#};
-        let mut builder = ProjectBuilder::default();
-        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
-        builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-
-        let project = builder.build().unwrap();
-
-        let errors = project
-            .verify(None, None)
-            .expect_err("Bad user preferences in nav not found");
-
-        assert_eq!(errors.len(), 2);
-    }
-
-    #[test]
     fn verify_items_have_href_or_external() {
         let settings = indoc! {r#"
         ---
@@ -1611,106 +1259,6 @@ mod test {
         );
 
         assert_eq!(errors.len(), 1);
-    }
-
-    #[test]
-    fn can_mark_subheadings_to_be_shown_given_a_user_preference() {
-        let nav = indoc! {r#"
-        - heading: "Guides"
-          items:
-            - subheading: "Create an account"
-              show_if:
-                user_preferences:
-                  plan:
-                    equals: Plan A
-        "#};
-        let mut builder = ProjectBuilder::default();
-        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
-        let project = builder.build().unwrap();
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan A".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections[0].items.len(), 1);
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan B".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections[0].items.len(), 0);
-    }
-
-    #[test]
-    fn can_mark_sections_to_be_shown_if_a_user_preference_matches_any_in_a_list() {
-        let nav = indoc! {r#"
-        - heading: "Guides"
-          show_if:
-            user_preferences:
-              plan:
-                one_of:
-                  - Plan A
-                  - Plan B
-          items:
-            - label: "Create an account"
-              href: "/guides/getting-started/create-an-account.md"
-        "#};
-
-        let settings = indoc! {r#"
-        ---
-        title: Example
-        user_preferences:
-          plan:
-            label: Plan
-            default: Plan A
-            values:
-              - Plan A
-              - Plan B
-              - Plan C
-        "#};
-
-        let mut builder = ProjectBuilder::default();
-        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
-        builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-        let project = builder.build().unwrap();
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan A".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections.len(), 1);
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan B".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections.len(), 1);
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan C".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections.len(), 0);
     }
 
     #[test]
@@ -1826,7 +1374,6 @@ mod test {
             sections[0].items.as_ref().unwrap()[0],
             ItemDescription::OpenApi {
                 open_api_spec: "openapi.json".to_string(),
-                show_if: None,
                 only: None,
             }
         );
@@ -1928,7 +1475,6 @@ mod test {
             sections[0].items.as_ref().unwrap()[0],
             ItemDescription::OpenApi {
                 open_api_spec: "openapi.yaml".to_string(),
-                show_if: None,
                 only: Some(vec!["puppies".to_owned(), "bunnies".to_owned()])
             }
         );
@@ -2018,7 +1564,6 @@ mod test {
             sections[0].items.as_ref().unwrap()[0],
             ItemDescription::OpenApi {
                 open_api_spec: "openapi.yaml".to_string(),
-                show_if: None,
                 only: Some(vec![
                     "kittens".to_owned(),
                     "puppies".to_owned(),
@@ -2131,7 +1676,6 @@ mod test {
             sections[0].items.as_ref().unwrap()[0],
             ItemDescription::OpenApi {
                 open_api_spec: "openapi.yaml".to_string(),
-                show_if: None,
                 only: Some(vec![
                     "kittens".to_owned(),
                     "DRAGONS".to_owned(),
@@ -2436,65 +1980,6 @@ mod test {
             &errors[0].description,
             "Expected one of [\"openapi.yaml\"].\nFound \"nope.yaml\"."
         );
-    }
-
-    #[test]
-    fn openapi_can_be_hidden_based_on_user_preferences() {
-        let nav = indoc! {r#"
-        - heading: API
-          items:
-            - open_api_spec: openapi.yaml
-              show_if:
-                user_preferences:
-                  plan:
-                    equals: Plan B
-        "#};
-
-        let settings = indoc! {r#"
-        ---
-        title: OpenAPI Example
-
-        user_preferences:
-          plan:
-            label: Plan
-            default: Plan A
-            values:
-              - Plan A
-              - Plan B
-
-        open_api:
-            - spec_file: openapi.yaml
-              uri_prefix: /api
-        "#};
-
-        let mut builder = ProjectBuilder::default();
-        builder.with_file(crate::NAVIGATION_FILE_NAME, nav);
-        builder.with_file(crate::SETTINGS_FILE_NAME, settings);
-        builder.with_file(
-            "openapi.yaml",
-            std::fs::read_to_string("./examples/open_api_specs/tag_order_inline.yaml").unwrap(),
-        );
-        let project = builder.build().unwrap();
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan A".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections[0].items.len(), 0);
-
-        let mut opts = RenderOptions::default();
-        opts.user_preferences
-            .insert("plan".to_string(), "Plan B".to_string());
-
-        let mut ctx = RenderContext::new();
-        ctx.with_options(&opts);
-
-        let sections = build(nav, &ctx, &project).unwrap();
-        assert_eq!(sections[0].items.len(), 4);
     }
 
     #[test]

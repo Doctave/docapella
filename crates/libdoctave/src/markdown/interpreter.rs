@@ -44,16 +44,7 @@ pub(crate) struct Interpreter<'a> {
 
 impl<'a> Interpreter<'a> {
     pub fn new(ctx: &'a RenderContext, input: &'a str) -> Self {
-        let preferences = ctx
-            .settings
-            .user_preferences()
-            .iter()
-            .map(|(k, p)| (k.to_string(), p.default.to_string()))
-            .chain(ctx.options.user_preferences.clone())
-            .collect::<HashMap<_, _>>();
-
-        let expr_interpreter =
-            ExprInterpreter::new(Some(Environment::from_user_prefs(&preferences)));
+        let expr_interpreter = ExprInterpreter::new(Some(Environment::default()));
 
         Interpreter {
             ctx,

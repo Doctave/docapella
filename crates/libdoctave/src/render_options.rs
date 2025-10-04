@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// Rules for rendering a Doctave page, for rewriting links,
-/// prefixing asset URLs, settings user preferences, etc.
+/// prefixing asset URLs, etc.
 ///
 /// Note that bool fields are `false` by default according to
 /// Rust's default rules
@@ -23,6 +23,5 @@ pub struct RenderOptions {
     pub link_rewrites: HashMap<String, String>,
     pub prefix_asset_urls: Option<String>,
     pub prefix_link_urls: Option<String>,
-    pub user_preferences: HashMap<String, String>,
     pub download_url_prefix: Option<String>,
 }
