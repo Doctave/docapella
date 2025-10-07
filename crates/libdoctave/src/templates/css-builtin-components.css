@@ -587,3 +587,139 @@ a.d-button[data-variant="outline"]:hover {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* Icon component */
+
+/* Base icon styles */
+img[data-d-component="Icon"] {
+  display: inline-block;
+  vertical-align: middle;
+
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Boxed variant - adds container styling */
+img[data-d-component="Icon"][data-variant="boxed"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: var(--space-2);
+}
+
+/* Boxed variant with accent color */
+img[data-d-component="Icon"][data-variant="boxed"][data-color="true"] {
+  background: linear-gradient(to bottom, var(--accent-2), var(--accent-3));
+  border: 1px solid var(--accent-4);
+}
+
+html.dark
+  img[data-d-component="Icon"][data-variant="boxed"][data-color="true"] {
+  background: linear-gradient(to bottom, var(--accent-3), var(--accent-4));
+}
+
+/* Boxed variant without color */
+img[data-d-component="Icon"][data-variant="boxed"]:not([data-color="true"]) {
+  background: linear-gradient(to bottom, var(--gray-2), var(--gray-3));
+  border: 1px solid var(--gray-4);
+  box-shadow: 0px 1px 1px 0px rgba(255, 255, 255, 0.95) inset;
+}
+
+html.dark
+  img[data-d-component="Icon"][data-variant="boxed"]:not([data-color="true"]) {
+  background: linear-gradient(to bottom, var(--gray-3), var(--gray-4));
+  box-shadow: 0px 1px 0px 0px rgba(255, 255, 255, 0.15) inset;
+}
+
+/* Plain variant with accent color */
+img[data-d-component="Icon"][data-variant="plain"][data-color="true"],
+img[data-d-component="Icon"]:not([data-variant])[data-color="true"] {
+  filter: brightness(0) saturate(100%)
+    /* This will be overridden by the accent color - using a placeholder tint */
+    invert(42%) sepia(93%) saturate(1352%) hue-rotate(170deg);
+}
+
+/* Size: Small */
+img[data-d-component="Icon"][data-size="sm"] {
+  width: var(--text-xs);
+  height: var(--text-xs);
+}
+
+@media (min-width: 768px) {
+  img[data-d-component="Icon"][data-size="sm"] {
+    width: var(--text-sm);
+    height: var(--text-sm);
+  }
+}
+
+img[data-d-component="Icon"][data-variant="boxed"][data-size="sm"] {
+  width: var(--space-5);
+  height: var(--space-5);
+  border-radius: var(--radius-3);
+}
+
+/* Size: Medium (default) */
+img[data-d-component="Icon"][data-size="md"],
+img[data-d-component="Icon"]:not([data-size]) {
+  width: var(--text-sm);
+  height: var(--text-sm);
+}
+
+@media (min-width: 768px) {
+  img[data-d-component="Icon"][data-size="md"],
+  img[data-d-component="Icon"]:not([data-size]) {
+    width: var(--text-base);
+    height: var(--text-base);
+  }
+}
+
+img[data-d-component="Icon"][data-variant="boxed"][data-size="md"],
+img[data-d-component="Icon"][data-variant="boxed"]:not([data-size]) {
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: var(--radius-4);
+}
+
+/* Size: Large */
+img[data-d-component="Icon"][data-size="lg"] {
+  width: var(--text-lg);
+  height: var(--text-lg);
+}
+
+@media (min-width: 768px) {
+  img[data-d-component="Icon"][data-size="lg"] {
+    width: var(--text-xl);
+    height: var(--text-xl);
+  }
+}
+
+img[data-d-component="Icon"][data-variant="boxed"][data-size="lg"] {
+  width: var(--space-7);
+  height: var(--space-7);
+  border-radius: var(--radius-4);
+}
+
+/* Size: Extra Large */
+img[data-d-component="Icon"][data-size="xl"] {
+  width: var(--text-xl);
+  height: var(--text-xl);
+}
+
+@media (min-width: 768px) {
+  img[data-d-component="Icon"][data-size="xl"] {
+    width: var(--text-2xl);
+    height: var(--text-2xl);
+  }
+}
+
+img[data-d-component="Icon"][data-variant="boxed"][data-size="xl"] {
+  width: var(--space-8);
+  height: var(--space-8);
+  border-radius: var(--radius-4);
+}
+
+/* Full radius support for boxed icons */
+[data-radius="full"] img[data-d-component="Icon"][data-variant="boxed"] {
+  border-radius: 9999px;
+}

@@ -37,5 +37,5 @@ attributes:
       is_a: text
 ---
 
-<i data-doctave-component="Icon" if={@set == "devicon"} data-variant={@variant} data-color={@color} data-size={@size} class={"devicon-" | append(@name) | append("-plain ") | append(@class)}></i>
-<i data-doctave-component="Icon" if={@set == "lucide"}  data-variant={@variant} data-color={@color} data-size={@size} class={"icon-" | append(@name) | append(" ") | append(@class)}></i>
+<img if={@set == "devicon"} src={"https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/" | append(@name) | append("/") | append(@name) | append("-plain.svg")} data-d-component="Icon" data-variant={@variant} data-color={@color} data-size={@size} class={"d-icon " | append(@class)} />
+<img if={@set == "lucide"} src={"https://unpkg.com/lucide-static@latest/icons/" | append(@name) | append(".svg")} data-d-component="Icon" data-variant={@variant} data-color={@color} data-size={@size} class={"d-icon" | append(@class)} />
