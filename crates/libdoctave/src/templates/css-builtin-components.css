@@ -134,6 +134,7 @@ html:not(.dark) .d-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  margin-bottom: var(--space-9);
 }
 
 .tabs .tabs-header {
@@ -590,136 +591,157 @@ a.d-button[data-variant="outline"]:hover {
 
 /* Icon component */
 
-/* Base icon styles */
-img[data-d-component="Icon"] {
+/* Base icon styles - for plain icons */
+div[data-d-component="Icon"] {
   display: inline-block;
   vertical-align: middle;
 
   margin: 0;
   border-radius: 0;
+
+  /* Mask properties for CDN SVG rendering */
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  /* Default color: theme-adaptive gray */
+  background-color: var(--gray-12);
 }
 
-/* Boxed variant - adds container styling */
-img[data-d-component="Icon"][data-variant="boxed"] {
+/* Icon with accent color */
+div[data-d-component="Icon"][data-color="true"] {
+  background-color: var(--accent-9);
+}
+
+/* Icon within IconBox - fills the box */
+div[data-d-component="IconBox"] > div[data-d-component="Icon"] {
+  width: 100%;
+  height: 100%;
+}
+
+/* IconBox wrapper - adds container styling with gradient background */
+div[data-d-component="IconBox"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  padding: var(--space-2);
+  box-sizing: border-box;
 }
 
-/* Boxed variant with accent color */
-img[data-d-component="Icon"][data-variant="boxed"][data-color="true"] {
+/* IconBox with accent color */
+div[data-d-component="IconBox"][data-color="true"] {
   background: linear-gradient(to bottom, var(--accent-2), var(--accent-3));
   border: 1px solid var(--accent-4);
 }
 
-html.dark
-  img[data-d-component="Icon"][data-variant="boxed"][data-color="true"] {
-  background: linear-gradient(to bottom, var(--accent-3), var(--accent-4));
+html.dark div[data-d-component="IconBox"][data-color="true"] {
+  background: linear-gradient(to bottom, var(--accent-4), var(--accent-5));
+  border: 1px solid var(--accent-4);
 }
 
-/* Boxed variant without color */
-img[data-d-component="Icon"][data-variant="boxed"]:not([data-color="true"]) {
+/* IconBox without color */
+div[data-d-component="IconBox"]:not([data-color="true"]) {
   background: linear-gradient(to bottom, var(--gray-2), var(--gray-3));
   border: 1px solid var(--gray-4);
   box-shadow: 0px 1px 1px 0px rgba(255, 255, 255, 0.95) inset;
 }
 
-html.dark
-  img[data-d-component="Icon"][data-variant="boxed"]:not([data-color="true"]) {
+html.dark div[data-d-component="IconBox"]:not([data-color="true"]) {
   background: linear-gradient(to bottom, var(--gray-3), var(--gray-4));
   box-shadow: 0px 1px 0px 0px rgba(255, 255, 255, 0.15) inset;
 }
 
-/* Plain variant with accent color */
-img[data-d-component="Icon"][data-variant="plain"][data-color="true"],
-img[data-d-component="Icon"]:not([data-variant])[data-color="true"] {
-  filter: brightness(0) saturate(100%)
-    /* This will be overridden by the accent color - using a placeholder tint */
-    invert(42%) sepia(93%) saturate(1352%) hue-rotate(170deg);
-}
-
-/* Size: Small */
-img[data-d-component="Icon"][data-size="sm"] {
+/* Size: Small - Plain icons */
+div[data-d-component="Icon"][data-size="sm"] {
   width: var(--text-xs);
   height: var(--text-xs);
 }
 
 @media (min-width: 768px) {
-  img[data-d-component="Icon"][data-size="sm"] {
+  div[data-d-component="Icon"][data-size="sm"] {
     width: var(--text-sm);
     height: var(--text-sm);
   }
 }
 
-img[data-d-component="Icon"][data-variant="boxed"][data-size="sm"] {
+/* Size: Small - Boxed icons */
+div[data-d-component="IconBox"][data-size="sm"] {
   width: var(--space-5);
   height: var(--space-5);
   border-radius: var(--radius-3);
+  padding: calc(var(--space-5) * 0.16);
 }
 
-/* Size: Medium (default) */
-img[data-d-component="Icon"][data-size="md"],
-img[data-d-component="Icon"]:not([data-size]) {
+/* Size: Medium (default) - Plain icons */
+div[data-d-component="Icon"][data-size="md"],
+div[data-d-component="Icon"]:not([data-size]) {
   width: var(--text-sm);
   height: var(--text-sm);
 }
 
 @media (min-width: 768px) {
-  img[data-d-component="Icon"][data-size="md"],
-  img[data-d-component="Icon"]:not([data-size]) {
+  div[data-d-component="Icon"][data-size="md"],
+  div[data-d-component="Icon"]:not([data-size]) {
     width: var(--text-base);
     height: var(--text-base);
   }
 }
 
-img[data-d-component="Icon"][data-variant="boxed"][data-size="md"],
-img[data-d-component="Icon"][data-variant="boxed"]:not([data-size]) {
+/* Size: Medium (default) - Boxed icons */
+div[data-d-component="IconBox"][data-size="md"],
+div[data-d-component="IconBox"]:not([data-size]) {
   width: var(--space-6);
   height: var(--space-6);
   border-radius: var(--radius-4);
+  padding: calc(var(--space-6) * 0.16);
 }
 
-/* Size: Large */
-img[data-d-component="Icon"][data-size="lg"] {
+/* Size: Large - Plain icons */
+div[data-d-component="Icon"][data-size="lg"] {
   width: var(--text-lg);
   height: var(--text-lg);
 }
 
 @media (min-width: 768px) {
-  img[data-d-component="Icon"][data-size="lg"] {
+  div[data-d-component="Icon"][data-size="lg"] {
     width: var(--text-xl);
     height: var(--text-xl);
   }
 }
 
-img[data-d-component="Icon"][data-variant="boxed"][data-size="lg"] {
+/* Size: Large - Boxed icons */
+div[data-d-component="IconBox"][data-size="lg"] {
   width: var(--space-7);
   height: var(--space-7);
   border-radius: var(--radius-4);
+  padding: calc(var(--space-7) * 0.16);
 }
 
-/* Size: Extra Large */
-img[data-d-component="Icon"][data-size="xl"] {
+/* Size: Extra Large - Plain icons */
+div[data-d-component="Icon"][data-size="xl"] {
   width: var(--text-xl);
   height: var(--text-xl);
 }
 
 @media (min-width: 768px) {
-  img[data-d-component="Icon"][data-size="xl"] {
+  div[data-d-component="Icon"][data-size="xl"] {
     width: var(--text-2xl);
     height: var(--text-2xl);
   }
 }
 
-img[data-d-component="Icon"][data-variant="boxed"][data-size="xl"] {
+/* Size: Extra Large - Boxed icons */
+div[data-d-component="IconBox"][data-size="xl"] {
   width: var(--space-8);
   height: var(--space-8);
   border-radius: var(--radius-4);
+  padding: calc(var(--space-8) * 0.16);
 }
 
 /* Full radius support for boxed icons */
-[data-radius="full"] img[data-d-component="Icon"][data-variant="boxed"] {
+[data-radius="full"] div[data-d-component="IconBox"] {
   border-radius: 9999px;
 }
