@@ -39,6 +39,8 @@
     {% include "components/markdown/table.html.jinja" %}
   {% elif node.kind.name == "md_tabs" %}
     {% include "components/md_tabs.html.jinja" %}
+  {% elif node.kind.name == "steps" %}
+    {% include "components/steps.html.jinja" %}
   {% elif node.kind.name == "box" %}
     {% include "components/box.html.jinja" %}
   {% elif node.kind.name == "flex" %}

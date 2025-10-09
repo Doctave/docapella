@@ -745,3 +745,35 @@ div[data-d-component="IconBox"][data-size="xl"] {
 [data-radius="full"] div[data-d-component="IconBox"] {
   border-radius: 9999px;
 }
+
+/* Steps */
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-bottom: var(--space-9);
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-5);
+    height: var(--space-5);
+    border-radius: var(--radius-3);
+    background-color: var(--accent-4);
+    color: var(--accent-11);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+  }
+
+  .steps-step {
+    display: flex;
+    gap: var(--space-4);
+  }
+
+  .step-title {
+    margin-top: calc(var(--space-1) * 0.5);
+    margin-bottom: var(--space-2);
+  }
+}

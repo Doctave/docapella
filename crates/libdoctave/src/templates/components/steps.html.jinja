@@ -1,0 +1,21 @@
+{% from "components/markdown.html.jinja" import markdown %}
+
+<div class="steps not-prose" data-d-component="Steps">
+  {% for step in node.children %}
+    <div class="steps-step">
+      <div class="step-number">
+        {{ loop.index }}
+      </div>
+      <div class="step-body">
+        <p class="step-title">
+          <b>{{ step.kind.data.title }}</b>
+        </p>
+        <div class="prose">
+          {% for child in step.children %}
+            {{ markdown(child) }}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
