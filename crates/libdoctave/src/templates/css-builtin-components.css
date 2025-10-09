@@ -452,6 +452,9 @@ a.d-button[data-variant="outline"]:hover {
 .d-flex[data-direction="row"] {
   flex-direction: row;
 }
+.d-flex[data-direction="row"] > * {
+  margin-top: 0;
+}
 
 .d-flex[data-direction="column"] {
   flex-direction: column;
