@@ -3,8 +3,6 @@
   items:
   - label: This template
     href: /
-  - label: Publishing your docs
-    href: /publishing.md
 
 - heading: How-To's
   items:

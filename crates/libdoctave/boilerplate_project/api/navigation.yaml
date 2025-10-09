@@ -1,7 +1,7 @@
 ---
 - heading: API references
   items:
-    - label: OpenAPI specs in Doctave
+    - label: OpenAPI specs in Docapella
       href: ./README.md
 
 - heading: Nebularis API

@@ -1,6 +1,6 @@
 # OpenAPI documentation
 
-Doctave can generate API reference documentation from your OpenAPI specification.
+Docapella can generate API reference documentation from your OpenAPI specification.
 
 This is an example project with a simple OpenAPI specification included for an imaginary cloud orchestration company, Nebularis.
 
@@ -8,9 +8,9 @@ This is an example project with a simple OpenAPI specification included for an i
 
 All you have to do is replace the `openapi.yaml` file in the root of this project with your own OpenAPI spec.
 
-## Read more
+## View the generated documentation
 
-To find out more, you can read our documentation about OpenAPI specifications.
+Take a look at the generated documentation for this project:
 
-<Button variant="secondary" href="https://docs.doctave.com/contents/api-reference-documentation">Read the docs ›</Button>
+<Button variant="secondary" href="/api/reference/Users">Read the docs ›</Button>
 

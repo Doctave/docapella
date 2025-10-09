@@ -1,7 +1,7 @@
 # This title is shown in the browser tab title
 title: Docapella Starter Template
 
-# Read the docs: https://docs.doctave.com/customization/themes
+# Customize the theme
 theme:
   colors:
     # Your brand's main color
@@ -14,14 +14,11 @@ theme:
     src_dark: _assets/logo-dark.svg
 
 # OpenAPI specifications are first imported here, and then referenced in a navigation.yaml to generate the navigation structure.
-#
-# Read the docs: https://docs.doctave.com/contents/api-reference-documentation
 open_api:
   - spec_file: openapi.yaml
     uri_prefix: /api/reference # The URL under which the spec will be placed
 
 # Customize your tab structure
-# Read the docs: https://docs.doctave.com/v2/contents/tabs-and-subtabs
 tabs:
   - label: Documentation
     path: /
@@ -29,30 +26,19 @@ tabs:
     path: /api/
 
 # Add useful links for your readers in your header
-# Read the docs: https://docs.doctave.com/customization/header
 header:
   links:
-    - label: Documentation
-      external: https://docs.doctave.com
     - label: Dashboard
-      external: https://dashboard.doctave.com
-    - label: Home
-      external: https://www.doctave.com
+      external: https://example.com
+    - label: Support
+      external: https://example.com
   # A more prominent call-to-action button
   cta:
     label: Sign Up
-    external: https://dashboard.doctave.com/
+    external: https://example.com
 
 # Add additional links and social media profiles
-# Read the docs: https://docs.doctave.com/customization/footer
 footer:
   links:
-    - label: API Status
-      external: https://www.example.com
-    - label: Privacy Policy
-      external: https://www.doctave.com
-    - label: Terms of Service
-      external: https://www.doctave.com
-  github: https://www.github.com/Doctave
-  twitter: https://www.twitter.com/GetDoctave
-  linkedin: https://www.linkedin.com/company/doctave/
+    - label: Docapella Documentation
+      external: https://docapella.com

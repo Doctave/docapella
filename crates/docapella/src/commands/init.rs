@@ -1,5 +1,6 @@
 use crate::Result;
 use libdoctave::Project;
+use owo_colors::OwoColorize as _;
 
 use std::path::Path;
 
@@ -20,7 +21,9 @@ pub fn run<W: std::io::Write>(args: InitArgs<W>) -> Result<()> {
 
     writeln!(
         args.stdout,
-        "Done! Run `docapella dev` to preview your documentation",
+        "{}\nRun {} to preview your documentation",
+        "Done ✓".green(),
+        "`docapella dev`".bold().blue()
     )?;
 
     Ok(())
