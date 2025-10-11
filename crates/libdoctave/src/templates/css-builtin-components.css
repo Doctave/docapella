@@ -775,6 +775,10 @@ div[data-d-component="IconBox"][data-size="xl"] {
     gap: var(--space-4);
   }
 
+  .step-body {
+    flex-grow: 1;
+  }
+
   .step-title {
     margin-top: calc(var(--space-1) * 0.5);
     margin-bottom: var(--space-2);
