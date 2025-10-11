@@ -1,0 +1,11 @@
+---
+- heading: API references
+  items:
+    - label: OpenAPI specs in Docapella
+      href: ./README.md
+
+- heading: Nebularis API
+  items:
+    # Here we use the special `open_api_spec` macro to generate the
+    # navigation structure from the OpenAPI spec directly.
+    - open_api_spec: openapi.yaml

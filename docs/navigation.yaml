@@ -1,0 +1,38 @@
+---
+- heading: Getting Started
+  items:
+  - label: Installation
+    href: /installation.md
+  - label: Quick Start
+    href: /quick-start.md
+
+- heading: Content
+  items:
+  - label: Project structure
+    href: /project-structure.md
+  - label: OpenAPI documentation
+    href: /openapi.md
+  - label: Navigation
+    href: /navigation.md
+  - label: Tabs and subtabs
+    href: /tabs.md
+  - label: Search
+    href: /search.md
+  - label: Assets
+    href: /assets.md
+
+- heading: Customization
+  items:
+  - label: Theme
+    href: /theme.md
+  - label: Header and footer
+    href: /header-and-footer.md
+  - label: Configuration reference
+    href: /configuration-reference.md
+
+- heading: Development
+  items:
+  - label: Checks and verification
+    href: /checks-and-verification.md
+  - label: Deployment
+    href: /deployment.md

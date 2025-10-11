@@ -1,0 +1,40 @@
+# This title is shown in the browser tab title
+title: Docapella Starter Template
+
+# Customize the theme
+theme:
+  colors:
+    # Your brand's main color
+    accent: "#F76B15"
+    # A matching grayscale 
+    grayscale: sand
+  logo:
+    # You can specify light and dark mode logos to make sure they work in different backgrounds.
+    src: _assets/logo.svg
+    src_dark: _assets/logo-dark.svg
+
+# OpenAPI specifications are first imported here, and then referenced in a navigation.yaml to generate the navigation structure.
+open_api:
+  - spec_file: openapi.yaml
+    uri_prefix: /api/reference # The URL under which the spec will be placed
+
+# Customize your tab structure
+tabs:
+  - label: Documentation
+    path: /
+  - label: Components
+    path: /components
+  - label: Example API Reference
+    path: /api/
+
+# Add useful links for your readers in your header
+header:
+  links:
+    - label: GitHub
+      external: https://github.com/Doctave/docapella
+
+# Add additional links and social media profiles
+footer:
+  links:
+    - label: Docapella Documentation
+      external: https://docapella.com
