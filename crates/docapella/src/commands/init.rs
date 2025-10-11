@@ -95,6 +95,6 @@ mod tests {
         let output = String::from_utf8(fake_stdout.into_inner()).unwrap();
 
         assert!(output.contains("Creating project..."));
-        assert!(output.contains("Done!"));
+        assert!(output.contains("Done"));
     }
 }

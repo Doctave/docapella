@@ -32,6 +32,12 @@ pub(crate) fn build<W: std::io::Write>(
             let start = std::time::Instant::now();
             writeln!(stdout, "Verifying project...")?;
 
+            let dir = out_dir.to_path_buf();
+            let clearer_thread_handle = std::thread::spawn(move || {
+                // Clean up the directory from any previous builds
+                let _ = std::fs::remove_dir_all(dir);
+            });
+
             let verify_results = project.verify(None, None);
 
             let verify_duration = start.elapsed();
@@ -60,6 +66,10 @@ pub(crate) fn build<W: std::io::Write>(
 
                 writeln!(stdout, "--------------------------------------------",)?;
             }
+
+            clearer_thread_handle
+                .join()
+                .expect("Failed to join clearer thread");
 
             let start = std::time::Instant::now();
 

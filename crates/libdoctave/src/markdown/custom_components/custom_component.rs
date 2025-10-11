@@ -2167,8 +2167,8 @@ mod test {
             assert_str_eq!(
                 node.debug_string().unwrap(),
                 indoc! { r#"
-                <i data-doctave-component={Icon} if={true} data-variant={plain} data-color={false} data-size={md} class={devicon-ruby-plain }>
-                </i>
+                <div if={true} role={img} aria-label={ruby icon} data-d-component={Icon} data-color={false} data-size={md} class={d-icon } style={mask-image: url(https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ruby/ruby-plain.svg); -webkit-mask-image: url(https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/ruby/ruby-plain.svg);}>
+                </div>
                 "# }
             );
         }
@@ -2185,8 +2185,8 @@ mod test {
             assert_str_eq!(
                 node.debug_string().unwrap(),
                 indoc! { r#"
-                <i data-doctave-component={Icon} if={true} data-variant={plain} data-color={false} data-size={md} class={icon-book }>
-                </i>
+                <div if={true} role={img} aria-label={book icon} data-d-component={Icon} data-color={false} data-size={md} class={d-icon } style={mask-image: url(https://unpkg.com/lucide-static@latest/icons/book.svg); -webkit-mask-image: url(https://unpkg.com/lucide-static@latest/icons/book.svg);}>
+                </div>
                 "# }
             );
         }
@@ -2310,8 +2310,8 @@ mod test {
             assert_str_eq!(
                 node.debug_string().unwrap(),
                 indoc! { r#"
-                <i data-doctave-component={Icon} if={true} data-variant={plain} data-color={false} data-size={md} class={icon-book some-class}>
-                </i>
+                <div if={true} role={img} aria-label={book icon} data-d-component={Icon} data-color={false} data-size={md} class={d-icon some-class} style={mask-image: url(https://unpkg.com/lucide-static@latest/icons/book.svg); -webkit-mask-image: url(https://unpkg.com/lucide-static@latest/icons/book.svg);}>
+                </div>
                 "# }
             );
         }

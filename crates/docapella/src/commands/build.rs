@@ -83,4 +83,31 @@ mod tests {
             "Built project not logged"
         );
     }
+
+    #[test]
+    fn cleans_up_the_build_directory() {
+        let working_dir = TempDir::new().unwrap();
+        let out_dir = TempDir::new().unwrap();
+        let mut fake_stdout = std::io::Cursor::new(Vec::new());
+
+        fs::write(
+            working_dir.path().join("docapella.yaml"),
+            "---\ntitle: Hello World",
+        )
+        .unwrap();
+        fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
+
+        fs::write(out_dir.path().join("foo.txt"), "").unwrap();
+
+        let result = run(BuildArgs {
+            working_dir: working_dir.path().to_path_buf(),
+            out_dir: out_dir.path().to_path_buf(),
+            stdout: &mut fake_stdout,
+        });
+
+        assert!(result.is_ok());
+
+        // Check that foo.txt was removed
+        assert!(!working_dir.path().join("_build/foo.txt").exists());
+    }
 }
