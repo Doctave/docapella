@@ -11,10 +11,6 @@ This demo project has 2 tabs:
 
 ## How tabs work
 
-<Callout>
-  You can read our official documentation about tabs [here](https://docs.doctave.com/contents/tabs-and-subtabs).
-</Callout>
-
 The basics of how tabs and subtabs work is as follows:
 
 - Tabs show up at the top of your project
@@ -25,7 +21,7 @@ The basics of how tabs and subtabs work is as follows:
 
 ## Defining tabs
 
-Tabs are defined in your `doctave.yaml` file. Let's look at an example with both tabs and subtabs.
+Tabs are defined in your `docapella.yaml` file. Let's look at an example with both tabs and subtabs.
 
 ```yaml
 tabs:
@@ -69,5 +65,3 @@ tab:
       set: lucide
       name: package
 ```
-
-You can find the supported icon sets [here](https://docs.doctave.com/contents/tabs-and-subtabs#icons).
