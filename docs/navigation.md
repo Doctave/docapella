@@ -1,13 +1,11 @@
 # Navigation
 
-Your site's sidebar navigation is defined in a `navigation.yaml` file in the
-root of your project directory (same directory as the `docapella.yaml` file). See [navigation reference](/reference/navigation-yaml.md) for full details.
+Your site's sidebar navigation is defined in a `navigation.yaml` file in the root of your project directory (same directory as the `docapella.yaml` file). Similarly, each [tab or subtab](./tabs.md) can have their own navigation structure.
 
-Your project **must** have a `navigation.yaml` file in order to build your project.
+Your project **must** have a root navigation file file in order to build your project.
 
-## How to get started
+## Example navigation.yaml
 
-Make sure you have a `navigation.yml` file in the same directory as `docapella.yml`.
 A simple `navigation.yml` might look like this:
 
 ```yaml title="navigation.yaml"
@@ -21,6 +19,8 @@ A simple `navigation.yml` might look like this:
     - label: Nested page
       href: /page-two/nested-page.md
 ```
+
+Links are grouped into  **sections**, where each section has a **heading**.
 
 ## External links in navigation
 
@@ -50,7 +50,7 @@ To create more than one section, add multiple root level sections into your `nav
 ```
 
 
-## Nested navigation sections
+## Nested navigation
 
 Each section can contain subheadings (which can contain further subheadings). To represent this in `navigation.yml`, you can add subheadings as the `items` of a section (or another subheading).
 

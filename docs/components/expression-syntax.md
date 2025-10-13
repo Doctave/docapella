@@ -1,7 +1,6 @@
-# Component Expression Syntax
+# Expression Syntax
 
 You can use expressions to use dynamic content in your docs, or conditionally show specific content.
-Expression syntax is primarily used with [user preferences](/contents/user-preferences.md).
 
 Here is a simple example:
 
@@ -13,21 +12,9 @@ This would render: `Bob`.
 
 **NOTE**: Dynamic expressions and components aren't supported inside code blocks, in order to prevent clashes with any languages with similar syntax.
 
-## Expressions in components
-
-You can use expressions as arguments to components. The only change you have to make is instead of using the HTML-style attribute syntax (`key="value"`), you use curly braces instead of quotes for the value of the attribute (`key={ value }`):
-
-For example, if you want to use a currently select user preference in a component, you can do that as follows:
-
-```html
-<Component.Example plan={ @user_preferences.plan } />
-```
-
-You can also use more complex expressions:
-
-```html
-<Card title={"Current plan: " | append(@user_preferences.plan) } />
-```
+<Callout type="info">
+  With the migration from Doctave to Docapella, expressions will be able to be more flexible, since we don't have to worry about safety when interpreting expressions on Doctave's servers. Expect updates and new capabilities in this area.
+</Callout>
 
 ## Filters
 
