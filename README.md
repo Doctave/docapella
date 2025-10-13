@@ -16,7 +16,7 @@ First, install Rust. You can find instructions [here](https://www.rust-lang.org/
 Next, install Docapella:
 
 ```bash
-cargo install --git https://github.com/Doctave/docapella.git
+cargo install --git https://github.com/Doctave/docapella.git docapella
 ```
 
 ## Usage

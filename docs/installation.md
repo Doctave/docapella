@@ -9,7 +9,7 @@ First, install Rust. You can find instructions [here](https://www.rust-lang.org/
 Next, install Docapella:
 
 ```bash
-cargo install --git https://github.com/Doctave/docapella.git
+cargo install --git https://github.com/Doctave/docapella.git docapella
 ```
 
 This will install the `docapella` binary to your Cargo bin directory.
