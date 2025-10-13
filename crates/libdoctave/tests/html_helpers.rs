@@ -1,6 +1,6 @@
 use tl::VDom;
 
-fn parse(html: &str) -> VDom {
+fn parse(html: &str) -> VDom<'_> {
     tl::parse(html, tl::ParserOptions::default()).unwrap()
 }
 

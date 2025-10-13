@@ -70,7 +70,7 @@ impl Display for Operator {
     }
 }
 
-pub fn parse(input: &str) -> Result<Expr> {
+pub fn parse(input: &str) -> Result<Expr<'_>> {
     let mut parser = Parser::new(input);
 
     parser.parse()
@@ -109,7 +109,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn peek(&mut self) -> Option<&(Token, usize, usize)> {
+    fn peek(&mut self) -> Option<&(Token<'_>, usize, usize)> {
         self.tokenizer.peek()
     }
 

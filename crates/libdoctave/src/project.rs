@@ -125,7 +125,7 @@ impl Project {
             list.iter()
                 .filter_map(|c| c.content.text())
                 .fold(0, |mut acc, t| {
-                    acc += t.bytes().len();
+                    acc += t.len();
                     acc
                 });
 
@@ -933,7 +933,7 @@ impl Project {
         crate::markdown::autocomplete(markdown, fs_path, self, &ctx)
     }
 
-    pub fn get_page_by_uri_path(&self, uri_path: &str) -> Option<PageHandle> {
+    pub fn get_page_by_uri_path(&self, uri_path: &str) -> Option<PageHandle<'_>> {
         // If we get an anchor in the URI, remove it.
         let without_anchor = uri_path.split('#').collect::<Vec<_>>()[0];
 
@@ -949,7 +949,7 @@ impl Project {
         None
     }
 
-    pub fn get_page_by_fs_path(&self, path: &Path) -> Option<PageHandle> {
+    pub fn get_page_by_fs_path(&self, path: &Path) -> Option<PageHandle<'_>> {
         for page in &self.pages {
             if let PageKind::Markdown(md) = page {
                 if Self::normalize_fs_path(md.path.as_ref()) == Self::normalize_fs_path(path) {
@@ -1011,7 +1011,7 @@ impl Project {
         path.strip_prefix("/").unwrap_or(path)
     }
 
-    pub fn pages(&self) -> Vec<PageHandle> {
+    pub fn pages(&self) -> Vec<PageHandle<'_>> {
         self.pages
             .iter()
             .map(|page| PageHandle {
