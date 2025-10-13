@@ -3,7 +3,7 @@
     <ul class="footer-links">
       {% for link in footer.links %}
       <li class="">
-        <a href="{{ link.external }}">{{ link.label }}</a>
+        <a href="{{ link.external or link.href }}">{{ link.label }}</a>
       </li>
       {% endfor %}
     </ul>

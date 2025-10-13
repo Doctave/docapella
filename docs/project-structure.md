@@ -1,12 +1,14 @@
 # Project structure
 
-Let's take a look at the structure of a basic Docapella project.
+Let's take a look at the structure of an example Docapella project.
 
-```
+```plain title="Example project structure"
 ├── docapella.yaml
 ├── navigation.yaml
 ├── openapi.yaml
 ├── README.md
+├── tutorials
+│   └── getting-started.md
 └── _assets
     ├── logo.svg
     └── logo-dark.svg

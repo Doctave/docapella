@@ -4,9 +4,11 @@ Docapella is a static site generator for technical documentation. It's opinionat
 
 It comes with built-in support for, OpenAPI 3.0 specifications, tabs and subtabs, search, and and extendable component system.
 
+The documentation you are currently reading is of course generated with Docapella!
+
 ## Installation
 
-<Callout type="warning">
+<Callout type="info">
     Currently, Docapella is only available via [Cargo](https://doc.rust-lang.org/cargo/). Other installation methods are coming soon.
 </Callout>
 

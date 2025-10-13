@@ -15,3 +15,9 @@ cargo install --git https://github.com/Doctave/docapella.git
 This will install the `docapella` binary to your Cargo bin directory.
 
 You can now run `docapella --help` to see the available commands.
+
+## Creating a new project
+
+Next, let's read on about how to create a new project:
+
+<Button variant="secondary" href="/quick-start">Creating your project &#8250;</Button>

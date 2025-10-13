@@ -33,6 +33,8 @@ This will generate the following palette:
 
 Try turning on dark mode to see the difference.
 
+These colors can be used in your custom CSS with the `--accent-1` through `--accent-12` variables.
+
 ## Logo
 
 You can specify a logo for your project. This will be shown in the header of your documentation.

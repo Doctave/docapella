@@ -34,11 +34,18 @@ header:
       external: https://github.com/Doctave/docapella
   # A more prominent call-to-action button
   cta:
-    label: Sign Up
-    external: https://example.com
+    label: Get started
+    href: /installation
 
 # Add additional links and social media profiles
 footer:
   links:
-    - label: Docapella Documentation
+    - label: Documentation
       external: https://docapella.com
+    - label: Get started
+      href: /quick-start
+  github: https://github.com/Doctave/docapella
+
+styles:
+  - _assets/styles.css
+

@@ -6,7 +6,7 @@ The search index is generated from your Markdown files and OpenAPI operations, a
 
 ## Using the search
 
-To use the search, you can press <kbd>Ctrl+K</kbd> on your keyboard, or click the magnifying glass icon in the top right corner of the header.
+To use the search, you can press <kbd>Cmd+K</kbd> or <kbd>Ctrl+K</kbd> on your keyboard, or click the search bar in the middle of the header.
 
 ## Under the hood
 

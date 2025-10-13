@@ -1,0 +1,50 @@
+
+- heading: Introduction
+  items:
+    - label: Component syntax
+      href: ./syntax.md
+    - label: Expression syntax
+      href: ./expression-syntax.md
+    - label: Filters
+      href: ./filters.md
+    - label: Custom reusable components
+      href: ./custom-components.md
+
+- heading: UI Components
+  items:
+    - label: Button
+      href: ./button.md
+    - label: Callout
+      href: ./callout.md
+    - label: Card
+      href: ./card.md
+    - label: Code
+      href: ./code.md
+    - label: CodeSelect
+      href: ./code-select.md
+    - label: Icon
+      href: ./icon.md
+    - label: Image
+      href: ./image.md
+    - label: Link
+      href: ./link.md
+    - label: Math
+      href: ./math.md
+    - label: Mermaid Diagrams
+      href: ./mermaid.md
+    - label: Steps
+      href: ./steps.md
+    - label: Tabs
+      href: ./tabs.md
+
+- heading: Layout Components
+  items:
+    - label: Flex
+      href: ./flex.md
+    - label: Fragment
+      href: ./fragment.md
+    - label: Grid
+      href: ./grid.md
+    - label: Box
+      href: ./box.md
+

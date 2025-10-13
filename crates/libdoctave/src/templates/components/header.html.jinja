@@ -57,7 +57,7 @@
           class="header-cta d-button"
           data-variant="primary"
           data-size="md"
-          href="{{ project.settings.header.cta.external }}"
+          href="{{ project.settings.header.cta.external or project.settings.header.cta.href }}"
           >{{ project.settings.header.cta.label }}</a
         >
       {% endif %}
