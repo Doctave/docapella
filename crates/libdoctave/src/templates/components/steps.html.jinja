@@ -3,9 +3,7 @@
 <div class="steps not-prose" data-d-component="Steps">
   {% for step in node.children %}
     <div class="steps-step">
-      <div class="step-number">
-        {{ loop.index }}
-      </div>
+      <div class="step-number">{{ loop.index }}</div>
       <div class="step-body">
         <p class="step-title">
           <b>{{ step.kind.data.title }}</b>
