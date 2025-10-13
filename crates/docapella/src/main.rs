@@ -87,10 +87,10 @@ fn main() {
     if let Err(e) = result {
         match e {
             docapella::Error::General(msg) => {
-                writeln!(&mut stdout, "{}", msg).expect("Failed to write to stdout");
+                writeln!(&mut stdout, "{}", msg.red()).expect("Failed to write to stdout");
             }
             docapella::Error::IoError(e) => {
-                writeln!(&mut stdout, "{}", e).expect("Failed to write to stdout");
+                writeln!(&mut stdout, "{}", e.red()).expect("Failed to write to stdout");
             }
             docapella::Error::FatalBuildError(errors) => {
                 writeln!(

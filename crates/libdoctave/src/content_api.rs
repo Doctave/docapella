@@ -56,7 +56,7 @@ impl Default for ResponseContext {
     }
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum ViewMode {
     Prod,

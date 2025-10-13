@@ -42,7 +42,7 @@ pub(crate) fn build<W: std::io::Write>(
 
             let verify_duration = start.elapsed();
 
-            if let Err(e) = verify_results {
+            if let Err(e) = &verify_results {
                 writeln!(
                     stdout,
                     "Found {} issues while building documentation in {:?}",
@@ -57,6 +57,7 @@ pub(crate) fn build<W: std::io::Write>(
                         issue.message.bold(),
                         issue
                             .file
+                            .as_ref()
                             .map(|f| format!("[{}]", f.display()))
                             .unwrap_or(String::from(""))
                             .bold()
@@ -72,6 +73,12 @@ pub(crate) fn build<W: std::io::Write>(
                 .expect("Failed to join clearer thread");
 
             let start = std::time::Instant::now();
+
+            if view_mode == ViewMode::Prod && verify_results.is_err() {
+                return Err(crate::Error::General(String::from(
+                    "Production build failed",
+                )));
+            }
 
             let results: Vec<Result<()>> = project
                 .pages()

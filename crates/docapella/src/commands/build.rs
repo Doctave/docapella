@@ -28,7 +28,7 @@ mod tests {
     fn builds_a_project() {
         let working_dir = TempDir::new().unwrap();
         let out_dir = TempDir::new().unwrap();
-        let mut fake_stdout = std::io::sink();
+        let mut fake_stdout = std::io::Cursor::new(Vec::new());
 
         fs::write(
             working_dir.path().join("docapella.yaml"),
@@ -36,6 +36,7 @@ mod tests {
         )
         .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
+        fs::write(working_dir.path().join("navigation.yaml"), "").unwrap();
 
         let result = run(BuildArgs {
             working_dir: working_dir.path().to_path_buf(),
@@ -44,7 +45,7 @@ mod tests {
         });
 
         if let Err(err) = result {
-            panic!("{}", err);
+            panic!("{:?}", err);
         }
 
         assert!(
@@ -65,6 +66,7 @@ mod tests {
         )
         .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
+        fs::write(working_dir.path().join("navigation.yaml"), "").unwrap();
 
         let result = run(BuildArgs {
             working_dir: working_dir.path().to_path_buf(),
@@ -96,6 +98,7 @@ mod tests {
         )
         .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
+        fs::write(working_dir.path().join("navigation.yaml"), "").unwrap();
 
         fs::write(out_dir.path().join("foo.txt"), "").unwrap();
 
@@ -109,5 +112,42 @@ mod tests {
 
         // Check that foo.txt was removed
         assert!(!working_dir.path().join("_build/foo.txt").exists());
+    }
+
+    #[test]
+    fn returns_an_error_if_there_were_verification_errors() {
+        let working_dir = TempDir::new().unwrap();
+        let out_dir = TempDir::new().unwrap();
+        let mut fake_stdout = std::io::Cursor::new(Vec::new());
+
+        fs::write(
+            working_dir.path().join("docapella.yaml"),
+            "---\ntitle: Hello World",
+        )
+        .unwrap();
+        fs::write(
+            working_dir.path().join("README.md"),
+            "[broken link](./foo.md)",
+        )
+        .unwrap();
+        fs::write(working_dir.path().join("navigation.yaml"), "").unwrap();
+
+        let result = run(BuildArgs {
+            working_dir: working_dir.path().to_path_buf(),
+            out_dir: out_dir.path().to_path_buf(),
+            stdout: &mut fake_stdout,
+        });
+
+        assert!(result.is_err());
+
+        let fake_stdout = String::from_utf8(fake_stdout.into_inner()).unwrap();
+
+        assert!(
+            fake_stdout.contains("Found 1 issues while building documentation"),
+            "Verification errors not logged"
+        );
+
+        // Check we didn't write any files
+        assert!(!out_dir.path().join("index.html").exists());
     }
 }
