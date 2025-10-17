@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    uses: ./.github/workflows/jobs/build.yaml
+  test:
+    uses: ./.github/workflows/jobs/test.yaml
+  format:
+    uses: ./.github/workflows/jobs/format.yaml
