@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/jobs/build-docs.yaml
+    uses: ./.github/workflows/_job-build-docs.yaml
   deploy:
     needs: build
-    uses: ./.github/workflows/jobs/deploy-pages.yaml
+    uses: ./.github/workflows/_job-deploy-pages.yaml

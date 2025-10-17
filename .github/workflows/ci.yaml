@@ -7,8 +7,8 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/jobs/build.yaml
+    uses: ./.github/workflows/_job-build.yaml
   test:
-    uses: ./.github/workflows/jobs/test.yaml
+    uses: ./.github/workflows/_job-test.yaml
   format:
-    uses: ./.github/workflows/jobs/format.yaml
+    uses: ./.github/workflows/_job-format.yaml
