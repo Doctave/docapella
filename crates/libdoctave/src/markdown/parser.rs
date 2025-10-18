@@ -3,8 +3,8 @@ use std::{collections::BTreeSet, path::PathBuf};
 use super::shared_ast::{Point, Position};
 use super::{Node, NodeKind};
 use crate::{
-    content_ast, interpreter::Interpreter, page_kind::OutgoingLink, project::Asset,
-    render_context::RenderContext, AttributeValue, Error, RenderOptions, Result,
+    content_ast, interpreter::Interpreter, page_kind::OutgoingLink, render_context::RenderContext,
+    AttributeValue, Error, Result,
 };
 
 use unix_path::{self as upath};
@@ -220,7 +220,7 @@ fn rewrite_links(renderable_ast: &mut Node, ctx: &RenderContext) {
                             return;
                         }
 
-                        *href = rewrite_image_src(href, ctx.options, ctx.assets);
+                        *href = rewrite_image_src(href, ctx);
                     }
                 }
             }
@@ -571,33 +571,20 @@ pub fn webbify_url(url: &str) -> String {
 
 fn rewrite_image_node(node: &mut Node, ctx: &RenderContext) {
     if let NodeKind::Image { ref mut url, .. } = node.kind {
-        *url = rewrite_image_src(url, ctx.options, ctx.assets);
+        *url = rewrite_image_src(url, ctx);
     }
 }
 
-pub(crate) fn rewrite_image_src(src: &str, opts: &RenderOptions, assets: &[Asset]) -> String {
-    let new_url = if opts.bust_image_caches {
-        let cache_key = if let Some(asset) = assets
-            .iter()
-            .find(|a| a == &&PathBuf::from(src.trim_start_matches('/')))
-        {
-            asset.signature.to_string()
-        } else {
-            let now = std::time::SystemTime::now();
-            now.duration_since(std::time::UNIX_EPOCH)
-                .expect("Time went backwards")
-                .as_millis()
-                .to_string()
-        };
-
-        format!("{}?c={}", src, cache_key)
+pub(crate) fn rewrite_image_src(src: &str, ctx: &RenderContext) -> String {
+    let new_url = if ctx.options.bust_image_caches {
+        format!("{}?c={}", src, ctx.cache_bust_timestamp)
     } else {
         src.to_string()
     };
 
-    if let Some(rewrite) = opts.link_rewrites.get(src) {
+    if let Some(rewrite) = ctx.options.link_rewrites.get(src) {
         rewrite.to_owned()
-    } else if let Some(prefix) = &opts.prefix_asset_urls {
+    } else if let Some(prefix) = &ctx.options.prefix_asset_urls {
         if new_url.starts_with("/_assets/") {
             let mut new = prefix.clone();
             new.push_str(src);

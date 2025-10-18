@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 use std::{ffi::OsStr, path::PathBuf};
 
 use crate::open_api::model::Components;
@@ -23,6 +24,8 @@ pub(crate) struct RenderContext<'a> {
     pub custom_components: &'a [CustomComponentHandle],
     pub assets: &'a [Asset],
     pub openapi_components: &'a HashMap<String, Components>,
+    /// Global timestamp for cache busting image URLs
+    pub cache_bust_timestamp: String,
 }
 
 lazy_static! {
@@ -33,6 +36,13 @@ lazy_static! {
 
 impl Default for RenderContext<'_> {
     fn default() -> Self {
+        let now = SystemTime::now();
+        let cache_bust_timestamp = now
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_millis()
+            .to_string();
+
         RenderContext {
             options: &DEFAULT_OPTS,
             settings: &DEFAULT_SETTINGS,
@@ -42,6 +52,7 @@ impl Default for RenderContext<'_> {
             custom_components: &BAKED_COMPONENTS,
             assets: &[],
             openapi_components: &DEFAULT_OPENAPI_COMPONENTS,
+            cache_bust_timestamp,
         }
     }
 }
@@ -143,6 +154,11 @@ impl<'a> RenderContext<'a> {
 
     pub fn should_expand_relative_uris(&self) -> bool {
         self.relative_url_base.is_some()
+    }
+
+    #[cfg(test)]
+    pub fn with_cache_bust_timestamp(&mut self, timestamp: String) {
+        self.cache_bust_timestamp = timestamp;
     }
 }
 

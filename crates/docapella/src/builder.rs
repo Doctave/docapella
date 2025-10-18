@@ -82,7 +82,7 @@ pub(crate) fn build<W: std::io::Write>(
 
             let results: Vec<Result<()>> = project
                 .pages()
-                .par_iter()
+                .into_par_iter()
                 .map(|page| {
                     let mut path = out_dir.to_path_buf();
                     path.push(page.out_path());
@@ -96,7 +96,7 @@ pub(crate) fn build<W: std::io::Write>(
                     ctx.view_mode = view_mode.clone();
                     ctx.options.bust_image_caches = true;
 
-                    let response = ContentApiResponse::content(page.clone(), &project, ctx);
+                    let response = ContentApiResponse::content(page, &project, ctx);
 
                     let rendered = renderer.render_page(response).map_err(|e| {
                         crate::Error::General(format!("Failed to render page: {:?}", e))

@@ -1,7 +1,6 @@
 use regex::Regex;
 
 use crate::parser::{is_external_link, rewrite_image_src, to_final_link};
-use crate::project::Asset;
 use crate::render_context::RenderContext;
 use crate::tabs::{TabDescription, TabsList};
 /// Settings for a given site backed by a `docapella.yaml` file.
@@ -53,15 +52,14 @@ impl Settings {
     }
 
     /// Rewrite links based on a list of link rewrites
-    pub(crate) fn rewrite_links(&mut self, opts: &RenderOptions, assets: &[Asset]) {
+    pub(crate) fn rewrite_links(&mut self, ctx: &RenderContext) {
         if let Some(logo) = self.theme.logo.as_mut() {
             logo.src = PathBuf::from(rewrite_image_src(
                 &format!(
                     "/{}",
                     logo.src.display().to_string().trim_start_matches('/')
                 ),
-                opts,
-                assets,
+                ctx,
             ));
             logo.src_dark = logo.src_dark.as_mut().map(|dark_logo| {
                 PathBuf::from(rewrite_image_src(
@@ -69,8 +67,7 @@ impl Settings {
                         "/{}",
                         dark_logo.display().to_string().trim_start_matches('/'),
                     ),
-                    opts,
-                    assets,
+                    ctx,
                 ))
             });
         }
@@ -81,19 +78,15 @@ impl Settings {
                     "/{}",
                     favicon.src.display().to_string().trim_start_matches('/')
                 ),
-                opts,
-                assets,
+                ctx,
             ));
         }
 
         if let Some(header) = self.header.as_mut() {
             if let Some(HeaderLink::Internal(link)) = header.cta.as_mut() {
                 if link.download {
-                    link.href = rewrite_image_src(
-                        &format!("/{}", link.href.trim_start_matches('/')),
-                        opts,
-                        assets,
-                    );
+                    link.href =
+                        rewrite_image_src(&format!("/{}", link.href.trim_start_matches('/')), ctx);
                 }
             }
 
@@ -102,8 +95,7 @@ impl Settings {
                     if link.download {
                         link.href = rewrite_image_src(
                             &format!("/{}", link.href.trim_start_matches('/')),
-                            opts,
-                            assets,
+                            ctx,
                         );
                     }
                 }
@@ -114,11 +106,8 @@ impl Settings {
         for link in footer.links.iter_mut() {
             if let HeaderLink::Internal(link) = link {
                 if link.download {
-                    link.href = rewrite_image_src(
-                        &format!("/{}", link.href.trim_start_matches('/')),
-                        opts,
-                        assets,
-                    );
+                    link.href =
+                        rewrite_image_src(&format!("/{}", link.href.trim_start_matches('/')), ctx);
                 }
             }
         }
@@ -1382,25 +1371,25 @@ mod test {
 
         let mut settings = Settings::parse(input).unwrap();
 
-        settings.rewrite_links(
-            &RenderOptions {
-                link_rewrites: [
-                    // NOTE: Jaleo always adds the "/" prefix
-                    ("/_assets/logo.png".to_string(), "new_logo.png".to_string()),
-                    (
-                        "/_assets/logo-dark.png".to_string(),
-                        "new_logo_dark.png".to_string(),
-                    ),
-                    (
-                        "/_assets/favicon.svg".to_string(),
-                        "new_favicon.svg".to_string(),
-                    ),
-                ]
-                .into(),
-                ..Default::default()
-            },
-            &[],
-        );
+        let opts = RenderOptions {
+            link_rewrites: [
+                // NOTE: Jaleo always adds the "/" prefix
+                ("/_assets/logo.png".to_string(), "new_logo.png".to_string()),
+                (
+                    "/_assets/logo-dark.png".to_string(),
+                    "new_logo_dark.png".to_string(),
+                ),
+                (
+                    "/_assets/favicon.svg".to_string(),
+                    "new_favicon.svg".to_string(),
+                ),
+            ]
+            .into(),
+            ..Default::default()
+        };
+        let mut ctx = RenderContext::new();
+        ctx.with_maybe_options(Some(&opts));
+        settings.rewrite_links(&ctx);
 
         assert_eq!(&settings.logo().unwrap().src, &Path::new("new_logo.png"));
         assert_eq!(
@@ -1430,25 +1419,25 @@ mod test {
 
         let mut settings = Settings::parse(input).unwrap();
 
-        settings.rewrite_links(
-            &RenderOptions {
-                link_rewrites: [
-                    // NOTE: Jaleo always adds the "/" prefix
-                    ("/_assets/logo.png".to_string(), "new_logo.png".to_string()),
-                    (
-                        "/_assets/logo-dark.png".to_string(),
-                        "new_logo_dark.png".to_string(),
-                    ),
-                    (
-                        "/_assets/favicon.svg".to_string(),
-                        "new_favicon.svg".to_string(),
-                    ),
-                ]
-                .into(),
-                ..Default::default()
-            },
-            &[],
-        );
+        let opts = RenderOptions {
+            link_rewrites: [
+                // NOTE: Jaleo always adds the "/" prefix
+                ("/_assets/logo.png".to_string(), "new_logo.png".to_string()),
+                (
+                    "/_assets/logo-dark.png".to_string(),
+                    "new_logo_dark.png".to_string(),
+                ),
+                (
+                    "/_assets/favicon.svg".to_string(),
+                    "new_favicon.svg".to_string(),
+                ),
+            ]
+            .into(),
+            ..Default::default()
+        };
+        let mut ctx = RenderContext::new();
+        ctx.with_maybe_options(Some(&opts));
+        settings.rewrite_links(&ctx);
 
         assert_eq!(&settings.logo().unwrap().src, &Path::new("new_logo.png"));
         assert_eq!(
@@ -1516,25 +1505,25 @@ mod test {
 
         let mut settings = Settings::parse(input).unwrap();
 
-        settings.rewrite_links(
-            &RenderOptions {
-                link_rewrites: [
-                    // NOTE: Jaleo always adds the "/" prefix
-                    ("/_assets/logo.png".to_string(), "new_logo.png".to_string()),
-                    (
-                        "/_assets/logo-dark.png".to_string(),
-                        "new_logo_dark.png".to_string(),
-                    ),
-                    (
-                        "/_assets/favicon.svg".to_string(),
-                        "new_favicon.svg".to_string(),
-                    ),
-                ]
-                .into(),
-                ..Default::default()
-            },
-            &[],
-        );
+        let opts = RenderOptions {
+            link_rewrites: [
+                // NOTE: Jaleo always adds the "/" prefix
+                ("/_assets/logo.png".to_string(), "new_logo.png".to_string()),
+                (
+                    "/_assets/logo-dark.png".to_string(),
+                    "new_logo_dark.png".to_string(),
+                ),
+                (
+                    "/_assets/favicon.svg".to_string(),
+                    "new_favicon.svg".to_string(),
+                ),
+            ]
+            .into(),
+            ..Default::default()
+        };
+        let mut ctx = RenderContext::new();
+        ctx.with_maybe_options(Some(&opts));
+        settings.rewrite_links(&ctx);
 
         assert_eq!(&settings.logo().unwrap().src, &Path::new("new_logo.png"));
         assert_eq!(
