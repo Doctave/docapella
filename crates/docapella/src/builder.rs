@@ -94,6 +94,8 @@ pub(crate) fn build<W: std::io::Write>(
                     let mut ctx = ResponseContext::default();
                     ctx.options.webbify_internal_urls = true;
                     ctx.view_mode = view_mode.clone();
+                    ctx.options.bust_image_caches = true;
+
                     let response = ContentApiResponse::content(page.clone(), &project, ctx);
 
                     let rendered = renderer.render_page(response).map_err(|e| {

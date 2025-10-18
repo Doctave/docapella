@@ -253,7 +253,8 @@ fn handle_request(
     build_dir: &std::path::Path,
 ) -> tiny_http::Response<std::io::Cursor<Vec<u8>>> {
     let url = request.url();
-    let path = resolve_path(url, build_dir);
+    let url_without_query = url.split('?').next().unwrap_or(url);
+    let path = resolve_path(url_without_query, build_dir);
 
     match std::fs::read(&path) {
         Ok(content) => {
