@@ -71,6 +71,8 @@
   flex: 1;
   height: var(--space-5);
   border: none;
+  background: var(--background-color);
+  color: var(--gray-11);
 }
 
 /* Search placeholder styles */

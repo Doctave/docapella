@@ -761,6 +761,7 @@ div[data-d-component="IconBox"][data-size="xl"] {
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     width: var(--space-5);
     height: var(--space-5);
     border-radius: var(--radius-3);

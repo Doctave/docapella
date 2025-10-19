@@ -69,6 +69,12 @@
     --header-height: calc(var(--header-top-height) + var(--header-bottom-height));
   }
 
+  @media (max-width: 1024px) {
+    :root {
+      --header-height: var(--header-top-height);
+    }
+  }
+
   :target {
     scroll-margin-top: calc(var(--header-height) + var(--space-8));
   }
@@ -151,136 +157,6 @@
   button {
     border: none;
     background: none;
-  }
-
-  header {
-    z-index: 10;
-    border-bottom: 1px solid var(--gray-3);
-    padding-left: var(--space-6);
-    padding-right: var(--space-6);
-    position: fixed;
-    top: 0;
-    background: var(--background-color);
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  header .logo img {
-    max-height: 2rem;
-  }
-
-  header .header-top-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: var(--bp-xl);
-    margin-left: auto;
-    margin-right: auto;
-
-    height: var(--header-top-height);
-  }
-
-  header .header-bottom-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    max-width: var(--bp-xl);
-    margin-left: auto;
-    margin-right: auto;
-
-    height: var(--header-bottom-height);
-  }
-
-  header #header-search-button {
-    position: absolute;
-    right: 50%;
-    transform: translateX(50%);
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    width: calc(var(--space-9) * 3);  
-    height: var(--space-6);
-    border-radius: var(--radius-4);
-    background-color: var(--gray-1);
-    border: 1px solid var(--gray-3);
-    padding-left: var(--space-2);
-    padding-right: var(--space-2);
-    cursor: pointer;
-
-    font-size: var(--text-xs);
-    font-weight: var(--weight-medium);
-    color: var(--gray-10);
-  }
-
-  header #header-search-button:hover {
-    background-color: var(--gray-2);
-    color: var(--gray-11);
-  }
-
-  header #header-search-button svg {
-    width: var(--space-4);
-    height: var(--space-4);
-  }
-
-  header #header-search-button span {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-  }
-
-  header .header-links {
-    display: flex;
-    gap: var(--space-3);
-    align-items: center;
-    list-style: none;
-
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-  }
-
-  header .header-links a {
-    color: var(--gray-11);
-    text-decoration: none;
-  }
-
-  header .header-links a:hover {
-    color: var(--accent-11);
-  }
-
-  header .header-tabs {
-    display: flex;
-    gap: var(--space-5);
-    align-items: center;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  header .header-tabs a {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    line-height: var(--line-height-sm);
-    text-decoration: none;
-    color: var(--gray-11);
-    height: var(--header-bottom-height);
-
-    box-sizing: border-box;
-    border-bottom: 2px solid transparent;
-
-    display: flex;
-    align-items: center;
-  }
-
-  header .header-tabs a:hover {
-    color: var(--gray-12);
-    border-bottom-color: var(--gray-10);
-  }
-
-  header .header-tabs a[data-current="true"] {
-    color: var(--gray-12);
-    border-bottom-color: var(--accent-11);
   }
 
   nav {
@@ -440,6 +316,12 @@
     flex-shrink: 1;
     display: flex;
     justify-content: center;
+  }
+
+  @media (max-width: 1024px) {
+    .markdown-outer-container {
+      padding-top: calc(var(--header-height) + var(--space-5));
+    }
   }
 
   .markdown-inner-container {
@@ -764,6 +646,7 @@
 
 {# prettier-ignore-start #}
 <style>
+  {% include "css-header.css" %}
   {% include "css-prose.css" %}
   {% include "css-builtin-components.css" %}
   {% include "css-openapi.css" %}

@@ -46,7 +46,7 @@
 
   // Set up toggle buttons when DOM is ready
   document.addEventListener("DOMContentLoaded", function () {
-    const toggleButtons = document.querySelectorAll(".dark-mode-toggle");
+    const toggleButtons = document.querySelectorAll('[data-dark-mode-toggle]');
 
     if (toggleButtons) {
       toggleButtons.forEach((toggleButton) => {
