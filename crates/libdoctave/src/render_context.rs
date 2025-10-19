@@ -155,11 +155,6 @@ impl<'a> RenderContext<'a> {
     pub fn should_expand_relative_uris(&self) -> bool {
         self.relative_url_base.is_some()
     }
-
-    #[cfg(test)]
-    pub fn with_cache_bust_timestamp(&mut self, timestamp: String) {
-        self.cache_bust_timestamp = timestamp;
-    }
 }
 
 impl std::fmt::Debug for RenderContext<'_> {

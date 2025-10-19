@@ -666,8 +666,6 @@ pub struct PageOptions {
 
 #[cfg(test)]
 mod test {
-    use pretty_assertions::assert_str_eq;
-
     use crate::{
         settings::{FooterLink, HeaderLink, InternalLink},
         InputContent, InputFile, NAVIGATION_FILE_NAME, SETTINGS_FILE_NAME,
