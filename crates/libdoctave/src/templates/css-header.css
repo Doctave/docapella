@@ -121,7 +121,7 @@ html.dark .header-button.header-button-solid:hover {
 }
 
 .header-button.header-button-ghost:hover {
-  background: var(--accent-4);
+  background: var(--gray-3);
   color: var(--accent-11);
 }
 

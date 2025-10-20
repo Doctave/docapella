@@ -50,14 +50,16 @@
     {% include "components/header.html.jinja" %}
     {% include "components/search-modal.html.jinja" %}
 
+    {% with navigation = project.active_navigation %}
+      {% include "components/mobile-navigation.html.jinja" %}
+    {% endwith %}
+
     <div class="page-outer-container">
       <div class="page-inner-container">
         {% if page.status == "ok" %}
-          <nav>
-            {% with navigation = project.active_navigation %}
-              {% include "components/navigation.html.jinja" %}
-            {% endwith %}
-          </nav>
+          {% with navigation = project.active_navigation %}
+            {% include "components/navigation.html.jinja" %}
+          {% endwith %}
           {% if page.ast.kind == "markdown" %}
             <div class="markdown-outer-container">
               <div class="markdown-inner-container">

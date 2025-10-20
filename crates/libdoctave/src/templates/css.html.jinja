@@ -159,7 +159,7 @@
     background: none;
   }
 
-  nav {
+  nav.desktop-nav {
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
     display: none;
@@ -167,8 +167,24 @@
   }
 
   @media (min-width: 1024px) {
-    nav {
+    nav.desktop-nav {
       display: block;
+    }
+  }
+
+  nav.mobile-nav {
+    display: none;
+  }
+
+  @media (max-width: 1024px) {
+    nav.mobile-nav {
+      display: block;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    nav.mobile-nav {
+      display: none !important;
     }
   }
 
@@ -647,6 +663,7 @@
 {# prettier-ignore-start #}
 <style>
   {% include "css-header.css" %}
+  {% include "css-mobile-nav.css" %}
   {% include "css-prose.css" %}
   {% include "css-builtin-components.css" %}
   {% include "css-openapi.css" %}

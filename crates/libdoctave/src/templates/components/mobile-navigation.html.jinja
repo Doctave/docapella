@@ -1,0 +1,74 @@
+<nav
+  x-cloak
+  x-data="{ open: false }"
+  class="mobile-nav"
+  x-bind:data-open="open"
+  @keydown.escape.window="open = false"
+  @mobile-nav-toggle.window="open = !open"
+  >
+  <div
+    x-show="open"
+    @click="open = false"
+    x-transition.opacity
+    class="mobile-navigation-underlay"
+  ></div>
+
+  <div @click.stop class="mobile-navigation-container">
+    <div class="mobile-navigation-header">
+      <a href="/" class="logo">
+        {% if project.settings.theme.logo %}
+          <img
+            class="light-only"
+            src="{{ project.settings.theme.logo.src }}"
+            alt="{{ project.settings.title }}"
+          />
+          <img
+            class="dark-only"
+            src="{{ project.settings.theme.logo.src_dark }}"
+            alt="{{ project.settings.title }}"
+          />
+        {% else %}
+          <span>{{ project.settings.title }}</span>
+        {% endif %}
+      </a>
+    </div>
+
+    {% if project.tabs %}
+      <ul class="mobile-header-tabs">
+        {% for tab in project.tabs %}
+          <li>
+            <a
+              data-current="{{ project.active_tab_index[0] == loop.index0 }}"
+              href="{{ tab.href }}"
+              >{{ tab.label }}</a
+            >
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <div class="mobile-navigation-links">
+      {% if navigation.status == "error" %}
+        <div class="navigation-error">
+          <h2>Error parsing navigation</h2>
+
+          {% for error in navigation.errors %}
+            <div class="navigation-error-item">
+              <div class="navigation-error-item-header">
+                <span><code>{{ error.file }}</code></span>
+                <p>{{ error.message }}</p>
+              </div>
+              <div class="navigation-error-description">
+                <code>{{ error.description|escape }}</code>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% for section in navigation.sections %}
+          {% include "components/navigation_section.html.jinja" %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </div>
+</nav>
