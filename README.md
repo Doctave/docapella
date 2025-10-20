@@ -3,6 +3,8 @@ Docapella, an opinionated Markdown and OpenAPI documentation generator
 
 Docapella is a static site generator that turns your Markdown and OpenAPI specifications into a documentation website.
 
+[Read the docs here](https://www.docapella.com).
+
 ## Status
 
 This project is currently pre 1.0. Some features are still being worked on, and installation is only supported via Cargo.
