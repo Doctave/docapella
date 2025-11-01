@@ -1,0 +1,47 @@
+.app-lightbox {
+  position: fixed;
+  top: 0;
+  z-index: 99999;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  cursor: zoom-out;
+  background-color: var(--bg-color, hsl(0, 0%, 0%, 0.85));
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.app-lightbox.is-active {
+  pointer-events: initial;
+  opacity: 1;
+}
+
+:global([data-zoomable]) {
+  cursor: zoom-in;
+}
+
+.portal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.35s, transform 0.35s;
+  transform: scale(0.2);
+}
+
+.app-lightbox.is-active .portal {
+  transform: scale(0.75);
+}
+
+@media (max-width: 1024px) {
+  .app-lightbox.is-active .portal {
+    transform: scale(0.9);
+  }
+}
+
+.portal img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-6);
+}

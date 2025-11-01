@@ -115,11 +115,13 @@
   border-radius: initial;
   margin-top: initial;
   margin-bottom: initial;
+  cursor: initial;
   {% else %}
   max-width: 100%;
   border-radius: var(--space-2);
   margin-top: calc(2em * var(--prose-scale));
   margin-bottom: calc(2em * var(--prose-scale));
+  cursor: zoom-in;
   {% endif %}
 }
 
@@ -381,6 +383,7 @@
   {% if not reset %}
   margin-top: 0;
   margin-bottom: 0;
+  cursor: zoom-in;
   {% endif %}
 }
 
