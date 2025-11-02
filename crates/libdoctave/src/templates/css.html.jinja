@@ -211,6 +211,10 @@
     list-style: none;
     padding: 0;
     box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--space-1) * 0.5);
   }
 
   nav ul ul {
@@ -249,37 +253,81 @@
   nav .navigation-item-label {
     margin-top: 1px;
     margin-left: calc(var(--space-2) * -1);
-    border-radius: var(--space-2);
+    border-radius: var(--radius-3);
 
     display: flex;
     align-items: center;
     gap: var(--space-1);
   }
 
+  nav ul li .navigation-subheading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    padding-bottom: var(--space-2);
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: var(--weight-semibold);
+    width: 100%;
+    color: var(--gray-12);
+  }
+
   nav ul li a {
     word-break: break-word;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    justify-content: space-between;
     text-decoration: none;
     font-weight: var(--weight-medium);
     font-size: 14px;
     width: 100%;
 
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
+
     padding-left: var(--space-2);
     padding-right: var(--space-2);
 
-    min-height: var(--space-6);
+    gap: var(--space-2);
+
+    min-height: var(--space-5);
     color: var(--gray-11);
+  }
+
+  nav ul li a .navigation-item-label-text {
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
+    flex-grow: 1;
+    display: flex;
+    align-items: flex-start;
+    height: 100%;
+  }
+
+  nav ul li a .open-api-operation-method {
+    margin-top: var(--space-1);
+    margin-bottom: var(--space-1);
+    flex-shrink: 0;
+    font-size: calc(var(--text-xs) * 0.7);
+    font-weight: var(--weight-bold);
+    padding: 2px 0px;
+    width: var(--space-7);
+    height: var(--space-3);
+    border-radius: var(--radius-3);
   }
 
   nav button.navigation-item-toggle {
     background: none;
     border: none;
-    border-radius: var(--space-2);
+    border-radius: var(--radius-3);
     padding: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+
+    margin-right: var(--space-1);
 
     color: var(--gray-11);
   }
@@ -293,6 +341,11 @@
   nav button.navigation-item-toggle:hover {
     background: var(--gray-3);
     color: var(--gray-12);
+  }
+
+  nav .navigation-item-label[data-current="true"] button.navigation-item-toggle:hover {
+    background: var(--accent-4);
+    color: var(--accent-11);
   }
 
   .page-outer-container {
@@ -494,7 +547,7 @@
 
     background: none;
     border: none;
-    border-radius: var(--radius-4);
+    border-radius: var(--radius-3);
     padding: 0;
 
     color: var(--gray-9);

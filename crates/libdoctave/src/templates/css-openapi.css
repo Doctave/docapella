@@ -109,12 +109,49 @@
 
 .open-api-operation-method-get {
   background-color: var(--blue-9);
-  color: var(--accent-contrast);
+  color: var(--blue-1);
 }
 
 .open-api-operation-method-post {
   background-color: var(--jade-9);
-  color: var(--accent-contrast);
+  color: var(--jade-1);
+}
+
+.open-api-operation-method-put {
+  background-color: var(--orange-9);
+  color: var(--orange-1);
+}
+
+.open-api-operation-method-patch {
+  background-color: var(--orange-9);
+  color: var(--orange-1);
+}
+
+.open-api-operation-method-del,
+.open-api-operation-method-delete {
+  background-color: var(--ruby-9);
+  color: var(--ruby-1);
+}
+
+.open-api-operation-method-opt,
+.open-api-operation-method-options {
+  background-color: var(--blue-9);
+  color: var(--blue-1);
+}
+
+.open-api-operation-method-head {
+  background-color: var(--jade-9);
+  color: var(--jade-1);
+}
+
+.open-api-operation-method-trace {
+  background-color: var(--blue-9);
+  color: var(--blue-1);
+}
+
+.open-api-operation-method-webhook {
+  background-color: var(--orange-9);
+  color: var(--orange-1);
 }
 
 .open-api-operation-details {
