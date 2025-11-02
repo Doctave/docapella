@@ -1,32 +1,72 @@
-<li x-data="{ open: {{ not (item.collapsible and item.collapsed) }} }">
-  <div
-    data-current="{{ item.href == page.path }}"
-    class="navigation-item-label"
-  >
-    <a href="{{ item.href }}">{{ item.label }}</a>
+{% set default_open = is_active_nav_item(item, page.path) or not (item.collapsible and item.collapsed) %}
+<li x-data="{ open: {{ default_open }} }">
+  {% if item.kind == "link" %}
+    <div
+      data-current="{{ item.href == page.path }}"
+      class="navigation-item-label"
+    >
+      <a href="{{ item.href }}">
+        <span class="navigation-item-label-text">{{ item.label }}</span>
+        {% if item.http_method %}
+          <span
+            class="open-api-operation-method open-api-operation-method-{{ item.http_method|lower }}"
+            >{{ item.http_method }}</span
+          >
+        {% endif %}
+      </a>
 
-    {% if item.items %}
-      <button class="navigation-item-toggle" @click="open = !open">
-        <svg
-          height="16"
-          width="16"
-          :class="{ 'rotate-90': open }"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 16 16"
-          fill="currentColor"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </button>
-    {% endif %}
-  </div>
+      {% if item.items %}
+        <button class="navigation-item-toggle" @click="open = !open">
+          <svg
+            height="16"
+            width="16"
+            :class="{ 'rotate-90': open }"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+  {% if item.kind == "subheading" %}
+    <div class="navigation-subheading">
+      <span class="navigation-item-label-text">{{ item.label }}</span>
+
+      {% if item.items %}
+        <button class="navigation-item-toggle" @click="open = !open">
+          <svg
+            height="16"
+            width="16"
+            :class="{ 'rotate-90': open }"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
 
   {% if item.items %}
-    <ul x-cloak x-show="open" x-transition x-transition.opacity>
+    <ul
+      {% if not default_open %}x-cloak{% endif %}
+      x-show="open"
+      x-transition
+      x-transition.opacity
+    >
       {% for item in item.items %}
         {% include "components/navigation_item.html.jinja" %}
       {% endfor %}

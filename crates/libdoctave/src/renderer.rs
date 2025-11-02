@@ -18,6 +18,7 @@ impl Renderer {
         env.add_function("color_scale_css", color_scale_css);
         env.add_function("flatten_examples", flatten_examples);
         env.add_function("flatten_response_examples", flatten_response_examples);
+        env.add_function("is_active_nav_item", is_active_nav_item);
 
         Ok(Renderer { env })
     }
@@ -257,4 +258,40 @@ fn flatten_response_examples(response: &Value) -> std::result::Result<Value, Err
     }
 
     Ok(Value::from_serialize(all_examples))
+}
+
+/// Checks if any of the nested navigation items are currently active
+fn is_active_nav_item(nav: &Value, current_path: &Value) -> std::result::Result<Value, Error> {
+    let Some(path) = current_path.as_str() else {
+        return Err(Error::new(
+            minijinja::ErrorKind::InvalidOperation,
+            "Missing current path",
+        ));
+    };
+
+    let current_item_url = nav
+        .get_attr("href")
+        .ok()
+        .as_ref()
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
+
+    if let Some(current_item_url) = current_item_url {
+        if current_item_url == path {
+            return Ok(Value::from_serialize(true));
+        }
+    }
+
+    // Recurse with children if any (use
+    if let Ok(children) = nav.get_attr("items") {
+        for child in children.try_iter()? {
+            if let Ok(result) = is_active_nav_item(&child, current_path) {
+                if result.is_true() {
+                    return Ok(Value::from_serialize(true));
+                }
+            }
+        }
+    }
+
+    Ok(Value::from_serialize(false))
 }
