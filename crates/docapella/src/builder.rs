@@ -145,7 +145,7 @@ pub(crate) fn build<W: std::io::Write>(
                         continue;
                     }
 
-                    std::fs::copy(working_dir.join(&asset.path), out_dir.join(&asset.path))?;
+                    copy_asset(&working_dir.join(&asset.path), &out_dir.join(&asset.path))?;
                 }
             }
 
@@ -173,4 +173,53 @@ pub(crate) fn build<W: std::io::Write>(
         }
         Err(e) => Err(crate::Error::FatalBuildError(e)),
     }
+}
+
+/// Copies a file from source to destination.
+///
+/// On macOS, std::fs::copy uses fclonefileat which creates APFS clones.
+/// This triggers filesystem events on both the source and destination,
+/// causing file watchers to detect the source as changed and creating
+/// an infinite rebuild loop.
+///
+/// This implementation manually copies the file to avoid triggering
+/// events on the source file.
+#[cfg(target_os = "macos")]
+fn copy_asset(from: &std::path::Path, to: &std::path::Path) -> std::io::Result<()> {
+    use std::fs::OpenOptions;
+    use std::io;
+    use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
+
+    let mut reader = std::fs::File::open(from)?;
+    let metadata = reader.metadata()?;
+
+    if !metadata.is_file() {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            format!("source is not a file: {}", from.display()),
+        ));
+    }
+
+    let perm = metadata.permissions();
+    let mut writer = OpenOptions::new()
+        .mode(perm.mode())
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(to)?;
+
+    let writer_metadata = writer.metadata()?;
+    if writer_metadata.is_file() {
+        // Set the correct file permissions, in case the file already existed.
+        writer.set_permissions(perm)?;
+    }
+
+    io::copy(&mut reader, &mut writer)?;
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn copy_asset(from: &std::path::Path, to: &std::path::Path) -> std::io::Result<()> {
+    std::fs::copy(from, to)?;
+    Ok(())
 }
