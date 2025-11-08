@@ -6,7 +6,7 @@ fn main() {
 
     // Parse arguments and flags
     let mut accent_color = "";
-    let mut gray_color = "#6b7280"; // Default gray
+    let mut gray_scale = "gray"; // Default gray scale name
     let mut show_css = false;
     let mut color_name = "accent";
 
@@ -24,11 +24,10 @@ fn main() {
                 }
             }
             arg if arg.starts_with('#') => {
-                if accent_color.is_empty() {
-                    accent_color = arg;
-                } else {
-                    gray_color = arg;
-                }
+                accent_color = arg;
+            }
+            arg if ["gray", "mauve", "slate", "sage", "olive", "sand"].contains(&arg) => {
+                gray_scale = arg;
             }
             _ => {
                 eprintln!("Unknown argument: {}", args[i]);
@@ -40,14 +39,16 @@ fn main() {
 
     if accent_color.is_empty() {
         eprintln!(
-            "Usage: {} <accent-color> [gray-color] [--css] [--name <color-name>]",
+            "Usage: {} <accent-color> [gray-scale] [--css] [--name <color-name>]",
             args[0]
         );
         eprintln!("Examples:");
         eprintln!("  {} \"#3b82f6\"", args[0]);
-        eprintln!("  {} \"#3b82f6\" \"#6b7280\"", args[0]);
-        eprintln!("  {} \"#10b981\" \"#64748b\" --css", args[0]);
+        eprintln!("  {} \"#3b82f6\" sand", args[0]);
+        eprintln!("  {} \"#10b981\" slate --css", args[0]);
         eprintln!("  {} \"#3b82f6\" --css --name blue", args[0]);
+        eprintln!("");
+        eprintln!("Gray scale options: gray, mauve, slate, sage, olive, sand (default: gray)");
         eprintln!("");
         eprintln!("Flags:");
         eprintln!("  --css              Output raw CSS instead of color preview");
@@ -55,15 +56,13 @@ fn main() {
         std::process::exit(1);
     }
 
-    // Validate hex color formats
-    for (name, color) in [("accent", accent_color), ("gray", gray_color)] {
-        if !color.starts_with('#') || (color.len() != 7 && color.len() != 4) {
-            eprintln!(
-                "Error: Invalid {} color format '{}'. Use #RRGGBB or #RGB",
-                name, color
-            );
-            std::process::exit(1);
-        }
+    // Validate accent color format
+    if !accent_color.starts_with('#') || (accent_color.len() != 7 && accent_color.len() != 4) {
+        eprintln!(
+            "Error: Invalid accent color format '{}'. Use #RRGGBB or #RGB",
+            accent_color
+        );
+        std::process::exit(1);
     }
 
     // Create the color generator
@@ -72,10 +71,10 @@ fn main() {
     if show_css {
         // Output CSS for both light and dark modes
         let light_palette =
-            generator.generate_scale(Appearance::Light, accent_color, gray_color, "#ffffff");
+            generator.generate_scale(Appearance::Light, accent_color, gray_scale, "#ffffff");
 
         let dark_palette =
-            generator.generate_scale(Appearance::Dark, accent_color, gray_color, "#0f0f0f");
+            generator.generate_scale(Appearance::Dark, accent_color, gray_scale, "#0f0f0f");
 
         // Generate CSS for light mode
         let light_css = light_palette.generate_css(color_name, ":root, .light, .light-theme");
@@ -85,12 +84,12 @@ fn main() {
         println!("{}", dark_css);
     } else {
         // Generate palettes for both light and dark modes (original behavior)
-        if gray_color == "#6b7280" {
+        if gray_scale == "gray" {
             println!("🎨 Generating color palette for: {}", accent_color);
         } else {
             println!(
-                "🎨 Generating color palette for accent: {} with gray: {}",
-                accent_color, gray_color
+                "🎨 Generating color palette for accent: {} with gray scale: {}",
+                accent_color, gray_scale
             );
         }
         println!();
@@ -98,7 +97,7 @@ fn main() {
         // Light mode
         println!("🌅 LIGHT MODE");
         let light_palette =
-            generator.generate_scale(Appearance::Light, accent_color, gray_color, "#ffffff");
+            generator.generate_scale(Appearance::Light, accent_color, gray_scale, "#ffffff");
 
         print_palette(&light_palette, "Light");
 
@@ -107,7 +106,7 @@ fn main() {
         // Dark mode
         println!("🌙 DARK MODE");
         let dark_palette =
-            generator.generate_scale(Appearance::Dark, accent_color, gray_color, "#0f0f0f");
+            generator.generate_scale(Appearance::Dark, accent_color, gray_scale, "#0f0f0f");
 
         print_palette(&dark_palette, "Dark");
     }

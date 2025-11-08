@@ -309,7 +309,7 @@ impl ColorGenerator {
         &self,
         appearance: Appearance,
         accent: &str,
-        gray: &str,
+        gray_name: &str,
         background: &str,
     ) -> Scale {
         let all_scales = match appearance {
@@ -323,11 +323,13 @@ impl ColorGenerator {
         };
 
         let background_color = parse_color(background);
-        let gray_base_color = parse_color(gray);
         let accent_base_color = parse_color(accent);
 
-        let gray_scale_colors =
-            self.get_scale_from_color(gray_base_color, gray_scales, background_color, appearance);
+        let gray_scale_colors = gray_scales.get(gray_name).copied().unwrap_or_else(|| {
+            *gray_scales
+                .get("gray")
+                .expect("Default gray scale must exist")
+        });
 
         let mut accent_scale_colors =
             self.get_scale_from_color(accent_base_color, all_scales, background_color, appearance);
