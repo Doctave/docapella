@@ -11,6 +11,39 @@
       {# prettier-ignore-end #}
     </title>
 
+    {# SEO Meta Tags #}
+    <meta name="generator" content="Docapella" />
+    {% if page.description %}
+      <meta name="description" content="{{ page.description }}" />
+    {% endif %}
+
+    {# Open Graph Tags #}
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ project.settings.title }}{% endif %}" />
+    {% if page.description %}
+      <meta property="og:description" content="{{ page.description }}" />
+    {% endif %}
+    {% if project.site.canonical_domain and page.path %}
+      <meta property="og:url" content="{{ canonical_url(page.path, project.site.canonical_domain) }}" />
+    {% endif %}
+
+    {# Twitter Card Tags #}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="{% if page.title %}{{ page.title }}{% else %}{{ project.settings.title }}{% endif %}" />
+    {% if page.description %}
+      <meta name="twitter:description" content="{{ page.description }}" />
+    {% endif %}
+
+    {# Canonical URL #}
+    {% if project.site.canonical_domain and page.path %}
+      <link rel="canonical" href="{{ canonical_url(page.path, project.site.canonical_domain) }}" />
+    {% endif %}
+
+    {# Favicon #}
+    {% if project.settings.theme.favicon %}
+      <link rel="icon" href="/{{ project.settings.theme.favicon.src }}" />
+    {% endif %}
+
     {% include "js/dark-mode-preload.html.jinja" %}
 
     <link

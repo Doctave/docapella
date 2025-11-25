@@ -1059,7 +1059,7 @@ impl Default for Project {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),

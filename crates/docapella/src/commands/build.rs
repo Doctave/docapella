@@ -32,7 +32,7 @@ mod tests {
 
         fs::write(
             working_dir.path().join("docapella.yaml"),
-            "---\ntitle: Hello World",
+            "---\ntitle: Hello World\ndomain: https://example.com",
         )
         .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
@@ -62,7 +62,7 @@ mod tests {
 
         fs::write(
             working_dir.path().join("docapella.yaml"),
-            "---\ntitle: Hello World",
+            "---\ntitle: Hello World\ndomain: https://example.com",
         )
         .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
@@ -94,7 +94,7 @@ mod tests {
 
         fs::write(
             working_dir.path().join("docapella.yaml"),
-            "---\ntitle: Hello World",
+            "---\ntitle: Hello World\ndomain: https://example.com",
         )
         .unwrap();
         fs::write(working_dir.path().join("README.md"), "# Hello World").unwrap();
@@ -143,7 +143,7 @@ mod tests {
         let fake_stdout = String::from_utf8(fake_stdout.into_inner()).unwrap();
 
         assert!(
-            fake_stdout.contains("Found 1 issues while building documentation"),
+            fake_stdout.contains("Found 2 issues while building documentation"),
             "Verification errors not logged"
         );
 

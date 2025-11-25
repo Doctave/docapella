@@ -197,6 +197,7 @@ impl Settings {
 
     pub fn verify(&self, project: &Project, errors: &mut Vec<Error>) {
         // Shared verifications
+        self.verify_domain(errors);
         self.verify_openapi_specs(project, errors);
         self.verify_favicon(project, errors);
         self.verify_styles(project, errors);
@@ -208,6 +209,104 @@ impl Settings {
 
         // Theme verifications
         self.verify_v2_theme(errors);
+    }
+
+    fn verify_domain(&self, errors: &mut Vec<Error>) {
+        match &self.domain {
+            None => {
+                errors.push(Error {
+                    code: Error::INVALID_DOCTAVE_YAML,
+                    message: String::from("Missing domain in docapella.yaml"),
+                    description: String::from(
+                        "The 'domain' field is required for production builds to generate proper SEO meta tags and sitemaps.\n\
+                        Add it to your docapella.yaml:\n\n\
+                        domain: https://docs.example.com\n\n\
+                        Note: The domain must use HTTPS and should not have a trailing slash."
+                    ),
+                    file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
+                    position: None,
+                });
+            }
+            Some(domain) => {
+                // Validate domain format
+                match Url::parse(domain) {
+                    Ok(url) => {
+                        // Check if scheme is HTTPS
+                        if url.scheme() != "https" {
+                            errors.push(Error {
+                                code: Error::INVALID_DOCTAVE_YAML,
+                                message: String::from("Domain must use HTTPS"),
+                                description: format!(
+                                    "The domain '{}' uses '{}://' but must use 'https://'.\n\
+                                    Example: domain: https://docs.example.com",
+                                    domain, url.scheme()
+                                ),
+                                file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
+                                position: None,
+                            });
+                        }
+
+                        // Check for trailing slash
+                        if domain.ends_with('/') {
+                            errors.push(Error {
+                                code: Error::INVALID_DOCTAVE_YAML,
+                                message: String::from("Domain should not have a trailing slash"),
+                                description: format!(
+                                    "Remove the trailing slash from '{}'.\n\
+                                    Example: domain: https://docs.example.com",
+                                    domain
+                                ),
+                                file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
+                                position: None,
+                            });
+                        }
+
+                        // Check if domain has a path (should be just scheme + host)
+                        if url.path() != "/" {
+                            errors.push(Error {
+                                code: Error::INVALID_DOCTAVE_YAML,
+                                message: String::from("Domain should not include a path"),
+                                description: format!(
+                                    "The domain '{}' includes a path '{}'. Only specify the domain without any path.\n\
+                                    Example: domain: https://docs.example.com",
+                                    domain, url.path()
+                                ),
+                                file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
+                                position: None,
+                            });
+                        }
+
+                        // Check for query parameters
+                        if url.query().is_some() {
+                            errors.push(Error {
+                                code: Error::INVALID_DOCTAVE_YAML,
+                                message: String::from("Domain should not include query parameters"),
+                                description: format!(
+                                    "The domain '{}' includes query parameters. Only specify the base domain.\n\
+                                    Example: domain: https://docs.example.com",
+                                    domain
+                                ),
+                                file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
+                                position: None,
+                            });
+                        }
+                    }
+                    Err(_) => {
+                        errors.push(Error {
+                            code: Error::INVALID_DOCTAVE_YAML,
+                            message: String::from("Invalid domain format"),
+                            description: format!(
+                                "The domain '{}' is not a valid URL.\n\
+                                Example: domain: https://docs.example.com",
+                                domain
+                            ),
+                            file: Some(PathBuf::from(SETTINGS_FILE_NAME)),
+                            position: None,
+                        });
+                    }
+                }
+            }
+        }
     }
 
     pub fn verify_vale(&self, project: &Project, errors: &mut Vec<Error>) {
@@ -542,6 +641,8 @@ impl Display for Radius {
 pub struct Settings {
     pub title: String,
     #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub domain: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
     pub header: Option<HeaderSettings>,
     #[serde(default = "Theme::default")]
     pub theme: Theme,
@@ -563,6 +664,7 @@ impl Default for Settings {
     fn default() -> Self {
         Settings {
             title: String::from("unknown project"),
+            domain: None,
             header: None,
             theme: Theme::default(),
             open_api: Vec::new(),

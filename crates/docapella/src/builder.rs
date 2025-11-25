@@ -2,7 +2,7 @@ use crate::file_gatherer::gather_files;
 use crate::Result;
 use std::path::Path;
 
-use libdoctave::content_api::ViewMode;
+use libdoctave::content_api::{Site, ViewMode};
 use libdoctave::{renderer::Renderer, ContentApiResponse, Project, ResponseContext};
 use owo_colors::{OwoColorize as _, Stream};
 use rayon::prelude::*;
@@ -95,6 +95,20 @@ pub(crate) fn build<W: std::io::Write>(
                     ctx.options.webbify_internal_urls = true;
                     ctx.view_mode = view_mode.clone();
                     ctx.options.bust_image_caches = true;
+
+                    // Set the domain based on view mode
+                    ctx.site = match view_mode {
+                        ViewMode::Dev => Site::with_domain("http://localhost:8080"),
+                        ViewMode::Prod => {
+                            // In production, use the configured domain (validation ensures it exists)
+                            Site::with_domain(
+                                project.settings.domain.clone().unwrap_or_else(|| {
+                                    // This should not happen as verification should catch missing domain
+                                    "https://www.example.com".to_string()
+                                })
+                            )
+                        }
+                    };
 
                     let response = ContentApiResponse::content(page, &project, ctx);
 

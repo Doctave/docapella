@@ -108,6 +108,10 @@ pub struct Site {
 
 impl Site {
     pub fn stub() -> Self {
+        Site::with_domain("https://www.example.com")
+    }
+
+    pub fn with_domain(domain: impl Into<String>) -> Self {
         Site {
             id: 0,
             team_id: 0,
@@ -115,7 +119,7 @@ impl Site {
             versions: vec![],
             integrations: Integrations::default(),
             collecting_feedback: false,
-            canonical_domain: "https://www.example.com".to_string(),
+            canonical_domain: domain.into(),
         }
     }
 }
@@ -688,7 +692,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -946,7 +950,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1460,7 +1464,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1513,7 +1517,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1611,7 +1615,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1683,7 +1687,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1739,7 +1743,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1799,7 +1803,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1874,7 +1878,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -1989,7 +1993,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -2104,7 +2108,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),
@@ -2164,7 +2168,7 @@ mod test {
             },
             InputFile {
                 path: PathBuf::from(SETTINGS_FILE_NAME),
-                content: InputContent::Text(String::from("---\ntitle: An Project")),
+                content: InputContent::Text(String::from("---\ntitle: An Project\ndomain: https://example.com")),
             },
             InputFile {
                 path: PathBuf::from(NAVIGATION_FILE_NAME),

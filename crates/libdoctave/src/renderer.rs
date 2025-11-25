@@ -19,6 +19,7 @@ impl Renderer {
         env.add_function("flatten_examples", flatten_examples);
         env.add_function("flatten_response_examples", flatten_response_examples);
         env.add_function("is_active_nav_item", is_active_nav_item);
+        env.add_function("canonical_url", canonical_url);
 
         Ok(Renderer { env })
     }
@@ -294,4 +295,42 @@ fn is_active_nav_item(nav: &Value, current_path: &Value) -> std::result::Result<
     }
 
     Ok(Value::from_serialize(false))
+}
+
+/// Builds a canonical URL from a path and domain
+/// Strips query parameters and hash, ensures proper formatting
+fn canonical_url(path: &Value, domain: &Value) -> std::result::Result<String, Error> {
+    let path_str = path.as_str().ok_or_else(|| {
+        Error::new(
+            minijinja::ErrorKind::InvalidOperation,
+            "canonical_url first argument (path) must be a string",
+        )
+    })?;
+    let domain_str = domain.as_str().ok_or_else(|| {
+        Error::new(
+            minijinja::ErrorKind::InvalidOperation,
+            "canonical_url second argument (domain) must be a string",
+        )
+    })?;
+
+    // Remove trailing slash from domain if present
+    let domain_clean = domain_str.trim_end_matches('/');
+
+    // Ensure path starts with /
+    let path_clean = if path_str.starts_with('/') {
+        path_str.to_string()
+    } else {
+        format!("/{}", path_str)
+    };
+
+    // Strip query parameters and hash from path
+    let path_no_query = path_clean
+        .split('?')
+        .next()
+        .unwrap_or(&path_clean)
+        .split('#')
+        .next()
+        .unwrap_or(&path_clean);
+
+    Ok(format!("{}{}", domain_clean, path_no_query))
 }

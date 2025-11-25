@@ -1,6 +1,9 @@
 # This title is shown in the browser tab title
 title: Docapella Starter Template
 
+# Domain for SEO meta tags and canonical URLs (required for production builds)
+domain: https://docapella.com
+
 # Customize the theme
 theme:
   colors:
