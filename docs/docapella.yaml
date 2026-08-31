@@ -1,5 +1,5 @@
 # This title is shown in the browser tab title
-title: Docapella Starter Template
+title: Docapella, a documentation site generator
 
 # Domain for SEO meta tags and canonical URLs (required for production builds)
 domain: https://docapella.com
@@ -9,7 +9,7 @@ theme:
   colors:
     # Your brand's main color
     accent: "#F76B15"
-    # A matching grayscale 
+    # A matching grayscale
     grayscale: sand
   logo:
     # You can specify light and dark mode logos to make sure they work in different backgrounds.
