@@ -1,9 +1,9 @@
 {% from "components/markdown.html.jinja" import prose %}
 
-{# 
+{#
   Macro: render_example_block
   Renders a block of examples with proper selection UI and Alpine.js state management
-  
+
   Parameters:
   - examples: Array of example objects
   - language_fallback: Default language for syntax highlighting (default: 'json')
@@ -56,10 +56,10 @@
   {% endif %}
 {% endmacro %}
 
-{# 
+{#
   Macro: render_media_type_selector
   Renders media type selector with content switching
-  
+
   Parameters:
   - media_types: Array of media type objects
   - content_type: Type of content to render ('schema', 'examples', or 'both')
@@ -131,10 +131,10 @@
   {% endif %}
 {% endmacro %}
 
-{# 
+{#
   Macro: render_schema_list
   Renders a list of schemas consistently
-  
+
   Parameters:
   - schemas: Array of schema objects (or parameters with .schema property)
   - is_parameters: Whether the input is parameters (with .schema) or direct schemas (default: false)
@@ -157,13 +157,13 @@
   {% endif %}
 {% endmacro %}
 
-{# 
+{#
   Macro: check_response_has_examples
   Helper to check if a response has any examples
-  
+
   Parameters:
   - response: Response object to check
-  
+
   Returns: Boolean (via setting a template variable)
 #}
 {% macro check_response_has_examples(response) %}
@@ -178,12 +178,12 @@
   {{ has_examples }}
 {% endmacro %}
 
-{# 
+{#
   Macro: render_example_tabs
   Renders example tabs for buttons (used in left side response examples)
-  
+
   Parameters:
-  - examples: Array of example objects  
+  - examples: Array of example objects
   - alpine_var: Alpine.js variable name for active example
 #}
 {% macro render_example_tabs(examples, alpine_var='activeExample') %}
@@ -196,6 +196,71 @@
         >
           {{ example.name or example.summary or "Example" }}
         </button>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endmacro %}
+
+{#
+  Macro: render_security_requirements
+  Renders the "Auth" tab content: one entry per security scheme that can
+  authorize the operation (OpenAPI `security` requirement).
+
+  Parameters:
+  - requirements: Array of SecurityRequirementAst values (tag: "kind", content: "data")
+#}
+{% macro render_security_requirements(requirements) %}
+  {% if requirements and requirements|length > 0 %}
+    <div class="open-api-schema-list">
+      {% for requirement in requirements %}
+        <div class="open-api-schema">
+          <div class="open-api-schema-attributes-top">
+            <code class="schema-name">{{ requirement.data.name }}</code>
+            <code class="schema-type">
+              {%- if requirement.kind == "http" -%}
+                HTTP {{ requirement.data.scheme|capitalize }}
+              {%- elif requirement.kind == "api_key" -%}
+                API Key
+              {%- elif requirement.kind == "o_auth2" -%}
+                OAuth 2.0
+              {%- elif requirement.kind == "open_i_d" -%}
+                OpenID Connect
+              {%- endif -%}
+            </code>
+          </div>
+
+          {% if requirement.data.description_ast %}
+            {{ prose(requirement.data.description_ast, true) }}
+          {% endif %}
+
+          <dl>
+            {%- if requirement.kind == "http" and requirement.data.bearer_format %}
+              <div>
+                <dt>Bearer format</dt>
+                <dd><span class="attr-value">{{ requirement.data.bearer_format }}</span></dd>
+              </div>
+            {%- elif requirement.kind == "api_key" %}
+              <div>
+                <dt>Sent via</dt>
+                <dd><span class="attr-value">{{ requirement.data.key_location }}</span></dd>
+              </div>
+              <div>
+                <dt>Parameter name</dt>
+                <dd><span class="attr-value">{{ requirement.data.key_name }}</span></dd>
+              </div>
+            {%- elif requirement.kind == "o_auth2" and requirement.data.required_scopes|length > 0 %}
+              <div>
+                <dt>Required scopes</dt>
+                <dd><span class="attr-value">{{ requirement.data.required_scopes|join(", ") }}</span></dd>
+              </div>
+            {%- elif requirement.kind == "open_i_d" %}
+              <div>
+                <dt>Connect URL</dt>
+                <dd><span class="attr-value">{{ requirement.data.open_id_connect_url }}</span></dd>
+              </div>
+            {%- endif %}
+          </dl>
+        </div>
       {% endfor %}
     </div>
   {% endif %}
