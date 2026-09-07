@@ -1,5 +1,5 @@
 {% set default_open = is_active_nav_item(item, page.path) or not (item.collapsible and item.collapsed) %}
-<li x-data="{ open: {{ default_open }} }">
+<li x-data="{ open: {{ 'true' if default_open else 'false' }} }">
   {% if item.kind == "link" %}
     <div
       data-current="{{ item.href == page.path }}"

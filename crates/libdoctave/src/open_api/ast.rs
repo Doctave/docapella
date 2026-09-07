@@ -897,7 +897,11 @@ mod test {
     "#};
 
     fn parse_into_value() -> serde_json::Value {
-        let spec = openapi_parser::openapi30::parser::parse_yaml(SPEC).unwrap();
+        parse_into_value_from_spec(SPEC)
+    }
+
+    fn parse_into_value_from_spec(spec: &str) -> serde_json::Value {
+        let spec = openapi_parser::openapi30::parser::parse_yaml(spec).unwrap();
         let pages =
             OpenApi::pages_from_parsed_spec(&spec, "openapi.yaml".into(), "/api".into()).unwrap();
 
@@ -1366,6 +1370,78 @@ mod test {
                 </Text>
             </Box>
             "# }
+        );
+    }
+
+    #[test]
+    /// Pins down the serde snake_case tag values for `SecurityRequirementAst`,
+    /// since they're used as string comparisons in the Auth tab template.
+    fn security_requirements_serialize_with_expected_kind_tags() {
+        let spec = indoc! {r#"
+          openapi: 3.0.0
+          info:
+            title: Sample API
+            version: 0.1.9
+          tags:
+            - name: Users
+          paths:
+            /users/:
+              get:
+                summary: Returns a list of users.
+                tags:
+                  - Users
+                security:
+                  - bearerAuth: []
+                  - apiKeyAuth: []
+                  - oauth2Auth: [read:users]
+                  - openIdAuth: []
+                responses:
+                  '200':
+                    description: OK
+          components:
+            securitySchemes:
+              bearerAuth:
+                type: http
+                scheme: bearer
+                bearerFormat: JWT
+              apiKeyAuth:
+                type: apiKey
+                in: header
+                name: X-Api-Key
+              oauth2Auth:
+                type: oauth2
+                flows:
+                  clientCredentials:
+                    tokenUrl: https://example.com/token
+                    scopes:
+                      read:users: Read users
+              openIdAuth:
+                type: openIdConnect
+                openIdConnectUrl: https://example.com/.well-known/openid-configuration
+      "#};
+
+        let json = parse_into_value_from_spec(spec);
+
+        let requirements = json["operations"][0]["security_requirements"]
+            .as_array()
+            .unwrap();
+
+        let kinds = requirements
+            .iter()
+            .map(|r| r["kind"].as_str().unwrap())
+            .collect::<Vec<_>>();
+
+        assert_eq!(kinds, vec!["http", "api_key", "o_auth2", "open_i_d"]);
+
+        assert_eq!(requirements[1]["data"]["key_location"], "header");
+        assert_eq!(requirements[1]["data"]["key_name"], "X-Api-Key");
+        assert_eq!(
+            requirements[2]["data"]["required_scopes"],
+            json!(["read:users"])
+        );
+        assert_eq!(
+            requirements[3]["data"]["open_id_connect_url"],
+            "https://example.com/.well-known/openid-configuration"
         );
     }
 }

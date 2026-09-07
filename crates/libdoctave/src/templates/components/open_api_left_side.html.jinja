@@ -1,5 +1,5 @@
 {% from "components/markdown.html.jinja" import prose %}
-{% from "components/open_api_macros.html.jinja" import render_example_block, render_media_type_selector, render_schema_list, render_example_tabs %}
+{% from "components/open_api_macros.html.jinja" import render_example_block, render_media_type_selector, render_schema_list, render_example_tabs, render_security_requirements %}
 
 {%- set initial_tab_index = initial_openapi_tab_index(operation) -%}
 <div
@@ -30,6 +30,11 @@
     {% if operation.cookie_params %}
       <button :class="{ 'active': activeIndex == 4 }" @click="activeIndex = 4">
         Cookie Params
+      </button>
+    {% endif %}
+    {% if operation.security_requirements %}
+      <button :class="{ 'active': activeIndex == 5 }" @click="activeIndex = 5">
+        Auth
       </button>
     {% endif %}
   </div>
@@ -80,6 +85,15 @@
         {% if initial_tab_index != 4 %}x-cloak{% endif %}
       >
         {{ render_schema_list(operation.cookie_params, is_parameters=true) }}
+      </div>
+    {% endif %}
+    {% if operation.security_requirements %}
+      <div
+        class="open-api-operation-tab-content"
+        x-show="activeIndex == 5"
+        {% if initial_tab_index != 5 %}x-cloak{% endif %}
+      >
+        {{ render_security_requirements(operation.security_requirements) }}
       </div>
     {% endif %}
   </div>

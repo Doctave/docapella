@@ -74,6 +74,8 @@ fn initial_openapi_tab_index(value: &Value) -> std::result::Result<usize, Error>
         Ok(3)
     } else if value.get_attr("cookie_params")? != Value::UNDEFINED {
         Ok(4)
+    } else if value.get_attr("security_requirements")? != Value::UNDEFINED {
+        Ok(5)
     } else {
         Ok(0)
     }
